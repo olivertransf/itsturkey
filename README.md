@@ -24,6 +24,32 @@ NEXT_PUBLIC_MAPBOX_API_KEY=
 3. Optional: `NEXT_PUBLIC_SITE_NAME`, `NEXT_PUBLIC_HOME_MAP_CARDS`, `SITE_PASSWORD` (middleware gate). See repo scripts under `scripts/` for map import helpers.
 4. `yarn dev` → [http://localhost:3000](http://localhost:3000)
 
+### Sharing maps with people who clone the repo
+
+Mongo data is not in git. To let someone run your maps locally or in their own Mongo:
+
+1. **Export** from your database (writes `seed-data/private/maps-bundle.json` by default; that folder is gitignored so large dumps stay local):
+
+   ```bash
+   yarn maps:export-bundle --from-home-env
+   # or: yarn maps:export-bundle --map-ids "<hex>,<hex>"
+   # optional sample for a small commit: --max-locations-per-map 500 --out seed-data/sample/maps-bundle.json
+   ```
+
+2. **Share the bundle** out of band, or commit a **small** sample under something like `seed-data/sample/` if you cap pins.
+
+3. **Import** on the other machine (same `MONGO_URI` / `DB_NAME` in `.env`):
+
+   ```bash
+   yarn maps:import-bundle --file ./seed-data/private/maps-bundle.json
+   # Custom maps: map owner must exist — pass your local users._id if IDs differ:
+   # yarn maps:import-bundle --file ./path/to/bundle.json --creator-user-id "<hex>"
+   ```
+
+4. Copy your **`NEXT_PUBLIC_HOME_MAP_CARDS`** JSON into their `.env` so homepage cards match the exported map IDs (IDs are preserved by default).
+
+Single-map JSON imports without a bundle still use `scripts/import-custom-map-from-json.mjs`.
+
 Docker, FAQ, and detailed Maps API setup live in the **[upstream GeoHub README](https://github.com/benlikescode/geohub/blob/main/README.md)**.
 
 ## Stack

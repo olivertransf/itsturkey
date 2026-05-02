@@ -13,6 +13,8 @@
     "seed:dev": "node scripts/seed-dev-data.js",
     "maps:import-equitable": "node scripts/import-equitable-world-map.js",
     "maps:split-equitable": "node scripts/split-equitable-into-maps.js --layout weighted --replace-existing",
+    "maps:export-bundle": "node scripts/export-maps-for-repo.mjs",
+    "maps:import-bundle": "node scripts/import-maps-bundle.mjs",
     "test": "jest"
   },
   "dependencies": {
