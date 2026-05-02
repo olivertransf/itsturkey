@@ -1,8 +1,8 @@
 # itsturkey
 
-Street View geography guessing game (GeoGuessr-style), deployed at **[itsturkey.vercel.app](https://itsturkey.vercel.app)**.
+Street View geography guessing game (GeoGuessr-style). Production URL is intentionally omitted here; deploy on your own infrastructure (for example **Vercel**) and set **`NEXT_PUBLIC_SITE_URL`** / your DNS accordingly.
 
-This repo is a fork of **[GeoHub](https://github.com/benlikescode/geohub)**. Game logic and UI build on that codebase; API keys, MongoDB, SendGrid, and hosting are configured for **this deployment only**.
+This repo is a fork of **[GeoHub](https://github.com/benlikescode/geohub)**. Game logic and UI build on that codebase; API keys, MongoDB, SendGrid, and hosting are configured per deployment.
 
 **Repos:** [olivertransf/itsturkey](https://github.com/olivertransf/itsturkey) (this fork) · [benlikescode/geohub](https://github.com/benlikescode/geohub) (upstream)
 
