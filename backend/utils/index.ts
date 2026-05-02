@@ -8,6 +8,11 @@ export { default as getLocations } from './getLocations'
 export { default as getMapBounds } from './getMapBounds'
 export { default as getQueryLimit } from './getQueryLimit'
 export { default as getUserId } from './getUserId'
+export { canAccessGame, getAnonymousGameId, getExistingAnonymousGameId } from './anonymousGame'
+export {
+  calculateMultiSessionTotalPoints,
+  normalizeMultiSessionSettings,
+} from './multiSession'
 export { default as isUserAnAdmin } from './isUserAnAdmin'
 export { default as isUserBanned } from './isUserBanned'
 export { monthAgo, dayAgo, weekAgo, todayStart, todayEnd } from './queryDates'

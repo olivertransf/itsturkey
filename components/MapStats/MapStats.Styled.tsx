@@ -1,84 +1,56 @@
 import styled from 'styled-components'
 
-type StyledProps = {
-  isLiked?: boolean
-}
+const StyledMapStats = styled.div`
+  padding: 18px 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 
-const StyledMapStats = styled.div<StyledProps>`
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  padding: 15px 20px 20px;
-
-  @media (max-width: 1000px) {
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
+  .locations-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #7d7d85;
   }
 
-  .stat-item {
+  .locations-line {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 14px;
-    background: #ffffff0a;
-    border-radius: 6px;
-    flex-shrink: 0;
-    box-sizing: border-box;
+    gap: 11px;
   }
 
-  .textWrapper {
+  .locations-icon {
     display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
 
-  .mainLabel {
-    color: var(--color2);
-
-    @media (max-width: 600px) {
-      font-size: 14px;
-    }
-  }
-
-  .subLabel {
-    color: var(--color3);
-    font-weight: 400;
-    font-size: 14px;
-
-    @media (max-width: 600px) {
-      font-size: 12px;
-    }
-  }
-
-  .stat-icon {
     svg {
-      height: 30px;
-      color: #9b9b9b;
-      transition: transform 200ms ease 0ms;
-      position: relative;
+      height: 20px;
+      width: 20px;
+      color: #a1a1aa;
 
       path {
         stroke-width: 1.5;
       }
-
-      @media (max-width: 600px) {
-        height: 24px;
-      }
     }
   }
 
-  .likeBtn {
-    background-color: transparent;
-    height: fit-content;
-    width: fit-content;
+  .locations-text {
+    color: #e4e4e7;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    font-variant-numeric: tabular-nums;
 
-    svg {
-      color: ${({ isLiked }) => isLiked && 'var(--red-500)'};
-
-      &:hover {
-        transform: scale(1.2);
-        color: var(--red-500);
-      }
+    @media (max-width: 600px) {
+      font-size: 15px;
     }
   }
 `

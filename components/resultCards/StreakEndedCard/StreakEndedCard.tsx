@@ -9,6 +9,7 @@ import { updateStartTime } from '@redux/slices'
 import { GameViewType } from '@types'
 import countries from '@utils/constants/countries'
 import { KEY_CODES } from '@utils/constants/keyCodes'
+import { getStreakLobbyPath } from '@utils/constants/random'
 import { mailman, showToast } from '@utils/helpers'
 import { StyledStreakEndedCard } from './'
 import { getRealCountryCode } from '@utils/helpers/getRealCountryCode'
@@ -64,6 +65,7 @@ const StreakEndedCard: FC<Props> = ({ gameData, setGameData, view, setView }) =>
       mapName: gameData.mapName,
       gameSettings: gameData.gameSettings,
       mode: gameData.mode,
+      ...(gameData.mode === 'streak' ? { unlimited: true } : {}),
     }
 
     // store start time
@@ -90,7 +92,7 @@ const StreakEndedCard: FC<Props> = ({ gameData, setGameData, view, setView }) =>
   }
 
   const navigateToStreaksPage = () => {
-    router.push('/streaks')
+    router.push(getStreakLobbyPath())
   }
 
   return (

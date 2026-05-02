@@ -1,5 +1,6 @@
 import NextHead from 'next/head'
 import { FC } from 'react'
+import { SITE_NAME } from '@utils/constants/site'
 
 type Props = {
   title?: string
@@ -9,11 +10,15 @@ type Props = {
 }
 
 const Meta: FC<Props> = ({ title, description, ogUrl, ogImage }) => {
-  const defaultTitle = 'GeoHub'
-  const defaultDescription =
-    'GeoHub is a free to play geography game that tests your ability to recognize where you are in the world.'
-  const defaultOGURL = 'https://www.geohub.gg'
+  const defaultTitle = SITE_NAME
+  const defaultDescription = 'A geography guessing game.'
+  const defaultOGURL =
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ||
+    (typeof process.env.VERCEL_URL === 'string' && process.env.VERCEL_URL.length > 0
+      ? `https://${process.env.VERCEL_URL}`
+      : '')
   const defaultOGImage = '/og-image.png'
+  const resolvedOgUrl = ogUrl || defaultOGURL
 
   return (
     <NextHead>
@@ -28,10 +33,10 @@ const Meta: FC<Props> = ({ title, description, ogUrl, ogImage }) => {
       <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       <link rel="manifest" href="/manifest.json" />
 
-      <meta property="og:url" content={ogUrl || defaultOGURL} />
+      {resolvedOgUrl ? <meta property="og:url" content={resolvedOgUrl} /> : null}
       <meta property="og:title" content={title || defaultTitle} />
       <meta property="og:description" content={description || defaultDescription} />
-      <meta property="og:site_name" content={title || defaultTitle} />
+      <meta property="og:site_name" content={SITE_NAME} />
       <meta property="og:image" content={ogImage || defaultOGImage} />
       <meta property="og:image:type" content="image/png" />
       <meta property="og:image:width" content="1200" />
@@ -39,7 +44,7 @@ const Meta: FC<Props> = ({ title, description, ogUrl, ogImage }) => {
       <meta property="og:image:alt" content={description || defaultDescription} />
 
       <meta name="twitter:image" content={ogImage || defaultOGImage} />
-      <meta name="twitter:url" content={ogUrl || defaultOGURL} />
+      {resolvedOgUrl ? <meta name="twitter:url" content={resolvedOgUrl} /> : null}
       <meta name="twitter:title" content={title || defaultTitle} />
       <meta name="twitter:description" content={description || defaultDescription} />
     </NextHead>

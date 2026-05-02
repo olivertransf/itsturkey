@@ -6,7 +6,7 @@ import { IconLayer } from '@deck.gl/layers/typed'
 import { useAppSelector } from '@redux/hook'
 import { GoogleMapsConfigType, LocationType } from '@types'
 import { SELECTION_MAP_OPTIONS } from '@utils/constants/googleMapOptions'
-import { getMapsKey, showToast } from '@utils/helpers'
+import { getMapsKey, googleMapLoaderAsync, showToast } from '@utils/helpers'
 import { StyledSelectionMap } from './'
 
 const REGULAR_MARKER_ICON = '/images/regular-pin.png'
@@ -125,6 +125,7 @@ const SelectionMap: FC<Props> = ({
   return (
     <StyledSelectionMap ref={wrapperRef}>
       <GoogleMapReact
+        googleMapLoader={googleMapLoaderAsync}
         bootstrapURLKeys={getMapsKey(user.mapsAPIKey)}
         center={{ lat: 0, lng: 0 }}
         zoom={2}

@@ -5,12 +5,18 @@ const StyledSlider = styled.div`
   input[type='range'] {
     -webkit-appearance: none;
     height: 16px;
-    width: 280px;
+    width: 100%;
+    max-width: 320px;
     background: var(--background4);
     background-image: linear-gradient(var(--mediumPurple), var(--mediumPurple));
     background-repeat: no-repeat;
     border-radius: 20px;
     cursor: pointer;
+  }
+
+  input[type='range']:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
   }
 
   input[type='range']::-webkit-slider-thumb {

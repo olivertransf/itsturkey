@@ -1,65 +1,96 @@
 import type { NextPage } from 'next'
-import Image from 'next/image'
-import { GamemodeCard } from '@components/GamemodeCard'
-import { MapPreviewCard } from '@components/MapPreviewCard'
+import { CountryStreakCard } from '@components/CountryStreakCard'
+import { HomeWorldCard } from '@components/HomeWorldCard'
 import { Meta } from '@components/Meta'
-import { Pill } from '@components/system'
+import { MultiGuessrCard } from '@components/MultiGuessrCard'
 import StyledHomePage from '@styles/HomePage.Styled'
-import geoTips from '@utils/constants/geotips.json'
-import officialMaps from '@utils/constants/officialMaps.json'
-import { COUNTRY_STREAK_DETAILS, DAILY_CHALLENGE_DETAILS } from '@utils/constants/random'
+import type { MapType } from '@types'
+import { SITE_NAME } from '@utils/constants/site'
+import { getHomeMapAccentColor } from '@utils/helpers/homeMapAccent'
+
+const parseHomeMapCards = (): Pick<MapType, '_id' | 'name' | 'description' | 'previewImg'>[] | null => {
+  const raw = process.env.NEXT_PUBLIC_HOME_MAP_CARDS
+
+  if (!raw) {
+    return null
+  }
+
+  try {
+    const parsed = JSON.parse(raw)
+
+    if (!Array.isArray(parsed)) {
+      return null
+    }
+
+    return parsed
+      .map((item) => {
+        if (!item || typeof item !== 'object') return null
+
+        const rec = item as Record<string, unknown>
+        const _id = rec._id
+        const name = rec.name
+        const previewImg = rec.previewImg
+
+        if (typeof _id !== 'string' || typeof name !== 'string' || typeof previewImg !== 'string') {
+          return null
+        }
+
+        const description = typeof rec.description === 'string' ? rec.description : ''
+
+        return { _id, name, description, previewImg }
+      })
+      .filter(Boolean) as Pick<MapType, '_id' | 'name' | 'description' | 'previewImg'>[]
+  } catch {
+    return null
+  }
+}
+
+const getHomeMaps = (): Pick<MapType, '_id' | 'name' | 'description' | 'previewImg'>[] => {
+  const fromEnv = parseHomeMapCards()
+  return fromEnv && fromEnv.length > 0 ? fromEnv : []
+}
 
 const Home: NextPage = () => {
-  const day = new Date().getDate()
-  const geoTip = geoTips[day - 1] ?? geoTips[0]
+  const homeMaps = getHomeMaps()
 
   return (
     <StyledHomePage>
-      <Meta title="GeoHub - The free geography guessing game" />
-      <div className="hero-section">
-        <Image
-          src="/images/backgrounds/hero.jpg"
-          alt="Homes on a street in Japan"
-          layout="fill"
-          objectFit="cover"
-          priority
-        />
-        <div className="hero-content">
-          <h2 className="banner-title">Today&apos;s Tip</h2>
-          <div className="tip-wrapper">
-            <span className="tip">{geoTip.tip}</span>
-          </div>
-          <div className="pills-wrapper">
-            {geoTip.tags.map((label, idx) => (
-              <Pill key={idx} label={label} />
-            ))}
-          </div>
-        </div>
-      </div>
+      <Meta title={SITE_NAME} />
 
       <div className="main-content">
-        <div className="map-preview-section">
-          {officialMaps.map((map, idx) => (
-            <MapPreviewCard key={idx} map={map} showDescription />
-          ))}
-        </div>
+        <div className="home-stack">
+          <h1 className="site-title">{SITE_NAME}</h1>
 
-        <div className="other-gamemodes">
-          <GamemodeCard
-            title={COUNTRY_STREAK_DETAILS.name}
-            titleColor="var(--blue-500)"
-            description={COUNTRY_STREAK_DETAILS.description}
-            buttonText="Play Streaks"
-            href="/streaks"
-          />
+          <section className="home-section">
+            <h2 className="section-title">Gamemodes</h2>
+            <div className="card-grid">
+              <CountryStreakCard />
+              <MultiGuessrCard />
+            </div>
+          </section>
 
-          <GamemodeCard
-            title={DAILY_CHALLENGE_DETAILS.name}
-            titleColor="var(--green-500)"
-            description={DAILY_CHALLENGE_DETAILS.description}
-            buttonText="Play Challenge"
-            href="/daily-challenge"
-          />
+          <section className="home-section">
+            <h2 className="section-title">Maps</h2>
+            <div className="card-grid">
+              {homeMaps.map((map) => (
+                <HomeWorldCard
+                  key={String(map._id)}
+                  mapId={String(map._id)}
+                  name={map.name}
+                  description={map.description}
+                  accentColor={getHomeMapAccentColor(map.name)}
+                />
+              ))}
+            </div>
+          </section>
+
+          {homeMaps.length === 0 && (
+            <div className="home-empty">
+              No homepage maps configured. Set <code>NEXT_PUBLIC_HOME_MAP_CARDS</code> to a JSON array of maps (one
+              entry per card). Example after{' '}
+              <code>npm run maps:split-equitable</code>: paste the printed JSON into <code>.env</code>.
+            </div>
+          )}
         </div>
       </div>
     </StyledHomePage>

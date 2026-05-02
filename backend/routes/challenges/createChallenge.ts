@@ -1,12 +1,18 @@
 import { ObjectId } from 'mongodb'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { collections, getLocations, getUserId } from '@backend/utils'
+import { DEFAULT_TOTAL_ROUNDS, MAX_TOTAL_ROUNDS } from '@utils/constants/gameModes'
 
 const createChallenge = async (req: NextApiRequest, res: NextApiResponse) => {
   const userId = await getUserId(req, res)
   const { mapId, gameSettings, mode } = req.body
 
-  const numLocationsToGenerate = mode === 'streak' ? 10 : 5
+  const parsed = Number.parseInt(String(req.body.totalRounds ?? ''), 10)
+  const totalRounds = Number.isFinite(parsed)
+    ? Math.min(MAX_TOTAL_ROUNDS, Math.max(1, parsed))
+    : DEFAULT_TOTAL_ROUNDS
+
+  const numLocationsToGenerate = mode === 'streak' ? 10 : totalRounds
   const locations = await getLocations(mapId, numLocationsToGenerate)
 
   if (locations === null) {

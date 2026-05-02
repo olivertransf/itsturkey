@@ -2,6 +2,7 @@ import type { NextPage } from 'next'
 import { useEffect, useState } from 'react'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import { NoResults } from '@components/errorViews'
+import { PageBackLink } from '@components/PageBackLink'
 import { PageHeader, WidthController } from '@components/layout'
 import { Meta } from '@components/Meta'
 import { DestroyModal } from '@components/modals'
@@ -86,6 +87,7 @@ const OngoingGamesPage: NextPage = () => {
     <StyledOngoingGamesPage>
       <WidthController customWidth="1160px">
         <Meta title="Ongoing Games" />
+        <PageBackLink href="/" label="Back to home" />
         <PageHeader>Ongoing Games</PageHeader>
 
         <div className="ongoing-banner">

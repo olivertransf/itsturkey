@@ -24,6 +24,42 @@ const StyledChallengeStart = styled.div<StyledProps>`
       object-fit: cover;
     }
 
+    .challenge-back-link {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #e8e8e8;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      text-decoration: none;
+      transition: background 0.15s ease, border-color 0.15s ease;
+
+      svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.62);
+        border-color: rgba(255, 255, 255, 0.2);
+      }
+
+      @media (max-width: 600px) {
+        top: 10px;
+        left: 10px;
+        padding: 7px 12px;
+        font-size: 13px;
+      }
+    }
+
     .map-name {
       position: absolute;
       bottom: 8px;

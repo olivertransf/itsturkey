@@ -1,16 +1,16 @@
 import { FC, useEffect, useState } from 'react'
 import { Game } from '@backend/models'
 import { LightningBoltIcon } from '@heroicons/react/solid'
+import { DEFAULT_TOTAL_ROUNDS } from '@utils/constants/gameModes'
 import { formatLargeNumber, formatStatusTimer } from '@utils/helpers'
 import { StyledGameStatus } from './'
 
 type Props = {
   gameData: Game
   handleSubmitGuess: (timedOut?: boolean) => void
-  hasCustomRoundLength?: boolean
 }
 
-const GameStatus: FC<Props> = ({ gameData, handleSubmitGuess, hasCustomRoundLength }) => {
+const GameStatus: FC<Props> = ({ gameData, handleSubmitGuess }) => {
   const timeLimit = gameData.gameSettings?.timeLimit
   const hasTimeLimit = gameData.gameSettings.timeLimit !== 0
 
@@ -30,6 +30,11 @@ const GameStatus: FC<Props> = ({ gameData, handleSubmitGuess, hasCustomRoundLeng
     }
   }, [hasTimeLimit, timeLeft])
 
+  const finiteTotal =
+    gameData.mode === 'standard' && !gameData.unlimited
+      ? gameData.totalRounds ?? gameData.rounds?.length ?? DEFAULT_TOTAL_ROUNDS
+      : null
+
   return (
     <StyledGameStatus>
       {gameData.mode === 'standard' && (
@@ -48,7 +53,9 @@ const GameStatus: FC<Props> = ({ gameData, handleSubmitGuess, hasCustomRoundLeng
               <span>Round</span>
             </div>
             <div className="value">
-              <span>{`${gameData.round} / ${hasCustomRoundLength ? gameData.rounds.length : 5}`}</span>
+              <span>
+                {finiteTotal != null ? `${gameData.round} / ${finiteTotal}` : `${gameData.round} (∞)`}
+              </span>
             </div>
           </div>
 

@@ -1,33 +1,44 @@
 import { FC, useState } from 'react'
 import { Tooltip } from '@components/system'
-import { FlagIcon, ArrowLeftIcon } from '@heroicons/react/outline'
+import { ChevronLeftIcon, FlagIcon, ArrowLeftIcon } from '@heroicons/react/outline'
 import { StyledStreetViewControls } from './'
 
 type Props = {
   handleBackToStart: () => void,
+  handleExitGame: () => void,
   handleUndoLastMove?: () => void
 }
 
-const StreetViewControls: FC<Props> = ({ handleBackToStart, handleUndoLastMove }) => {
+const StreetViewControls: FC<Props> = ({ handleBackToStart, handleExitGame, handleUndoLastMove }) => {
   const [showStartTip, setShowStartTip] = useState(false)
   const [showBackTip, setShowBackTip] = useState(false)
+  const [showExitTip, setShowExitTip] = useState(false)
 
   return (
     <StyledStreetViewControls>
-      <div className="control-button-wrapper" onMouseOver={() => setShowStartTip(true)} onMouseOut={() => setShowStartTip(false)}>
-        <button className="control-button" onClick={handleBackToStart}>
-          <FlagIcon />
+      <div className="exit-control" onMouseOver={() => setShowExitTip(true)} onMouseOut={() => setShowExitTip(false)}>
+        <button className="control-button" onClick={handleExitGame}>
+          <ChevronLeftIcon />
         </button>
-        {showStartTip && <Tooltip label="Back To Start (R)" position="left" />}
+        {showExitTip && <Tooltip label="Exit Game" position="right" />}
       </div>
-      {handleUndoLastMove && (
-        <div className="control-button-wrapper" onMouseOver={() => setShowBackTip(true)} onMouseOut={() => setShowBackTip(false)}>
-          <button className="control-button" onClick={handleUndoLastMove}>
-            <ArrowLeftIcon />
+
+      <div className="primary-controls">
+        <div className="control-button-wrapper" onMouseOver={() => setShowStartTip(true)} onMouseOut={() => setShowStartTip(false)}>
+          <button className="control-button" onClick={handleBackToStart}>
+            <FlagIcon />
           </button>
-          {showBackTip && <Tooltip label="Undo Last Move (Z)" position="left" />}
+          {showStartTip && <Tooltip label="Back To Start (R)" position="left" />}
         </div>
-      )}
+        {handleUndoLastMove && (
+          <div className="control-button-wrapper" onMouseOver={() => setShowBackTip(true)} onMouseOut={() => setShowBackTip(false)}>
+            <button className="control-button" onClick={handleUndoLastMove}>
+              <ArrowLeftIcon />
+            </button>
+            {showBackTip && <Tooltip label="Undo Last Move (Z)" position="left" />}
+          </div>
+        )}
+      </div>
     </StyledStreetViewControls>
   )
 }

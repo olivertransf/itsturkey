@@ -6,7 +6,7 @@ import { Marker } from '@components/Marker'
 import { LocationType } from '@types'
 import { RESULT_MAP_OPTIONS } from '@utils/constants/googleMapOptions'
 import { POLYGON_STYLES } from '@utils/constants/polygonStyles'
-import { formatPolygon, getMapsKey } from '@utils/helpers'
+import { formatPolygon, getMapsKey, googleMapLoaderAsync } from '@utils/helpers'
 import { useAppSelector } from '../../redux-utils'
 import { StyledStreaksSummaryMap } from './'
 import { getRealCountryCode } from '@utils/helpers/getRealCountryCode'
@@ -74,6 +74,7 @@ const StreaksSummaryMap: FC<Props> = ({ gameData }) => {
     <StyledStreaksSummaryMap>
       <div className="map">
         <GoogleMapReact
+          googleMapLoader={googleMapLoaderAsync}
           bootstrapURLKeys={getMapsKey(user.mapsAPIKey)}
           center={{ lat: 0, lng: 0 }}
           zoom={2}

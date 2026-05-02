@@ -8,7 +8,7 @@ import { useAppSelector } from '@redux/hook'
 import { GoogleMapsConfigType, LocationType } from '@types'
 import { GUESS_MAP_OPTIONS } from '@utils/constants/googleMapOptions'
 import useGuessMap from '@utils/hooks/useGuessMap'
-import getMapsKey from '../../utils/helpers/getMapsKey'
+import { getMapsKey, googleMapLoaderAsync } from '@utils/helpers'
 import { StyledGuessMap } from './'
 import { LockOpenIcon, LockClosedIcon } from '@heroicons/react/solid'
 
@@ -22,6 +22,7 @@ type Props = {
   setGoogleMapsConfig: (googleMapsConfig: GoogleMapsConfigType) => void
   resetMap?: boolean
   gameData: Game
+  compactIdle?: boolean
 }
 
 const GuessMap: FC<Props> = ({
@@ -34,6 +35,7 @@ const GuessMap: FC<Props> = ({
   setGoogleMapsConfig,
   resetMap,
   gameData,
+  compactIdle,
 }) => {
   const [marker, setMarker] = useState<{ lat: number; lng: number } | null>(null)
 
@@ -42,14 +44,13 @@ const GuessMap: FC<Props> = ({
     mapWidth,
     hovering,
     isPinned,
-    setMapHeight,
-    setMapWidth,
     setHovering,
     setIsPinned,
     handleMapHover,
     handleMapLeave,
     changeMapSize,
-  } = useGuessMap()
+    resetGuessMapDimensions,
+  } = useGuessMap({ idleScale: compactIdle ? 0.45 : 1 })
   const user = useAppSelector((state) => state.user)
 
   useEffect(() => {
@@ -92,9 +93,8 @@ const GuessMap: FC<Props> = ({
     }
 
     setHovering(false)
-    setMapHeight(15)
-    setMapWidth(15)
     setIsPinned(false)
+    resetGuessMapDimensions()
     setCurrGuess(null)
     setMarker(null)
     closeMobileMap()
@@ -110,7 +110,12 @@ const GuessMap: FC<Props> = ({
   }
 
   return (
-    <StyledGuessMap mapHeight={mapHeight} mapWidth={mapWidth} mobileMapOpen={mobileMapOpen}>
+    <StyledGuessMap
+      mapHeight={mapHeight}
+      mapWidth={mapWidth}
+      mobileMapOpen={mobileMapOpen}
+      mapDimmed={!mobileMapOpen && !hovering && !isPinned}
+    >
       <div className="guessMapWrapper" onMouseOver={handleMapHover} onMouseLeave={handleMapLeave}>
         {hovering && (
           <div className="controls">
@@ -138,6 +143,7 @@ const GuessMap: FC<Props> = ({
 
         <div className="map">
           <GoogleMapReact
+            googleMapLoader={googleMapLoaderAsync}
             bootstrapURLKeys={getMapsKey(user.mapsAPIKey)}
             defaultCenter={{ lat: 0, lng: 0 }}
             defaultZoom={1}

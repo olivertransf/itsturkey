@@ -3,6 +3,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { Game } from '@backend/models'
 import getMapFromGame from '@backend/queries/getMapFromGame'
 import { collections, getUserId, isUserBanned, throwError } from '@backend/utils'
+import { DEFAULT_TOTAL_ROUNDS } from '@utils/constants/gameModes'
 
 const createChallengeGame = async (req: NextApiRequest, res: NextApiResponse) => {
   const userId = await getUserId(req, res)
@@ -34,6 +35,8 @@ const createChallengeGame = async (req: NextApiRequest, res: NextApiResponse) =>
     challengeId: new ObjectId(challengeId),
     mode,
     gameSettings,
+    totalRounds: Array.isArray(locations) ? locations.length : DEFAULT_TOTAL_ROUNDS,
+    unlimited: false,
     guesses: [],
     rounds: locations,
     round: 1,

@@ -1,6 +1,7 @@
 import type { NextPage } from 'next'
 import { useEffect, useState } from 'react'
 import { NoResults } from '@components/errorViews'
+import { PageBackLink } from '@components/PageBackLink'
 import { PageHeader, WidthController } from '@components/layout'
 import { LikedMapCard } from '@components/MapCards/LikedMapCard'
 import { Meta } from '@components/Meta'
@@ -42,6 +43,7 @@ const LikedMapsPage: NextPage = () => {
     <StyledLikedMapsPage>
       <WidthController>
         <Meta title="Liked Maps" />
+        <PageBackLink href="/" label="Back to home" />
         <PageHeader>Liked Maps</PageHeader>
 
         {loading && <SkeletonCards numCards={8} />}

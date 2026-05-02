@@ -29,6 +29,7 @@ const StyledNavbar = styled.div`
     display: flex;
     align-items: center;
     justify-content: flex-start;
+    gap: 0.5rem;
     flex-grow: 1;
     width: 100%;
     height: 100%;
@@ -36,6 +37,13 @@ const StyledNavbar = styled.div`
     @media (max-width: 500px) {
       flex-shrink: 3;
     }
+  }
+
+  .navBackSlot {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    margin-right: 0.25rem;
   }
 
   .middleContainer {

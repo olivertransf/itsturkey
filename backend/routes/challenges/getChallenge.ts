@@ -33,7 +33,7 @@ const getChallenge = async (req: NextApiRequest, res: NextApiResponse) => {
     })
   }
 
-  const mapDetails = await getMapFromGame(challenge as ChallengeType)
+  const mapDetails = await getMapFromGame(challenge as unknown as ChallengeType)
 
   if (!mapDetails) {
     return throwError(res, 404, 'Failed to find challenge')

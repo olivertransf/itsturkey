@@ -6,29 +6,21 @@ const StyledAppLogo = styled.div<StyledProps>`
   .logo {
     user-select: none;
     display: flex;
+    align-items: center;
     position: relative;
     width: fit-content;
     transition: 0.2s;
 
-    .earth {
-      position: absolute;
-      left: 29px;
-      top: -7px;
-      pointer-events: none;
-      transition: 0.2s;
-    }
-
-    svg {
-      pointer-events: none;
-      height: 18px;
+    .wordmark {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+      line-height: 1;
     }
 
     &:hover {
       opacity: 0.7;
-
-      .earth {
-        transform: scale(1.1);
-      }
     }
   }
 `

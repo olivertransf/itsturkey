@@ -2,16 +2,32 @@ import styled from 'styled-components'
 
 const StyledStreetViewControls = styled.div`
   position: absolute;
-  bottom: 100px;
-  left: 10px;
+  inset: 0;
   z-index: 2;
-  display: grid;
-  gap: 15px;
+  pointer-events: none;
+
+  .primary-controls {
+    position: absolute;
+    left: 10px;
+    bottom: 100px;
+    display: grid;
+    gap: 15px;
+    pointer-events: auto;
+  }
+
+  .exit-control {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    pointer-events: auto;
+  }
 
   .control-button-wrapper {
     position: relative;
+  }
 
-    .control-button {
+  .control-button-wrapper .control-button,
+  .exit-control .control-button {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -30,7 +46,6 @@ const StyledStreetViewControls = styled.div`
         height: 22px;
         color: #fff;
       }
-    }
   }
 `
 

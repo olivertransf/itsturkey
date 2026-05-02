@@ -42,7 +42,7 @@ const DailyQuotaModal: FC<Props> = ({ isOpen, closeModal }) => {
           </div>
 
           <p className="modal-text">
-            To keep GeoHub free, there is a limit to how many games can be played each day.
+            To keep hosting sustainable, there is a limit to how many games can be played each day.
             <span> The daily quota resets at midnight (PT)</span>.
           </p>
         </div>
@@ -56,14 +56,11 @@ const DailyQuotaModal: FC<Props> = ({ isOpen, closeModal }) => {
             <Link href="/user/settings">
               <a className="support-link">Add Key</a>
             </Link>
-            <a
-              className="support-link donate"
-              href="https://www.buymeacoffee.com/geohubgame"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Donate
-            </a>
+            {process.env.NEXT_PUBLIC_DONATE_URL ? (
+              <a className="support-link donate" href={process.env.NEXT_PUBLIC_DONATE_URL} target="_blank" rel="noreferrer">
+                Donate
+              </a>
+            ) : null}
           </div>
 
           <div className="checkbox-wrapper">

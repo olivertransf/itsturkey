@@ -3,7 +3,7 @@ import { ObjectId } from 'mongodb'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { collections, dbConnect, throwError } from '@backend/utils'
 import queryTopScores from '@backend/queries/topScores'
-import { COUNTRY_STREAKS_ID, DAILY_CHALLENGE_ID } from '@utils/constants/random'
+import { COUNTRY_STREAKS_ID, DAILY_CHALLENGE_ID, EQUITABLE_COUNTRY_STREAK_ID } from '@utils/constants/random'
 import queryTopStreaks from '@backend/queries/topStreaks'
 import { Game } from '@backend/models'
 
@@ -179,18 +179,31 @@ const updateMapLeaderboard = async (game: Game) => {
     : 0
 
   if (game.totalPoints >= lowestTopScore || leaderboardNeedsMoreScores) {
-    const query = { mapId, round: 6 }
+    const query = {
+      mapId,
+      state: 'finished',
+      mode: 'standard',
+      isDailyChallenge: { $ne: true },
+      $or: [{ challengeId: { $exists: false } }, { challengeId: null }],
+    }
     const newTopScores = await queryTopScores(query, LEADERBOARD_LENGTH)
 
     await collections.mapLeaderboard?.findOneAndUpdate({ mapId }, { $set: { scores: newTopScores } }, { upsert: true })
   }
 }
 
-// COUNTRY STREAKS
-const updateStreakStats = async () => {
+// COUNTRY STREAKS (classic vs equitable virtual maps)
+const updateStreakStatsForMapId = async (streakMapId: string) => {
   const gameStats = await collections.games
     ?.aggregate([
-      { $match: { mode: 'streak', state: 'finished', notForLeaderboard: { $ne: true } } },
+      {
+        $match: {
+          mode: 'streak',
+          state: 'finished',
+          notForLeaderboard: { $ne: true },
+          mapId: streakMapId,
+        },
+      },
       {
         $group: {
           _id: null,
@@ -216,14 +229,20 @@ const updateStreakStats = async () => {
   const roundedAvgScore = Math.ceil(avgScore)
 
   await collections.mapLeaderboard?.findOneAndUpdate(
-    { mapId: COUNTRY_STREAKS_ID },
+    { mapId: streakMapId },
     { $set: { avgScore: roundedAvgScore, usersPlayed: explorers } },
     { upsert: true }
   )
 }
 
+const updateStreakStats = async () => {
+  await updateStreakStatsForMapId(COUNTRY_STREAKS_ID)
+  await updateStreakStatsForMapId(EQUITABLE_COUNTRY_STREAK_ID)
+}
+
 const updateStreakLeaderboard = async (game: Game) => {
-  const mapId = COUNTRY_STREAKS_ID
+  const mapId =
+    game.mapId === EQUITABLE_COUNTRY_STREAK_ID ? EQUITABLE_COUNTRY_STREAK_ID : COUNTRY_STREAKS_ID
   const mapLeaderboard = await collections.mapLeaderboard?.findOne({ mapId })
 
   const topScores = mapLeaderboard?.scores
@@ -233,7 +252,7 @@ const updateStreakLeaderboard = async (game: Game) => {
     : 0
 
   if (game.streak >= lowestTopScore || leaderboardNeedsMoreScores) {
-    const query = { mode: 'streak', state: 'finished' }
+    const query = { mode: 'streak', state: 'finished', mapId }
     const newTopScores = await queryTopStreaks(query, LEADERBOARD_LENGTH)
 
     await collections.mapLeaderboard?.findOneAndUpdate({ mapId }, { $set: { scores: newTopScores } }, { upsert: true })

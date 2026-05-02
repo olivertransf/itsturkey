@@ -13,6 +13,8 @@ type Game = {
   currView: 'Game' | 'Result' | 'FinalResults'
   guesses: GuessType[]
   rounds: LocationType[]
+  totalRounds?: number
+  unlimited?: boolean
   gameSettings: GameSettingsType
   createdAt?: Date
   mapDetails?: MapType[]

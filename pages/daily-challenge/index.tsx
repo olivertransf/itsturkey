@@ -2,6 +2,7 @@ import { useRouter } from 'next/router'
 import { FC, useEffect, useState } from 'react'
 import { DailyChallengeMapStats } from '@components/DailyChallengeMapStats'
 import { DailyChallengeWinners } from '@components/DailyChallengeWinners'
+import { PageBackLink } from '@components/PageBackLink'
 import { WidthController } from '@components/layout'
 import { MapLeaderboard } from '@components/MapLeaderboard'
 import { Meta } from '@components/Meta'
@@ -13,6 +14,7 @@ import { useAppSelector } from '@redux/hook'
 import StyledDailyChallengePage from '@styles/DailyChallengePage.Styled'
 import { DailyChallengeStatsType, MapLeaderboardType } from '@types'
 import { DAILY_CHALLENGE_DETAILS } from '@utils/constants/random'
+import { SITE_NAME } from '@utils/constants/site'
 import { mailman, showToast } from '@utils/helpers'
 
 const DailyChallengePage: FC = () => {
@@ -64,7 +66,8 @@ const DailyChallengePage: FC = () => {
   return (
     <StyledDailyChallengePage>
       <WidthController customWidth="1100px" mobilePadding="0px">
-        <Meta title={`Play - ${DAILY_CHALLENGE_DETAILS.name}`} />
+        <Meta title={`${SITE_NAME} — ${DAILY_CHALLENGE_DETAILS.name}`} />
+        <PageBackLink href="/" label="Back to home" />
 
         <div className="daily-challenge-wrapper">
           {mapStats && challengeId ? (

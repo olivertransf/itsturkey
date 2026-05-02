@@ -14,6 +14,7 @@ import { Button, FlexGroup } from '@components/system'
 import { useAppSelector } from '@redux/hook'
 import StyledResultPage from '@styles/ResultPage.Styled'
 import { MapType, PageType } from '@types'
+import { getStreakLobbyPath } from '@utils/constants/random'
 import { mailman } from '@utils/helpers'
 
 const ChallengeResultsPage: PageType = () => {
@@ -49,9 +50,9 @@ const ChallengeResultsPage: PageType = () => {
   }
 
   const getDefaultGameToShow = () => {
-    const thisUserIndex = gamesFromChallenge?.map((game) => game.userId.toString()).indexOf(user?.id)
+    const thisUserIndex = gamesFromChallenge?.map((game) => game.userId?.toString()).indexOf(user?.id)
 
-    if (thisUserIndex && thisUserIndex !== -1) {
+    if (typeof thisUserIndex !== 'undefined' && thisUserIndex !== -1) {
       setSelectedGameIndex(thisUserIndex)
     }
   }
@@ -99,7 +100,7 @@ const ChallengeResultsPage: PageType = () => {
           <SkeletonGameResults />
         ) : (
           <section>
-            <Navbar />
+            <Navbar backHref={getStreakLobbyPath()} backLabel="Back to streaks" />
 
             <StreaksSummaryMap gameData={gamesFromChallenge[selectedGameIndex]} />
 
@@ -124,7 +125,7 @@ const ChallengeResultsPage: PageType = () => {
         <SkeletonGameResults />
       ) : (
         <section>
-          <Navbar />
+          <Navbar backHref="/ongoing" backLabel="Back to ongoing" />
 
           <ResultMap
             guessedLocations={gamesFromChallenge[selectedGameIndex].guesses}

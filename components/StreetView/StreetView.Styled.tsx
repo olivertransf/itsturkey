@@ -8,7 +8,8 @@ const StyledStreetView = styled.div<StyledProps>`
   height: 100%;
   width: 100%;
 
-  #streetview {
+  #streetview,
+  .streetview-pano {
     height: 100%;
     width: 100%;
   }

@@ -1,5 +1,7 @@
 export const OFFICIAL_WORLD_ID = '6185df7a7b54baf63473a53e'
 export const COUNTRY_STREAKS_ID = 'country-streaks'
+/** Streak mode: sample rounds only from equitable-world GeoHub maps (with country metadata). */
+export const EQUITABLE_COUNTRY_STREAK_ID = 'equitable-country-streak'
 export const DAILY_CHALLENGE_ID = 'daily-challenge'
 
 export const GUEST_ACCOUNT_ID = '636ed6784ec6f85e6f18591e'
@@ -10,6 +12,19 @@ export const COUNTRY_STREAK_DETAILS = {
   description: 'How many countries can you guess in a row?',
   previewImg: 'official22.jpg',
   creator: 'GeoHub',
+}
+
+export const EQUITABLE_COUNTRY_STREAK_DETAILS = {
+  _id: EQUITABLE_COUNTRY_STREAK_ID,
+  name: 'Equitable Country Streak',
+  description: 'Country streak on Equitable World coverage only — guess the country from Street View.',
+  previewImg: 'custom-map.svg',
+  creator: 'GeoHub',
+}
+
+/** Hub route for Country Streak (equitable sampling). */
+export function getStreakLobbyPath(): '/equitable-streaks' {
+  return '/equitable-streaks'
 }
 
 export const DAILY_CHALLENGE_DETAILS = {

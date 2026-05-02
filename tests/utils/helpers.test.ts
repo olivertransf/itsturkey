@@ -1,4 +1,5 @@
 import { formatLargeNumber, formatRoundTime } from '@utils/helpers'
+import getMapsKey from '@utils/helpers/getMapsKey'
 
 // formatRoundTime
 test('Round time less than 60 should return the time in seconds', () => {
@@ -32,4 +33,8 @@ test('Score of 9999 should return 9,999', () => {
 
 test('Score of 600 should return 600', () => {
   expect(formatLargeNumber(600)).toBe('600')
+})
+
+test('Google Maps bootstrap key includes async loading', () => {
+  expect(getMapsKey('custom-key')).toEqual({ key: 'custom-key', loading: 'async' })
 })

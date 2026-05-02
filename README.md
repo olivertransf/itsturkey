@@ -12,6 +12,8 @@
   <hr />
 </div>
 
+Fork of [benlikescode/geohub](https://github.com/benlikescode/geohub) with custom features and deployment settings for this instance.
+
 GeoHub is a free and open source geography guessing game inspired by Geoguessr.
 
 For those unfamilar with Geoguessr, it uses Google Streetview to place you in a random location and you have to guess where you think you are in the world. You can move around and use clues around you such as Language, Architecture, Road Signs, etc... to make your guess. The objective is clear, the closer you are to the correct location, the more points you get.
@@ -107,7 +109,48 @@ DB_NAME="your-mongodb-database-name"
 NEXTAUTH_SECRET="any-random-string"
 CRYPTR_SECRET="any-random-string"
 NEXTAUTH_URL="http://localhost:3000"
+NEXT_PUBLIC_MAPBOX_API_KEY="your-mapbox-token"
 ```
+
+Optional homepage customization:
+
+```
+NEXT_PUBLIC_SITE_NAME="itsturkey"
+NEXT_PUBLIC_HOME_MAP_CARDS='[{"_id":"<mongo maps._id hex>","name":"My Map","description":"...","previewImg":"custom-map.svg"},{"_id":"<another>","name":"My Map 2","description":"...","previewImg":"custom-map.svg"}]'
+```
+
+`npm run maps:split-equitable` imports `~/Downloads/equitable-world.final.resolved` with **`weighted`** split (**`two-default-three-equitable`** alias): **5 disjoint maps**, weights **60∶60∶42∶42∶42** matching **~60k + ~60k + ~42k×3** targets at **~246k** total pins; a **~125k** file uses the **same ratios** (no overlap), so counts scale down (~31k / ~21k per slice). Override with `EQUITABLE_SPLITS_WEIGHTS=60,60,42,42,42`. Equal **⅕** slices: `--layout five-way`. **Only** 3 equitable maps, full dataset in thirds: `--layout three-equitable`. **Only** 2 default maps from one JSON (disjoint halves): `node scripts/split-equitable-into-maps.js <file.json> --layout two-default --replace-existing` (replaces **Default World** / **Default World 2** only; leaves equitable maps). Input may be `customCoordinates` or a root array. Copy printed `NEXT_PUBLIC_HOME_MAP_CARDS=...` into `.env`.
+
+**Equitable Country Streak** (`/equitable-streaks`) uses the same country-guess streak rules as classic Country Streaks but draws rounds only from equitable GeoHub maps that have `countryCode`. By default it reads those maps from `NEXT_PUBLIC_HOME_MAP_CARDS` (entries whose names start with `Equitable World`). Set **`EQUITABLE_COUNTRY_STREAK_MAP_IDS`** (comma-separated `maps._id` hex values) to override. It has its own leaderboard and stats.
+
+Optional filter for the bundled official homepage cards:
+
+```
+NEXT_PUBLIC_HOME_OFFICIAL_MAP_IDS="6185df7a7b54baf63473a53e"
+```
+
+### Importing a large custom locations JSON file into MongoDB
+
+GeoHub stores gameplay pins in `userLocations` for user-created maps (see `backend/utils/getLocations.ts`).
+
+This repo includes a helper script:
+
+```
+node scripts/import-custom-map-from-json.mjs \
+  --gist-url "https://gist.githubusercontent.com/.../file.json" \
+  --creator-user-id "<your users._id hex>" \
+  --name "My imported map" \
+  --description "Imported from JSON" \
+  --preview-img "custom-map.svg" \
+  --published true \
+  --max-locations 60000
+```
+
+Notes:
+
+- Custom maps have a hard limit of **60,000** locations (`MAX_ALLOWED_CUSTOM_LOCATIONS`).
+- `--creator-user-id` must exist in your `users` collection (register/login once locally to create a user).
+- By default the importer **shuffles** locations before truncation (use `--shuffle false` to disable).
 
 Next, you can install the required dependencies and start the local dev server:
 

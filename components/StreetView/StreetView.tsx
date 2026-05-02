@@ -1,4 +1,5 @@
 import React, { FC, useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/router'
 import { Game } from '@backend/models'
 import { GameStatus } from '@components/GameStatus'
 import { GuessMap } from '@components/GuessMap'
@@ -19,9 +20,23 @@ type Props = {
   setGameData: (gameData: Game) => void
   view: GameViewType
   setView: (view: GameViewType) => void
+  panoElementId?: string
+  enableGlobalShortcuts?: boolean
+  getGuessTime?: () => number
+  compactGuessMapIdle?: boolean
 }
 
-const Streetview: FC<Props> = ({ gameData, setGameData, view, setView }) => {
+const Streetview: FC<Props> = ({
+  gameData,
+  setGameData,
+  view,
+  setView,
+  panoElementId = 'streetview',
+  enableGlobalShortcuts = true,
+  getGuessTime,
+  compactGuessMapIdle,
+}) => {
+  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [currGuess, setCurrGuess] = useState<LocationType | null>(null)
   const [countryStreakGuess, setCountryStreakGuess] = useState('')
@@ -84,7 +99,7 @@ const Streetview: FC<Props> = ({ gameData, setGameData, view, setView }) => {
     const svService = new google.maps.StreetViewService()
 
     const svPanorama = new google.maps.StreetViewPanorama(
-      document.getElementById('streetview') as HTMLElement,
+      document.getElementById(panoElementId) as HTMLElement,
       getStreetviewOptions(gameData)
     )
 
@@ -143,13 +158,15 @@ const Streetview: FC<Props> = ({ gameData, setGameData, view, setView }) => {
 
   const handleSubmitGuess = async (timedOut?: boolean) => {
     if (currGuess || countryStreakGuess || timedOut) {
-      if (!game.startTime) {
+      if (!getGuessTime && !game.startTime) {
         return showToast('error', 'Something went wrong')
       }
 
+      const guessTime = getGuessTime ? getGuessTime() : (new Date().getTime() - (game.startTime as number)) / 1000
+
       const body = {
         guess: currGuess || { lat: 0, lng: 0 },
-        guessTime: (new Date().getTime() - game.startTime) / 1000,
+        guessTime,
         localRound: gameData.round,
         timedOut,
         timedOutWithGuess: currGuess !== null,
@@ -174,6 +191,22 @@ const Streetview: FC<Props> = ({ gameData, setGameData, view, setView }) => {
     panoramaRef.current.setPov({ heading: location.heading || 0, pitch: location.pitch || 0 })
   }
 
+  const handleExitGame = async () => {
+    const mapId = gameData.mapDetails?._id?.toString?.() ?? gameData.mapId
+
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back()
+      return
+    }
+
+    if (mapId) {
+      await router.push(`/map/${mapId}`)
+      return
+    }
+
+    await router.push('/ongoing')
+  }
+
   const handleBackToStartKeys = (e: KeyboardEvent) => {
     const backToStartKeys = ['r']
 
@@ -183,14 +216,14 @@ const Streetview: FC<Props> = ({ gameData, setGameData, view, setView }) => {
   }
 
   useEffect(() => {
-    if (view !== 'Game') return
+    if (view !== 'Game' || !enableGlobalShortcuts) return
 
     document.addEventListener('keydown', handleBackToStartKeys)
 
     return () => {
       document.removeEventListener('keydown', handleBackToStartKeys)
     }
-  }, [view])
+  }, [view, enableGlobalShortcuts])
 
   const handleUndoLastMove = () => {
     if (!panoramaRef.current) return
@@ -210,14 +243,14 @@ const Streetview: FC<Props> = ({ gameData, setGameData, view, setView }) => {
   }
 
   useEffect(() => {
-    if (view !== 'Game') return
+    if (view !== 'Game' || !enableGlobalShortcuts) return
 
     document.addEventListener('keydown', handleUndoLastMoveKeys)
 
     return () => {
       document.removeEventListener('keydown', handleUndoLastMoveKeys)
     }
-  }, [])
+  }, [view, enableGlobalShortcuts])
 
   const handleSubmitGuessKeys = async (e: KeyboardEvent) => {
     const submitGuessKeys = [KEY_CODES.SPACE, KEY_CODES.SPACE_IE11, KEY_CODES.ENTER]
@@ -228,14 +261,14 @@ const Streetview: FC<Props> = ({ gameData, setGameData, view, setView }) => {
   }
 
   useEffect(() => {
-    if (view !== 'Game') return
+    if (view !== 'Game' || !enableGlobalShortcuts) return
 
     document.addEventListener('keydown', handleSubmitGuessKeys, { once: true })
 
     return () => {
       document.removeEventListener('keydown', handleSubmitGuessKeys)
     }
-  }, [currGuess, countryStreakGuess, view])
+  }, [currGuess, countryStreakGuess, view, enableGlobalShortcuts])
 
   const handleMovingArrowKeys = (e: KeyboardEvent) => {
     const movingArrowKeys = [
@@ -253,22 +286,26 @@ const Streetview: FC<Props> = ({ gameData, setGameData, view, setView }) => {
   }
 
   useEffect(() => {
-    if (view !== 'Game') return
+    if (view !== 'Game' || !enableGlobalShortcuts) return
 
     document.addEventListener('keydown', handleMovingArrowKeys, { capture: true })
 
     return () => {
       document.removeEventListener('keydown', handleMovingArrowKeys, { capture: true })
     }
-  }, [view])
+  }, [view, enableGlobalShortcuts])
 
   return (
     <>
       <StyledStreetView showMap={!loading}>
         {loading && <LoadingPage />}
 
-        <div id="streetview">
-          <StreetViewControls handleBackToStart={handleBackToStart} handleUndoLastMove={gameData.gameSettings.canMove ? handleUndoLastMove : undefined} />
+        <div id={panoElementId} className="streetview-pano">
+          <StreetViewControls
+            handleBackToStart={handleBackToStart}
+            handleExitGame={handleExitGame}
+            handleUndoLastMove={gameData.gameSettings.canMove ? handleUndoLastMove : undefined}
+          />
           {view === 'Game' && <GameStatus gameData={gameData} handleSubmitGuess={handleSubmitGuess} />}
 
           {gameData.mode === 'standard' && (
@@ -282,6 +319,7 @@ const Streetview: FC<Props> = ({ gameData, setGameData, view, setView }) => {
               setGoogleMapsConfig={setGoogleMapsConfig}
               resetMap={view === 'Game'}
               gameData={gameData}
+              compactIdle={compactGuessMapIdle}
             />
           )}
 

@@ -6,7 +6,7 @@ import { useAppSelector } from '@redux/hook'
 import { GuessType, LocationType } from '@types'
 import { RESULT_MAP_OPTIONS } from '@utils/constants/googleMapOptions'
 import { createMapPolyline } from '@utils/helpers'
-import getMapsKey from '../../utils/helpers/getMapsKey'
+import { getMapsKey, googleMapLoaderAsync } from '@utils/helpers'
 import { StyledResultMap } from './'
 
 type Props = {
@@ -99,6 +99,7 @@ const ResultMap: FC<Props> = ({
     <StyledResultMap>
       <div className="map">
         <GoogleMapReact
+          googleMapLoader={googleMapLoaderAsync}
           bootstrapURLKeys={getMapsKey(user.mapsAPIKey)}
           center={{ lat: 0, lng: 0 }}
           zoom={2}

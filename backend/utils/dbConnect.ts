@@ -1,6 +1,6 @@
 import { Collection, Db, MongoClient } from 'mongodb'
 import { RecentSearch, UserBansType, FeatureFlagsType } from '@types'
-import { MapLeaderboard } from '@backend/models'
+import { MapLeaderboard, MultiSession } from '@backend/models'
 
 export const collections: {
   users?: Collection
@@ -14,6 +14,7 @@ export const collections: {
   passwordResets?: Collection
   featureFlags?: Collection<FeatureFlagsType>
   mapLeaderboard?: Collection<MapLeaderboard>
+  multiSessions?: Collection<MultiSession>
   userBans?: Collection<UserBansType>
   analytics?: Collection
 } = {}
@@ -49,11 +50,13 @@ export const dbConnect = async () => {
     collections.passwordResets = db.collection('passwordResets')
     collections.featureFlags = db.collection('featureFlags')
     collections.mapLeaderboard = db.collection('mapLeaderboard')
+    collections.multiSessions = db.collection('multiSessions')
     collections.userBans = db.collection('userBans')
     collections.analytics = db.collection('analytics')
 
     return cachedDb
   } catch (err) {
     console.log(err)
+    throw err
   }
 }

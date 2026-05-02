@@ -17,6 +17,7 @@ import { PencilAltIcon } from '@heroicons/react/solid'
 import { useAppDispatch, useAppSelector } from '@redux/hook'
 import { updateAvatar, updateBio, updateUsername } from '@redux/slices'
 import StyledProfilePage from '@styles/ProfilePage.Styled'
+import { SITE_NAME } from '@utils/constants/site'
 import { MapType, UserGameHistoryType } from '@types'
 import { USER_AVATAR_PATH } from '@utils/constants/random'
 import { mailman, showToast } from '@utils/helpers'
@@ -149,7 +150,7 @@ const ProfilePage: NextPage = () => {
 
   return (
     <StyledProfilePage isEditing={isEditing}>
-      <Meta title={userDetails ? userDetails.name : 'GeoHub'} />
+      <Meta title={userDetails ? `${userDetails.name} — ${SITE_NAME}` : SITE_NAME} />
 
       {loading || !userStats ? (
         <SkeletonProfile />

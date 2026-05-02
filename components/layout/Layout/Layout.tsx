@@ -1,6 +1,5 @@
 import { useRouter } from 'next/router'
 import { FC, ReactNode, useEffect, useState } from 'react'
-import { MobileNav, Navbar, Sidebar } from '@components/layout'
 import { StyledLayout } from './'
 import { mailman } from '@utils/helpers'
 import { BanType } from '@types'
@@ -44,15 +43,9 @@ const Layout: FC<Props> = ({ children }) => {
   return (
     <StyledLayout>
       <div className="app-layout">
-        <Navbar />
-
         <div className="appBody">
-          <Sidebar />
-
           <main id="main">{children}</main>
         </div>
-
-        <MobileNav />
 
         {banMessage && (
           <div className="ban-message">

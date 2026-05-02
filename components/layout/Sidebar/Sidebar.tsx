@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { FC, useEffect, useState } from 'react'
 import { Avatar } from '@components/system'
 import {
+  GlobeAltIcon,
   HeartIcon,
   HomeIcon,
   LightningBoltIcon,
@@ -66,6 +67,8 @@ const Sidebar: FC = () => {
             <Item text="Ongoing Games" icon={<PlayIcon />} route="/ongoing" />
 
             <Item text="Country Streaks" icon={<LightningBoltIcon />} route="/streaks" />
+
+            <Item text="Equitable Streak" icon={<GlobeAltIcon />} route="/equitable-streaks" />
 
             <Item text="Daily Challenge" icon={<LocationMarkerIcon />} route="/daily-challenge" />
           </div>

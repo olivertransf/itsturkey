@@ -8,7 +8,7 @@ import { RESULT_MAP_OPTIONS } from '@utils/constants/googleMapOptions'
 import { POLYGON_STYLES } from '@utils/constants/polygonStyles'
 import { formatPolygon } from '@utils/helpers'
 import { useAppSelector } from '../../redux-utils'
-import getMapsKey from '../../utils/helpers/getMapsKey'
+import { getMapsKey, googleMapLoaderAsync } from '@utils/helpers'
 import { StyledStreaksResultMap } from './'
 import { getRealCountryCode } from '@utils/helpers/getRealCountryCode'
 
@@ -105,6 +105,7 @@ const ResultMap: FC<Props> = ({ gameData, resetMap }) => {
     <StyledStreaksResultMap>
       <div className="map">
         <GoogleMapReact
+          googleMapLoader={googleMapLoaderAsync}
           bootstrapURLKeys={getMapsKey(user.mapsAPIKey)}
           center={{ lat: 0, lng: 0 }}
           zoom={2}

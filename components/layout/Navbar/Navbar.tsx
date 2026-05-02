@@ -1,13 +1,19 @@
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { FC, useState } from 'react'
+import { PageBackLink } from '@components/PageBackLink'
 import { Avatar, Button, Searchbar } from '@components/system'
 import { SearchIcon } from '@heroicons/react/outline'
 import { useAppSelector } from '../../../redux-utils'
 import { AppLogo } from '../../AppLogo'
 import { StyledNavbar } from './'
 
-const Navbar: FC = () => {
+type NavbarProps = {
+  backHref?: string
+  backLabel?: string
+}
+
+const Navbar: FC<NavbarProps> = ({ backHref, backLabel }) => {
   const { data: session } = useSession()
   const user = useAppSelector((state) => state.user)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -26,6 +32,11 @@ const Navbar: FC = () => {
       {!searchOpen && (
         <>
           <div className="leftContainer">
+            {backHref ? (
+              <div className="navBackSlot">
+                <PageBackLink href={backHref} label={backLabel ?? 'Back'} compact />
+              </div>
+            ) : null}
             <AppLogo />
           </div>
 

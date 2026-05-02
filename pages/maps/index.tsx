@@ -1,4 +1,5 @@
 import { FC, useEffect, useState } from 'react'
+import { PageBackLink } from '@components/PageBackLink'
 import { WidthController } from '@components/layout'
 import { MapPreviewCard } from '@components/MapPreviewCard'
 import { Meta } from '@components/Meta'
@@ -54,6 +55,7 @@ const MapsPage: FC = () => {
     <StyledMapsPage>
       <WidthController>
         <Meta title="Browse Maps" />
+        <PageBackLink href="/" label="Back to home" />
 
         <div className="page-wrapper">
           <div>

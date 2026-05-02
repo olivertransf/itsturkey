@@ -1,8 +1,10 @@
 import Image from 'next/image'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { FC, useEffect, useState } from 'react'
 import { Avatar } from '@components/system'
 import {
+  ArrowLeftIcon,
   ArrowsExpandIcon,
   ClockIcon,
   LocationMarkerIcon,
@@ -11,7 +13,11 @@ import {
 } from '@heroicons/react/outline'
 import { useAppSelector } from '@redux/hook'
 import { ChallengeType, GameViewType } from '@types'
-import { MAP_AVATAR_PATH } from '@utils/constants/random'
+import {
+  EQUITABLE_COUNTRY_STREAK_DETAILS,
+  EQUITABLE_COUNTRY_STREAK_ID,
+  MAP_AVATAR_PATH,
+} from '@utils/constants/random'
 import { formatTimeLimit, redirectToRegister } from '@utils/helpers'
 import { StyledChallengeStart } from './'
 
@@ -48,6 +54,13 @@ const ChallengeStart: FC<Props> = ({ challengeData, handleStartChallenge }) => {
   return (
     <StyledChallengeStart>
       <div className="challengeStartWrapper">
+        <Link href="/">
+          <a className="challenge-back-link">
+            <ArrowLeftIcon aria-hidden />
+            Back
+          </a>
+        </Link>
+
         <Image
           src={`${MAP_AVATAR_PATH}/${challengeData?.mapDetails?.previewImg}`}
           alt=""
@@ -76,7 +89,11 @@ const ChallengeStart: FC<Props> = ({ challengeData, handleStartChallenge }) => {
                 <span className="emphasizedText">{challengeData.creatorName}</span>
                 <span> challenged you to play </span>
                 <span className="emphasizedText">
-                  {challengeData.mode === 'streak' ? 'Country Streaks' : challengeData?.mapDetails?.name}
+                  {challengeData.mode === 'streak'
+                    ? challengeData.mapId === EQUITABLE_COUNTRY_STREAK_ID
+                      ? EQUITABLE_COUNTRY_STREAK_DETAILS.name
+                      : 'Country Streaks'
+                    : challengeData?.mapDetails?.name}
                 </span>
               </div>
             </div>

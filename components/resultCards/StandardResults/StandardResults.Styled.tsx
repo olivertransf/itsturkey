@@ -49,6 +49,10 @@ const StyledStandardResults = styled.div`
 
   .actionButton {
     margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
 
     .next-round-btn {
       border-radius: 50rem;
@@ -66,6 +70,27 @@ const StyledStandardResults = styled.div`
 
       :hover {
         background-color: var(--indigo-600);
+      }
+    }
+
+    .end-session-btn {
+      border-radius: 50rem;
+      height: 44px;
+      width: 200px;
+      font-size: 15px;
+      font-weight: 500;
+      user-select: none;
+      background: transparent;
+      color: var(--color3);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+
+      :hover:not(:disabled) {
+        border-color: rgba(255, 255, 255, 0.35);
+        color: #fff;
+      }
+
+      :disabled {
+        opacity: 0.6;
       }
     }
   }

@@ -1,32 +1,45 @@
 import { ObjectId } from 'mongodb'
 import { NextApiRequest, NextApiResponse } from 'next'
 import Game from '@backend/models/game'
-import { collections, getLocations, getUserId, isUserBanned, throwError } from '@backend/utils'
+import { collections, getAnonymousGameId, getLocations, getUserId, isUserBanned, throwError } from '@backend/utils'
+import { DEFAULT_TOTAL_ROUNDS, MAX_TOTAL_ROUNDS, UNLIMITED_LOCATION_BATCH } from '@utils/constants/gameModes'
 
 const createGame = async (req: NextApiRequest, res: NextApiResponse) => {
   const userId = await getUserId(req, res)
-  const { mode, mapId } = req.body
+  const { mode, mapId, mapName, gameSettings } = req.body
+  const anonymousId = userId ? undefined : getAnonymousGameId(req, res)
 
-  if (!userId) {
-    return throwError(res, 401, 'Unauthorized')
-  }
-
-  const { isBanned } = await isUserBanned(userId)
+  const { isBanned } = userId ? await isUserBanned(userId) : { isBanned: false }
 
   if (isBanned) {
     return throwError(res, 401, 'You are currently banned from playing games')
   }
 
-  const locations = await getLocations(mapId)
+  const unlimited = mode === 'streak' ? true : req.body.unlimited === true
+
+  let totalRounds = Number.parseInt(String(req.body.totalRounds ?? ''), 10)
+  if (!unlimited) {
+    if (!Number.isFinite(totalRounds)) {
+      totalRounds = DEFAULT_TOTAL_ROUNDS
+    }
+    totalRounds = Math.min(MAX_TOTAL_ROUNDS, Math.max(1, totalRounds))
+  }
+
+  const locationCount = unlimited ? UNLIMITED_LOCATION_BATCH : totalRounds
+  const locations = await getLocations(mapId, locationCount)
 
   if (!locations) {
     return throwError(res, 400, 'Failed to get locations')
   }
 
   const newGame = {
-    ...req.body,
     mapId: mode === 'standard' ? new ObjectId(mapId) : mapId,
-    userId: new ObjectId(userId),
+    mapName,
+    gameSettings,
+    mode,
+    userId: userId ? new ObjectId(userId) : undefined,
+    anonymousId,
+    notForLeaderboard: !userId,
     guesses: [],
     rounds: locations,
     round: 1,
@@ -36,9 +49,9 @@ const createGame = async (req: NextApiRequest, res: NextApiResponse) => {
     streak: 0,
     state: 'started',
     createdAt: new Date(),
+    ...(unlimited ? { unlimited: true } : { totalRounds, unlimited: false }),
   } as Game
 
-  // Create game
   const result = await collections.games?.insertOne(newGame)
 
   if (!result) {

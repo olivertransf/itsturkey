@@ -4,6 +4,7 @@ type StyledProps = {
   mapHeight: number
   mapWidth: number
   mobileMapOpen?: boolean
+  mapDimmed?: boolean
 }
 
 const slideUpAnim = keyframes`
@@ -41,9 +42,9 @@ const StyledStreaksGuessMap = styled.div<StyledProps>`
   .map {
     height: ${({ mapHeight }) => mapHeight}vh;
     width: ${({ mapWidth }) => mapWidth}vw;
-    opacity: ${({ mapWidth }) => (mapWidth === 300 ? 0.5 : 1)};
+    opacity: ${({ mapDimmed, mobileMapOpen }) => (mobileMapOpen || !mapDimmed ? 1 : 0.55)};
     border-radius: 4px;
-    transition: opacity 0.1s ease, width 0.1s ease, height 0.1s ease;
+    transition: opacity 0.15s ease, width 0.1s ease, height 0.1s ease;
     position: relative;
     margin-bottom: 10px;
 
@@ -51,6 +52,7 @@ const StyledStreaksGuessMap = styled.div<StyledProps>`
       height: 100%;
       width: 100%;
       border-radius: 0;
+      opacity: 1;
     }
 
     .selected-country {

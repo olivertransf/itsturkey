@@ -39,7 +39,7 @@ const StyledLayout = styled.div`
 
   main {
     width: 100% !important;
-    height: calc(100vh - var(--navbarHeight));
+    height: 100vh;
     max-height: 100%;
     position: relative;
     overflow: hidden auto;
@@ -62,12 +62,13 @@ const StyledLayout = styled.div`
       width: 100%;
       height: unset;
       overflow: unset;
-      padding: 50px 0 70px 0;
+      padding: 0;
       box-sizing: border-box;
     }
 
     main {
       height: auto;
+      min-height: 100vh;
       overflow: unset;
     }
   }

@@ -10,7 +10,7 @@ import { GoogleMapsConfigType } from '@types'
 import countries from '@utils/constants/countries'
 import { GUESS_MAP_OPTIONS } from '@utils/constants/googleMapOptions'
 import { POLYGON_STYLES } from '@utils/constants/polygonStyles'
-import { formatPolygon, getMapsKey } from '@utils/helpers'
+import { formatPolygon, getMapsKey, googleMapLoaderAsync } from '@utils/helpers'
 import useGuessMap from '@utils/hooks/useGuessMap'
 import { StyledStreaksGuessMap } from './'
 import { LockOpenIcon, LockClosedIcon } from '@heroicons/react/solid'
@@ -43,13 +43,12 @@ const StreaksGuessMap: FC<Props> = ({
     mapWidth,
     hovering,
     isPinned,
-    setMapHeight,
-    setMapWidth,
     setHovering,
     setIsPinned,
     handleMapHover,
     handleMapLeave,
     changeMapSize,
+    resetGuessMapDimensions,
   } = useGuessMap()
 
   const user = useAppSelector((state) => state.user)
@@ -82,9 +81,8 @@ const StreaksGuessMap: FC<Props> = ({
     map.setZoom(1)
 
     setHovering(false)
-    setMapHeight(15)
-    setMapWidth(15)
     setIsPinned(false)
+    resetGuessMapDimensions()
     setCountryStreakGuess('')
     removeCountryPolygons(map)
     closeMobileMap()
@@ -124,7 +122,12 @@ const StreaksGuessMap: FC<Props> = ({
   }
 
   return (
-    <StyledStreaksGuessMap mapHeight={mapHeight} mapWidth={mapWidth} mobileMapOpen={mobileMapOpen}>
+    <StyledStreaksGuessMap
+      mapHeight={mapHeight}
+      mapWidth={mapWidth}
+      mobileMapOpen={mobileMapOpen}
+      mapDimmed={!mobileMapOpen && !hovering && !isPinned}
+    >
       <div className="guessMapWrapper" onMouseOver={handleMapHover} onMouseLeave={handleMapLeave}>
         {hovering && (
           <div className="controls">
@@ -152,6 +155,7 @@ const StreaksGuessMap: FC<Props> = ({
 
         <div className="map">
           <GoogleMapReact
+            googleMapLoader={googleMapLoaderAsync}
             bootstrapURLKeys={getMapsKey(user.mapsAPIKey)}
             defaultCenter={{ lat: 0, lng: 0 }}
             defaultZoom={1}

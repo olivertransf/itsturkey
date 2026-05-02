@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
-import { collections, compareObjectIds, getUserId, throwError } from '@backend/utils'
-import { COUNTRY_STREAKS_ID } from '@utils/constants/random'
+import { collections, compareObjectIds, getUserId } from '@backend/utils'
+import { COUNTRY_STREAKS_ID, EQUITABLE_COUNTRY_STREAK_ID } from '@utils/constants/random'
 import { ObjectId } from 'mongodb'
 import { TopScore } from '@backend/models'
 
@@ -8,15 +8,23 @@ type TopScoreType = TopScore & {
   highlight?: boolean
 }
 
-const LOCATION_COUNT = 250000
+const CLASSIC_LOCATION_COUNT = 250000
+const EQUITABLE_LOCATION_COUNT = 125000
 const COUNTRY_COUNT = 98
+
+function resolveStreakStatsMapId(queryMapId: unknown): string {
+  return queryMapId === EQUITABLE_COUNTRY_STREAK_ID ? EQUITABLE_COUNTRY_STREAK_ID : COUNTRY_STREAKS_ID
+}
 
 const getStreakStats = async (req: NextApiRequest, res: NextApiResponse) => {
   const userId = await getUserId(req, res)
+  const streakMapId = resolveStreakStatsMapId(req.query.mapId)
+  const locationCount =
+    streakMapId === EQUITABLE_COUNTRY_STREAK_ID ? EQUITABLE_LOCATION_COUNT : CLASSIC_LOCATION_COUNT
 
   const mapLeaderboard = await collections.mapLeaderboard
     ?.aggregate([
-      { $match: { mapId: COUNTRY_STREAKS_ID } },
+      { $match: { mapId: streakMapId } },
       {
         $unwind: '$scores',
       },
@@ -56,7 +64,7 @@ const getStreakStats = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(200).send({
       avgScore: 0,
       usersPlayed: 0,
-      locationCount: LOCATION_COUNT,
+      locationCount,
       countryCount: COUNTRY_COUNT,
       scores: [],
     })
@@ -73,7 +81,14 @@ const getStreakStats = async (req: NextApiRequest, res: NextApiResponse) => {
   } else {
     const usersTopScore = (await collections.games
       ?.aggregate([
-        { $match: { mode: 'streak', userId: new ObjectId(userId), state: 'finished' } },
+        {
+          $match: {
+            mode: 'streak',
+            mapId: streakMapId,
+            userId: new ObjectId(userId),
+            state: 'finished',
+          },
+        },
         { $sort: { streak: -1 } },
         { $limit: 1 },
         {
@@ -108,7 +123,7 @@ const getStreakStats = async (req: NextApiRequest, res: NextApiResponse) => {
   res.status(200).send({
     avgScore: streakStats.avgScore,
     usersPlayed: streakStats.usersPlayed,
-    locationCount: LOCATION_COUNT,
+    locationCount,
     countryCount: COUNTRY_COUNT,
     scores: topScores,
   })

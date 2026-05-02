@@ -7,6 +7,7 @@ import { useAppDispatch, useAppSelector } from '@redux/hook'
 import { updateStartTime } from '@redux/slices'
 import { GameViewType } from '@types'
 import { KEY_CODES } from '@utils/constants/keyCodes'
+import { DEFAULT_TOTAL_ROUNDS } from '@utils/constants/gameModes'
 import { formatLargeNumber, mailman, showToast } from '@utils/helpers'
 import { StyledStandardFinalResults } from './'
 
@@ -43,11 +44,15 @@ const StandardFinalResults: FC<Props> = ({ gameData, setGameData, view, setView 
     }
   }
 
-  // Converts total points to a percentage
-  const calculateProgress = () => {
-    const progress = (gameData.totalPoints / 25000) * 100
+  const totalRounds = gameData.totalRounds ?? gameData.rounds?.length ?? DEFAULT_TOTAL_ROUNDS
 
-    return progress
+  const calculateProgress = () => {
+    const roundsPlayed = gameData.guesses?.length ?? 0
+    const denom = gameData.unlimited
+      ? Math.max(1, roundsPlayed) * 5000
+      : Math.max(1, totalRounds) * 5000
+
+    return Math.min(100, (gameData.totalPoints / denom) * 100)
   }
 
   const playAgain = async () => {
@@ -60,6 +65,7 @@ const StandardFinalResults: FC<Props> = ({ gameData, setGameData, view, setView 
       mapName: gameData.mapName,
       gameSettings: gameData.gameSettings,
       mode: gameData.mode,
+      ...(gameData.unlimited ? { unlimited: true } : { unlimited: false, totalRounds }),
     }
 
     // store start time

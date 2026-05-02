@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { PageBackLink } from '@components/PageBackLink'
 import { PageHeader, WidthController } from '@components/layout'
 import { MapPreviewCard } from '@components/MapPreviewCard'
 import { Meta } from '@components/Meta'
@@ -78,6 +79,7 @@ const MyMapsPage: NextPage = () => {
     <StyledMyMapsPage>
       <WidthController>
         <Meta title="My Maps" />
+        <PageBackLink href="/" label="Back to home" />
         <PageHeader>My Maps</PageHeader>
 
         {loading ? (

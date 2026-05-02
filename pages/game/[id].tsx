@@ -70,7 +70,7 @@ const GamePage: PageType = () => {
 
   return (
     <StyledGamePage>
-      <Meta title={`Game - GeoHub`} />
+      <Meta title="Game" />
 
       {gameData.mode === 'standard' && (
         <StandardGameView gameData={gameData} setGameData={setGameData} view={view} setView={setView} />

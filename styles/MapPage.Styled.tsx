@@ -95,33 +95,47 @@ const StyledMapPage = styled.div`
     }
   }
 
+  .map-page-back-row {
+    padding: 12px 18px 0;
+    border-bottom: none;
+
+    @media (max-width: 600px) {
+      padding: 10px 14px 0;
+    }
+  }
+
+  .map-back-link {
+    display: inline-flex;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color3);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--color2);
+      text-decoration: underline;
+    }
+  }
+
   .mapDescriptionWrapper {
     width: 100%;
   }
 
   .statsWrapper {
-    display: contents;
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
   }
 
   .descriptionColumnWrapper {
     display: flex;
-    justify-content: space-between;
-    padding: 20px;
+    justify-content: flex-start;
+    padding: 22px 24px 20px;
     width: 100%;
 
     @media (max-width: 600px) {
       flex-direction: column;
-    }
-
-    .play-button {
-      width: 148px;
-      height: 52px;
-      padding: 0;
-
-      @media (max-width: 600px) {
-        width: 100%;
-        margin-top: 35px;
-      }
     }
 
     .descriptionColumn {

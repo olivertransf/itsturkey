@@ -6,6 +6,8 @@ import { LeaderboardCard } from '@components/Results'
 import { StreetView } from '@components/StreetView'
 import { ChevronLeftIcon } from '@heroicons/react/outline'
 import { GameViewType, MapType } from '@types'
+import { DEFAULT_TOTAL_ROUNDS } from '@utils/constants/gameModes'
+import { mailman, showToast } from '@utils/helpers'
 import { StyledGameView } from './'
 
 type Props = {
@@ -18,6 +20,20 @@ type Props = {
 const RESULT_VIEWS = ['Result', 'FinalResults', 'Leaderboard']
 
 const StandardGameView: FC<Props> = ({ gameData, setGameData, view, setView }) => {
+  const totalRounds = gameData.totalRounds ?? gameData.rounds?.length ?? DEFAULT_TOTAL_ROUNDS
+
+  const handleEndUnlimitedSession = async () => {
+    const res = await mailman(`games/${gameData._id}`, 'PUT', JSON.stringify({ endGame: true }))
+
+    if (res.error) {
+      showToast('error', res.error.message)
+      return
+    }
+
+    setGameData({ ...res.game, mapDetails: res.mapDetails, userDetails: gameData.userDetails })
+    setView('FinalResults')
+  }
+
   return (
     <StyledGameView>
       <div className="play-wrapper" style={{ display: view === 'Game' ? 'block' : 'none' }}>
@@ -37,6 +53,9 @@ const StandardGameView: FC<Props> = ({ gameData, setGameData, view, setView }) =
           {view === 'Result' && (
             <StandardResults
               round={gameData.round}
+              totalRounds={totalRounds}
+              unlimited={!!gameData.unlimited}
+              onEndUnlimitedSession={gameData.unlimited ? handleEndUnlimitedSession : undefined}
               distance={gameData.guesses[gameData.guesses.length - 1].distance}
               points={gameData.guesses[gameData.guesses.length - 1].points}
               noGuess={

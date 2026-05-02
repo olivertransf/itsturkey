@@ -14,7 +14,7 @@ const AuthModal: FC<Props> = ({ isOpen, closeModal }) => {
     <Modal isOpen={isOpen} onClose={closeModal} maxWidth="400px">
       <StyledAuthModal>
         <div className="header">
-          <h1 className="modal-title">Login To GeoHub</h1>
+          <h1 className="modal-title">Log in</h1>
           <button className="close-button" onClick={closeModal}>
             <XIcon />
           </button>

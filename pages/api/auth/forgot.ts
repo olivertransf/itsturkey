@@ -42,6 +42,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
       const protocol = req.headers['x-forwarded-proto'] || 'http'
       const host = req.headers['x-forwarded-host'] || req.headers.host
+      const siteUrl = `${protocol}://${host}`
 
       const token = generateUrlSafeToken()
       const hashedToken = crypto.createHash('sha256').update(token).digest('hex')
@@ -64,8 +65,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         header: 'Forgot your password?',
         text: `No worries, it happens! Click the link below to reset your password. If you didn't make this request, please disregard this email and the link will expire in 24 hours.`,
         button: 'Reset your password',
-        siteName: 'GeoHub',
-        siteUrl: 'https://www.geohub.gg',
+        siteName: process.env.NEXT_PUBLIC_SITE_NAME || 'itsturkey',
+        siteUrl,
       }
 
       const html = `

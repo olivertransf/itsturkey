@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import { FC } from 'react'
+import { PageBackLink } from '@components/PageBackLink'
 import { StyledNotFound } from './'
 
 type Props = {
@@ -15,6 +16,7 @@ const NotFound: FC<Props> = ({ title, message }) => {
 
         <h2>{title || `404 - Page Not Found`}</h2>
         <h3>{message || `Hmm... this page is not on our map.`}</h3>
+        <PageBackLink />
       </div>
     </StyledNotFound>
   )

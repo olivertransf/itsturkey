@@ -12,6 +12,7 @@ import { StreaksSummaryMap } from '@components/StreaksSummaryMap'
 import { FlexGroup } from '@components/system'
 import StyledResultPage from '@styles/ResultPage.Styled'
 import { MapType, PageType } from '@types'
+import { getStreakLobbyPath } from '@utils/constants/random'
 import { mailman } from '@utils/helpers'
 
 const ResultsPage: PageType = () => {
@@ -71,7 +72,7 @@ const ResultsPage: PageType = () => {
           <SkeletonGameResults />
         ) : (
           <section>
-            <Navbar />
+            <Navbar backHref={getStreakLobbyPath()} backLabel="Back to streaks" />
 
             <StreaksSummaryMap gameData={gameData} />
 
@@ -92,7 +93,7 @@ const ResultsPage: PageType = () => {
         <SkeletonGameResults />
       ) : (
         <section>
-          <Navbar />
+          <Navbar backHref="/" backLabel="Back to home" />
 
           <ResultMap
             guessedLocations={gameData.guesses}

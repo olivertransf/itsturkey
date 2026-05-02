@@ -4,6 +4,7 @@ type StyledProps = {
   activeColor?: string
   inActiveColor?: string
   circleColor?: string
+  $disabled?: boolean
 }
 
 const StyledToggleSwitch = styled.div<StyledProps>`
@@ -22,7 +23,8 @@ const StyledToggleSwitch = styled.div<StyledProps>`
 
   .slider {
     position: absolute;
-    cursor: pointer;
+    cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
+    opacity: ${({ $disabled }) => ($disabled ? 0.5 : 1)};
     top: 0;
     left: 0;
     right: 0;
