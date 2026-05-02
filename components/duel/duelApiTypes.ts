@@ -31,6 +31,8 @@ export type DuelClientPayload = {
   guestJoined: boolean
   host: { hp: number; totalPoints: number }
   guest: { hp: number; totalPoints: number }
+  startingHpHost: number
+  startingHpGuest: number
   completedRounds: number
   totalRounds?: number
   reactiveSeconds: number

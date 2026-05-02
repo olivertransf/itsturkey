@@ -2,8 +2,10 @@ import styled from 'styled-components'
 
 const StyledHomePage = styled.div`
   min-height: 100vh;
-  background: var(--bg-primary);
-  background-image: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.12), transparent);
+  background: transparent;
+  background-image:
+    radial-gradient(ellipse 95% 58% at 50% -28%, rgba(167, 139, 250, 0.14), transparent 50%),
+    radial-gradient(ellipse 70% 45% at 100% 0%, rgba(59, 130, 246, 0.09), transparent 42%);
 
   .main-content {
     max-width: var(--mainMaxWidth);
@@ -44,10 +46,11 @@ const StyledHomePage = styled.div`
     .site-title {
       margin: 0;
       font-size: clamp(1.9rem, 5vw, 2.5rem);
-      font-weight: 700;
-      letter-spacing: -0.035em;
+      font-weight: 800;
+      letter-spacing: -0.04em;
       line-height: 1.12;
       color: var(--text-primary);
+      text-shadow: 0 0 48px rgba(167, 139, 250, 0.2);
     }
 
     .site-tagline {
@@ -69,12 +72,23 @@ const StyledHomePage = styled.div`
     .section-title {
       margin: 0;
       font-size: var(--label-upper-size);
-      font-weight: 600;
+      font-weight: 700;
       letter-spacing: var(--label-upper-tracking);
       text-transform: uppercase;
-      color: var(--text-muted);
+      color: #c4b5fd;
       text-align: left;
       width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      &::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(90deg, rgba(167, 139, 250, 0.35), transparent);
+        min-width: 24px;
+      }
     }
 
     .card-grid {

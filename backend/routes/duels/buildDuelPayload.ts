@@ -13,6 +13,8 @@ export type DuelClientPayload = {
   guestJoined: boolean
   host: { hp: number; totalPoints: number }
   guest: { hp: number; totalPoints: number }
+  startingHpHost: number
+  startingHpGuest: number
   completedRounds: number
   totalRounds?: number
   reactiveSeconds: number
@@ -60,6 +62,8 @@ export const buildDuelPayload = (duel: DuelSession, role: DuelSide | null, mapDe
     guestJoined: duel.guest.joined,
     host: { hp: duel.host.hp, totalPoints: duel.host.totalPoints },
     guest: { hp: duel.guest.hp, totalPoints: duel.guest.totalPoints },
+    startingHpHost: duel.startingHpHost,
+    startingHpGuest: duel.startingHpGuest,
     completedRounds: duel.completedRounds,
     totalRounds: duel.totalRounds,
     reactiveSeconds: duel.reactiveSeconds,

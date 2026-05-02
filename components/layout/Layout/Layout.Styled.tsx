@@ -43,6 +43,8 @@ const StyledLayout = styled.div`
     max-height: 100%;
     position: relative;
     overflow: hidden auto;
+    background-image: radial-gradient(ellipse 90% 55% at 50% -35%, rgba(124, 58, 237, 0.06), transparent 48%);
+    background-attachment: local;
   }
 
   .mainContent {

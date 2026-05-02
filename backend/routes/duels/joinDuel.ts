@@ -5,6 +5,7 @@ import type DuelSession from '@backend/models/duelSession'
 import { collections, getAnonymousGameId, getUserId, isUserBanned, throwError } from '@backend/utils'
 import getMapFromGame from '@backend/queries/getMapFromGame'
 import { duelParticipantRole } from '@backend/utils/duelParticipant'
+import { findDuelSessionByInvite } from '@backend/utils/resolveDuelInvite'
 import { buildDuelPayload } from './buildDuelPayload'
 
 const joinDuel = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -18,11 +19,7 @@ const joinDuel = async (req: NextApiRequest, res: NextApiResponse) => {
     return throwError(res, 401, 'You are currently banned from playing games')
   }
 
-  if (!duelId || duelId.length !== 24) {
-    return throwError(res, 404, 'Duel not found')
-  }
-
-  let duel = (await collections.duelSessions?.findOne({ _id: new ObjectId(duelId) })) as DuelSession | null
+  let duel = (await findDuelSessionByInvite(duelId)) as DuelSession | null
 
   if (!duel) {
     return throwError(res, 404, 'Duel not found')

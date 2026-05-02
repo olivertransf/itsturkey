@@ -35,11 +35,16 @@ const createDuel = async (req: NextApiRequest, res: NextApiResponse) => {
   const mapDetails = await getMapFromGame({ mapId: cfg.mapId } as unknown as Game)
   const scoreFactor = typeof mapDetails?.scoreFactor === 'number' ? mapDetails.scoreFactor : undefined
 
-  let shortCode = randomDuelShortCode(6)
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const clash = await collections.duelSessions?.findOne({ shortCode })
-    if (!clash) break
-    shortCode = randomDuelShortCode(6)
+  let shortCode = randomDuelShortCode(4)
+  let clash = await collections.duelSessions?.findOne({ shortCode })
+  let attempts = 0
+  while (clash && attempts < 80) {
+    shortCode = randomDuelShortCode(4)
+    clash = await collections.duelSessions?.findOne({ shortCode })
+    attempts++
+  }
+  if (clash) {
+    return throwError(res, 503, 'Could not allocate a duel code — try again')
   }
 
   const hostSlot = {

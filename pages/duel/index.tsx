@@ -1,56 +1,121 @@
 import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
+import { HeartIcon, LightningBoltIcon, SparklesIcon } from '@heroicons/react/outline'
 import { Meta } from '@components/Meta'
 import { PageBackLink } from '@components/PageBackLink'
 import { Button } from '@components/system'
 import ToggleSwitch from '@components/system/ToggleSwitch/ToggleSwitch'
 import StyledMultiGamePage from '@styles/MultiGamePage.Styled'
+import { GamifiedCenterStage, GamifiedFormCard } from '@styles/GamifiedHubShell.Styled'
 import { OFFICIAL_WORLD_ID } from '@utils/constants/random'
 import { DEFAULT_TOTAL_ROUNDS, MAX_TOTAL_ROUNDS } from '@utils/constants/gameModes'
 import { mailman, showToast } from '@utils/helpers'
 import styled from 'styled-components'
 
-const Panel = styled.div`
-  max-width: 520px;
-  margin: 0 auto;
-  padding: 24px 18px;
-  color: #eee;
+const CardHero = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 18px;
+
+  .glyph {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(124, 58, 237, 0.22);
+    border: 1px solid rgba(167, 139, 250, 0.42);
+    color: #e9d5ff;
+
+    svg {
+      width: 26px;
+      height: 26px;
+    }
+  }
 
   h1 {
-    font-size: 1.5rem;
-    margin-bottom: 16px;
+    margin: 0;
+    font-size: clamp(1.35rem, 4vw, 1.65rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    color: #fafafa;
   }
 
-  label {
-    display: block;
-    margin: 14px 0 6px;
+  .tag {
+    margin: 8px 0 0;
     font-size: 13px;
-    opacity: 0.85;
+    line-height: 1.45;
+    color: #a1a1aa;
   }
+`
 
-  input[type='number'],
-  input[type='text'] {
-    width: 100%;
-    padding: 10px 12px;
-    border-radius: 8px;
-    border: 1px solid #444;
-    background: #151515;
-    color: #eee;
-    box-sizing: border-box;
+const FieldLabel = styled.label`
+  display: block;
+  margin: 14px 0 7px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #94a3b8;
+`
+
+const FieldInput = styled.input`
+  width: 100%;
+  padding: 11px 13px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.35);
+  color: #f4f4f5;
+  font-size: 14px;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: rgba(167, 139, 250, 0.55);
+    outline: none;
   }
+`
 
-  .row {
+const ModeStrip = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  span.mode-copy {
     display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-    align-items: flex-end;
-  }
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #e4e4e7;
 
-  .field {
-    flex: 1;
-    min-width: 140px;
+    svg {
+      width: 18px;
+      height: 18px;
+      opacity: 0.9;
+    }
   }
+`
+
+const Row = styled.div`
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+`
+
+const FieldGrow = styled.div`
+  flex: 1;
+  min-width: 140px;
 `
 
 const DuelLobbyPage: NextPage = () => {
@@ -104,103 +169,130 @@ const DuelLobbyPage: NextPage = () => {
       return
     }
 
-    const id = res._id as string
-    await router.push(`/duel/${id}`)
+    const shortCode = typeof res.shortCode === 'string' ? res.shortCode.trim() : ''
+    const fallbackId = res._id != null ? String(res._id) : ''
+    const inviteSegment = shortCode || fallbackId
+    if (!inviteSegment) {
+      showToast('error', 'Missing duel invite — try again')
+      return
+    }
+    await router.push(`/duel/${inviteSegment}`)
   }
 
   return (
     <StyledMultiGamePage>
       <Meta title="Create Duel" />
 
-      <Panel>
-        <PageBackLink href="/" label="Home" />
-
-        <h1>Create duel</h1>
-        <p style={{ opacity: 0.85, marginBottom: 8 }}>
-          1v1 Street View duel with invite link. No account required — guests should join from another browser or incognito.
-        </p>
-
-        <label htmlFor="mapId">Map ID</label>
-        <input id="mapId" type="text" value={mapField} onChange={(e) => setMapField(e.target.value)} />
-
-        <label>Mode</label>
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-          <ToggleSwitch isActive={mode === 'points'} setIsActive={(on) => setMode(on ? 'points' : 'hp')} />
-          <span>{mode === 'hp' ? 'HP duel (KO)' : `Points race (${rounds} rounds)`}</span>
-        </div>
-
-        {mode === 'points' && (
-          <>
-            <label htmlFor="rounds">Rounds</label>
-            <input
-              id="rounds"
-              type="number"
-              min={1}
-              max={MAX_TOTAL_ROUNDS}
-              value={rounds}
-              onChange={(e) => setRounds(Number(e.target.value))}
-            />
-          </>
-        )}
-
-        <div className="row">
-          <div className="field">
-            <label htmlFor="hpHost">Host starting HP</label>
-            <input
-              id="hpHost"
-              type="number"
-              min={100}
-              value={startingHpHost}
-              onChange={(e) => setStartingHpHost(Number(e.target.value))}
-            />
+      <GamifiedCenterStage>
+        <GamifiedFormCard>
+          <div style={{ marginBottom: 18 }}>
+            <PageBackLink href="/" label="Home" />
           </div>
-          <div className="field">
-            <label htmlFor="hpGuest">Guest starting HP</label>
-            <input
-              id="hpGuest"
-              type="number"
-              min={100}
-              value={startingHpGuest}
-              onChange={(e) => setStartingHpGuest(Number(e.target.value))}
-            />
-          </div>
-        </div>
 
-        <div className="row">
-          <div className="field">
-            <label htmlFor="dmh">Host damage multiplier</label>
-            <input
-              id="dmh"
-              type="number"
-              min={0.1}
-              step={0.1}
-              value={damageMultHost}
-              onChange={(e) => setDamageMultHost(Number(e.target.value))}
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="dmg">Guest damage multiplier</label>
-            <input
-              id="dmg"
-              type="number"
-              min={0.1}
-              step={0.1}
-              value={damageMultGuest}
-              onChange={(e) => setDamageMultGuest(Number(e.target.value))}
-            />
-          </div>
-        </div>
+          <CardHero>
+            <div className="glyph">
+              <SparklesIcon />
+            </div>
+            <div>
+              <h1>Create duel room</h1>
+              <p className="tag">
+                1v1 invite link · guests should join from another browser or profile so sessions stay separate.
+              </p>
+            </div>
+          </CardHero>
 
-        <label style={{ marginTop: 16 }}>GeoGuessr-style damage ramp from round 5</label>
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-          <ToggleSwitch isActive={useRamp} setIsActive={setUseRamp} />
-          <span>{useRamp ? 'Enabled' : 'Off'}</span>
-        </div>
+          <FieldLabel htmlFor="mapId">Map ID</FieldLabel>
+          <FieldInput id="mapId" type="text" value={mapField} onChange={(e) => setMapField(e.target.value)} />
 
-        <Button variant="solidGray" style={{ marginTop: 22 }} disabled={submitting} onClick={() => void create()}>
-          {submitting ? 'Creating…' : 'Create duel'}
-        </Button>
-      </Panel>
+          <FieldLabel>Mode</FieldLabel>
+          <ModeStrip>
+            <ToggleSwitch isActive={mode === 'points'} setIsActive={(on) => setMode(on ? 'points' : 'hp')} />
+            <span className="mode-copy">
+              {mode === 'hp' ? (
+                <>
+                  <HeartIcon /> HP duel · fight until KO
+                </>
+              ) : (
+                <>
+                  <LightningBoltIcon /> Points race · {rounds} rounds
+                </>
+              )}
+            </span>
+          </ModeStrip>
+
+          {mode === 'points' && (
+            <>
+              <FieldLabel htmlFor="rounds">Rounds</FieldLabel>
+              <FieldInput
+                id="rounds"
+                type="number"
+                min={1}
+                max={MAX_TOTAL_ROUNDS}
+                value={rounds}
+                onChange={(e) => setRounds(Number(e.target.value))}
+              />
+            </>
+          )}
+
+          <Row>
+            <FieldGrow>
+              <FieldLabel htmlFor="hpHost">Host HP</FieldLabel>
+              <FieldInput
+                id="hpHost"
+                type="number"
+                min={100}
+                value={startingHpHost}
+                onChange={(e) => setStartingHpHost(Number(e.target.value))}
+              />
+            </FieldGrow>
+            <FieldGrow>
+              <FieldLabel htmlFor="hpGuest">Guest HP</FieldLabel>
+              <FieldInput
+                id="hpGuest"
+                type="number"
+                min={100}
+                value={startingHpGuest}
+                onChange={(e) => setStartingHpGuest(Number(e.target.value))}
+              />
+            </FieldGrow>
+          </Row>
+
+          <Row>
+            <FieldGrow>
+              <FieldLabel htmlFor="dmh">Host damage ×</FieldLabel>
+              <FieldInput
+                id="dmh"
+                type="number"
+                min={0.1}
+                step={0.1}
+                value={damageMultHost}
+                onChange={(e) => setDamageMultHost(Number(e.target.value))}
+              />
+            </FieldGrow>
+            <FieldGrow>
+              <FieldLabel htmlFor="dmg">Guest damage ×</FieldLabel>
+              <FieldInput
+                id="dmg"
+                type="number"
+                min={0.1}
+                step={0.1}
+                value={damageMultGuest}
+                onChange={(e) => setDamageMultGuest(Number(e.target.value))}
+              />
+            </FieldGrow>
+          </Row>
+
+          <FieldLabel style={{ marginTop: 16 }}>Damage ramp (round 5+)</FieldLabel>
+          <ModeStrip style={{ marginTop: 4 }}>
+            <ToggleSwitch isActive={useRamp} setIsActive={setUseRamp} />
+            <span className="mode-copy">{useRamp ? 'GeoGuessr-style scaling on' : 'Flat damage'}</span>
+          </ModeStrip>
+
+          <Button variant="primary" style={{ marginTop: 26, width: '100%' }} disabled={submitting} onClick={() => void create()}>
+            {submitting ? 'Creating…' : 'Create room'}
+          </Button>
+        </GamifiedFormCard>
+      </GamifiedCenterStage>
     </StyledMultiGamePage>
   )
 }

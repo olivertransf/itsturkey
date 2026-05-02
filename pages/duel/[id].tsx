@@ -2,25 +2,34 @@ import { useRouter } from 'next/router'
 import { useCallback, useEffect, useState } from 'react'
 import DuelPlaySurface from '@components/duel/DuelPlaySurface'
 import DuelRoundOverview from '@components/duel/DuelRoundOverview'
+import {
+  DuelFinishBanner,
+  DuelLobbyGuestJoinPanel,
+  DuelLobbyGuestWaitingPanel,
+  DuelLobbyHostStartPanel,
+  DuelLobbyHostWaitingPanel,
+} from '@components/duel/DuelRoomPanels'
 import type { DuelClientPayload } from '@components/duel/duelApiTypes'
 import { NotFound } from '@components/errorViews'
 import { LoadingPage } from '@components/layout'
 import { Meta } from '@components/Meta'
-import { Button } from '@components/system'
 import StyledMultiGamePage from '@styles/MultiGamePage.Styled'
+import { GamifiedCenterStage } from '@styles/GamifiedHubShell.Styled'
 import type { PageType } from '@types'
 import { mailman, showToast } from '@utils/helpers'
+import { isValidDuelUrlSegment } from '@utils/helpers/duelInvite'
 import { DUEL_POLL_MS, duelPollTier } from '@utils/duelPollTier'
 
 const DuelRoomPage: PageType = () => {
   const router = useRouter()
-  const duelId = router.query.id as string
+  const duelId =
+    router.isReady && typeof router.query.id === 'string' ? router.query.id.trim() : ''
 
   const [payload, setPayload] = useState<DuelClientPayload | null>()
   const [fatal, setFatal] = useState<string | null>(null)
 
   const refresh = useCallback(async () => {
-    if (!duelId || duelId.length !== 24) return
+    if (!duelId || !isValidDuelUrlSegment(duelId)) return
 
     const res = await mailman(`duels/${duelId}`)
 
@@ -38,7 +47,7 @@ const DuelRoomPage: PageType = () => {
   const pollMs = DUEL_POLL_MS[pollTier]
 
   useEffect(() => {
-    if (!duelId || duelId.length !== 24) return
+    if (!duelId || !isValidDuelUrlSegment(duelId)) return
 
     void refresh()
 
@@ -69,13 +78,34 @@ const DuelRoomPage: PageType = () => {
   }
 
   const copyInvite = async () => {
-    const url = `${window.location.origin}/duel/${duelId}`
+    const url = `${window.location.origin}/duel/${encodeURIComponent(duelId)}`
     try {
       await navigator.clipboard.writeText(url)
       showToast('success', 'Invite link copied')
     } catch {
       showToast('error', 'Could not copy link')
     }
+  }
+
+  if (!router.isReady) {
+    return (
+      <StyledMultiGamePage>
+        <Meta title="Duel" />
+        <LoadingPage />
+      </StyledMultiGamePage>
+    )
+  }
+
+  if (!isValidDuelUrlSegment(duelId)) {
+    return (
+      <StyledMultiGamePage>
+        <Meta title="Duel" />
+        <NotFound
+          title="Invalid duel link"
+          message="Use your host's invite link or a valid duel code (for example four letters like X7K2)."
+        />
+      </StyledMultiGamePage>
+    )
   }
 
   if (fatal) {
@@ -99,15 +129,6 @@ const DuelRoomPage: PageType = () => {
   const waitingLobby = payload.status === 'waiting' && !payload.guestJoined
   const lobbyGuestReady = payload.status === 'waiting' && payload.guestJoined
 
-  const outcomeLabel =
-    payload.outcome === 'tie'
-      ? 'Tie game'
-      : payload.outcome === 'host_win'
-      ? 'Host wins'
-      : payload.outcome === 'guest_win'
-      ? 'Guest wins'
-      : ''
-
   const youWon =
     !!payload.outcome &&
     payload.outcome !== 'tie' &&
@@ -115,83 +136,76 @@ const DuelRoomPage: PageType = () => {
       (payload.outcome === 'guest_win' && you === 'guest'))
 
   const headline =
-    payload.outcome === 'tie' ? 'Tie game' : youWon ? 'You won' : you ? 'You lost' : outcomeLabel
+    payload.outcome === 'tie'
+      ? 'Tie game'
+      : youWon
+      ? 'You won'
+      : you
+      ? 'You lost'
+      : payload.outcome === 'host_win'
+      ? 'Host wins'
+      : payload.outcome === 'guest_win'
+      ? 'Guest wins'
+      : 'Match finished'
+
+  const finishTone =
+    payload.outcome === 'tie'
+      ? ('tie' as const)
+      : !you
+      ? ('neutral' as const)
+      : youWon
+      ? ('win' as const)
+      : ('loss' as const)
+
+  const lobbyOrFinish =
+    payload.status === 'finished' ||
+    waitingLobby ||
+    lobbyGuestReady
 
   return (
     <StyledMultiGamePage>
       <Meta title="Duel" />
 
-      {payload.status === 'finished' && (
-        <div style={{ padding: 16, color: '#eee', background: '#111', borderBottom: '1px solid #333' }}>
-          <h1 style={{ margin: '0 0 8px', fontSize: 22 }}>{headline}</h1>
-          <p style={{ margin: 0, opacity: 0.85 }}>
-            {payload.mode === 'hp'
-              ? `Final HP — host ${payload.host.hp}, guest ${payload.guest.hp}`
-              : `Final points — host ${payload.host.totalPoints}, guest ${payload.guest.totalPoints}`}
-          </p>
-          {payload.lastRoundResult && payload.lastRoundActualLocation && (
-            <div style={{ marginTop: 16 }}>
-              <DuelRoundOverview
-                variant="compact"
-                roundOneBased={payload.lastRoundResult.roundIndex + 1}
-                mode={payload.mode}
-                actual={payload.lastRoundActualLocation}
-                result={payload.lastRoundResult}
-              />
-            </div>
+      {lobbyOrFinish && (
+        <GamifiedCenterStage>
+          {payload.status === 'finished' && (
+            <DuelFinishBanner headline={headline} tone={finishTone} payload={payload} onHome={() => router.push('/')}>
+              {payload.lastRoundResult && payload.lastRoundActualLocation && (
+                <div style={{ marginBottom: 14 }}>
+                  <DuelRoundOverview
+                    variant="compact"
+                    roundOneBased={payload.lastRoundResult.roundIndex + 1}
+                    mode={payload.mode}
+                    actual={payload.lastRoundActualLocation}
+                    result={payload.lastRoundResult}
+                    hostMaxHp={payload.startingHpHost}
+                    guestMaxHp={payload.startingHpGuest}
+                    viewerRole={you}
+                  />
+                </div>
+              )}
+            </DuelFinishBanner>
           )}
-          <Button variant="solidGray" size="sm" style={{ marginTop: 12 }} onClick={() => router.push('/')}>
-            Home
-          </Button>
-        </div>
-      )}
 
-      {waitingLobby && you === 'host' && (
-        <div style={{ padding: 16, color: '#eee', background: '#111', borderBottom: '1px solid #333' }}>
-          <h1 style={{ margin: '0 0 8px', fontSize: 20 }}>Waiting for opponent</h1>
-          <p style={{ margin: '0 0 8px', opacity: 0.85 }}>
-            Share this link or code <strong>{payload.shortCode}</strong>
-          </p>
-          <p style={{ margin: '0 0 12px', opacity: 0.65, fontSize: 13, maxWidth: 520 }}>
-            Two Incognito windows in the same browser share one anonymous session. Open the invite link in a normal
-            window, another browser, or another profile so the guest gets their own identity.
-          </p>
-          <Button variant="solidGray" size="sm" onClick={() => void copyInvite()}>
-            Copy invite link
-          </Button>
-        </div>
-      )}
+          {waitingLobby && you === 'host' && (
+            <DuelLobbyHostWaitingPanel shortCode={payload.shortCode} onCopyInvite={() => void copyInvite()} />
+          )}
 
-      {waitingLobby && you !== 'host' && (
-        <div style={{ padding: 16, color: '#eee', background: '#111', borderBottom: '1px solid #333' }}>
-          <h1 style={{ margin: '0 0 8px', fontSize: 20 }}>Join duel</h1>
-          <p style={{ margin: '0 0 12px', opacity: 0.85 }}>
-            Code <strong>{payload.shortCode}</strong> ·{' '}
-            {payload.mode === 'hp' ? 'HP duel' : `Points duel (${payload.totalRounds} rounds)`}
-          </p>
-          <Button variant="solidGray" size="sm" onClick={() => void handleJoin()}>
-            Join as guest
-          </Button>
-        </div>
-      )}
+          {waitingLobby && you !== 'host' && (
+            <DuelLobbyGuestJoinPanel
+              shortCode={payload.shortCode}
+              mode={payload.mode}
+              totalRounds={payload.totalRounds}
+              onJoin={() => void handleJoin()}
+            />
+          )}
 
-      {lobbyGuestReady && you === 'host' && (
-        <div style={{ padding: 16, color: '#eee', background: '#111', borderBottom: '1px solid #333' }}>
-          <h1 style={{ margin: '0 0 8px', fontSize: 20 }}>Opponent joined</h1>
-          <p style={{ margin: '0 0 12px', opacity: 0.85 }}>
-            Start the duel when you are both ready. Street View loads after you start.
-          </p>
-          <Button variant="solidGray" size="sm" onClick={() => void handleStartGame()}>
-            Start game
-          </Button>
-        </div>
-      )}
+          {lobbyGuestReady && you === 'host' && (
+            <DuelLobbyHostStartPanel onStart={() => void handleStartGame()} />
+          )}
 
-      {lobbyGuestReady && you === 'guest' && (
-        <div style={{ padding: 16, color: '#eee', background: '#111', borderBottom: '1px solid #333' }}>
-          <h1 style={{ margin: '0 0 8px', fontSize: 20 }}>Waiting for host</h1>
-          <p style={{ margin: 0, opacity: 0.85 }}>The host will start the duel shortly.</p>
-        </div>
+          {lobbyGuestReady && you === 'guest' && <DuelLobbyGuestWaitingPanel />}
+        </GamifiedCenterStage>
       )}
 
       {payload.status === 'in_progress' &&
