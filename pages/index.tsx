@@ -2,6 +2,7 @@ import type { NextPage } from 'next'
 import { CountryStreakCard } from '@components/CountryStreakCard'
 import { HomeWorldCard } from '@components/HomeWorldCard'
 import { Meta } from '@components/Meta'
+import { DuelGuessrCard } from '@components/DuelGuessrCard'
 import { MultiGuessrCard } from '@components/MultiGuessrCard'
 import StyledHomePage from '@styles/HomePage.Styled'
 import type { MapType } from '@types'
@@ -61,7 +62,9 @@ const Home: NextPage = () => {
         <div className="home-stack">
           <header className="home-hero">
             <h1 className="site-title">{SITE_NAME}</h1>
-            <p className="site-tagline">Street View guessing: maps, country streaks, or four boards at once.</p>
+            <p className="site-tagline">
+              Street View guessing: maps, country streaks, four boards at once, or head-to-head duels.
+            </p>
           </header>
 
           <section className="home-section">
@@ -69,6 +72,7 @@ const Home: NextPage = () => {
             <div className="card-grid">
               <CountryStreakCard />
               <MultiGuessrCard />
+              <DuelGuessrCard />
             </div>
           </section>
 

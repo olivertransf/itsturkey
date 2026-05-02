@@ -1,5 +1,6 @@
 import { Collection, Db, MongoClient } from 'mongodb'
 import { RecentSearch, UserBansType, FeatureFlagsType } from '@types'
+import type DuelSession from '@backend/models/duelSession'
 import { MapLeaderboard, MultiSession } from '@backend/models'
 
 export const collections: {
@@ -15,6 +16,7 @@ export const collections: {
   featureFlags?: Collection<FeatureFlagsType>
   mapLeaderboard?: Collection<MapLeaderboard>
   multiSessions?: Collection<MultiSession>
+  duelSessions?: Collection<DuelSession>
   userBans?: Collection<UserBansType>
   analytics?: Collection
 } = {}
@@ -51,6 +53,7 @@ export const dbConnect = async () => {
     collections.featureFlags = db.collection('featureFlags')
     collections.mapLeaderboard = db.collection('mapLeaderboard')
     collections.multiSessions = db.collection('multiSessions')
+    collections.duelSessions = db.collection('duelSessions')
     collections.userBans = db.collection('userBans')
     collections.analytics = db.collection('analytics')
 

@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useRef, useState } from 'react'
+import React, { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/router'
 import { Game } from '@backend/models'
 import { GameStatus } from '@components/GameStatus'
@@ -15,6 +15,21 @@ import { mailman, showToast } from '@utils/helpers'
 import { StyledStreetView } from './'
 import { DailyQuotaModal } from '@components/modals/DailyQuotaModal'
 
+const triggerPanoramaResize = (pano: google.maps.StreetViewPanorama | null) => {
+  if (!pano) return
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      google.maps.event.trigger(pano, 'resize')
+    })
+  })
+}
+
+export type DuelGuessSubmitPayload = {
+  guess: LocationType | null
+  guessTime: number
+  timedOut?: boolean
+}
+
 type Props = {
   gameData: Game
   setGameData: (gameData: Game) => void
@@ -24,6 +39,8 @@ type Props = {
   enableGlobalShortcuts?: boolean
   getGuessTime?: () => number
   compactGuessMapIdle?: boolean
+  duelGuessSubmit?: (payload: DuelGuessSubmitPayload) => Promise<void>
+  onGuessCoordinateChange?: (loc: LocationType | null) => void
 }
 
 const Streetview: FC<Props> = ({
@@ -35,10 +52,20 @@ const Streetview: FC<Props> = ({
   enableGlobalShortcuts = true,
   getGuessTime,
   compactGuessMapIdle,
+  duelGuessSubmit,
+  onGuessCoordinateChange,
 }) => {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [currGuess, setCurrGuess] = useState<LocationType | null>(null)
+
+  const updateCurrGuess = useCallback(
+    (loc: LocationType | null) => {
+      setCurrGuess(loc)
+      onGuessCoordinateChange?.(loc)
+    },
+    [onGuessCoordinateChange]
+  )
   const [countryStreakGuess, setCountryStreakGuess] = useState('')
   const [mobileMapOpen, setMobileMapOpen] = useState(false)
   const [googleMapsConfig, setGoogleMapsConfig] = useState<GoogleMapsConfigType>()
@@ -50,6 +77,7 @@ const Streetview: FC<Props> = ({
 
   const serviceRef = useRef<google.maps.StreetViewService | null>(null)
   const panoramaRef = useRef<google.maps.StreetViewPanorama | null>(null)
+  const panoContainerRef = useRef<HTMLDivElement | null>(null)
 
   const undoLocRef = useRef<LocationType[]>([])
 
@@ -62,6 +90,27 @@ const Streetview: FC<Props> = ({
     const timeoutId = setTimeout(checkForQuotaExceeded, 300)
 
     return () => clearTimeout(timeoutId)
+  }, [googleMapsConfig])
+
+  useEffect(() => {
+    if (!googleMapsConfig) return
+
+    const pano = panoramaRef.current
+    const el = panoContainerRef.current
+    if (!pano || !el || typeof ResizeObserver === 'undefined') return
+
+    const ro = new ResizeObserver(() => {
+      google.maps.event.trigger(pano, 'resize')
+    })
+    ro.observe(el)
+
+    const onWinResize = () => google.maps.event.trigger(pano, 'resize')
+    window.addEventListener('resize', onWinResize)
+
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('resize', onWinResize)
+    }
   }, [googleMapsConfig])
 
   // Loads all subsequent panos
@@ -96,12 +145,12 @@ const Streetview: FC<Props> = ({
   }
 
   const initializeStreetView = () => {
+    const panoEl = panoContainerRef.current ?? document.getElementById(panoElementId)
+    if (!panoEl) return
+
     const svService = new google.maps.StreetViewService()
 
-    const svPanorama = new google.maps.StreetViewPanorama(
-      document.getElementById(panoElementId) as HTMLElement,
-      getStreetviewOptions(gameData)
-    )
+    const svPanorama = new google.maps.StreetViewPanorama(panoEl, getStreetviewOptions(gameData))
 
     svPanorama.addListener("position_changed", trackLocations)
 
@@ -117,25 +166,55 @@ const Streetview: FC<Props> = ({
     const svService = serviceRef.current
     const svPanorama = panoramaRef.current
 
-    if (!svService || !svPanorama) return
+    if (!svService || !svPanorama) {
+      setLoading(false)
+      return
+    }
 
-    await svService.getPanorama({ location, radius: 50 }, (data) => {
-      if (!data || !data.location) {
-        return showToast('error', 'Could not load streetview for this location')
-      }
+    const loc = gameData.rounds[gameData.round - 1]
+    if (!loc) {
+      setLoading(false)
+      showToast('error', 'Missing round location')
+      return
+    }
 
-      svPanorama.setPano(data.location.pano)
-      svPanorama.setPov({
-        heading: location.heading || 0,
-        pitch: location.pitch || 0,
+    const lat = Number(loc.lat)
+    const lng = Number(loc.lng)
+    const useLatLng = Number.isFinite(lat) && Number.isFinite(lng)
+
+    if (!loc.panoId && !useLatLng) {
+      setLoading(false)
+      showToast('error', 'Missing round location')
+      return
+    }
+
+    const request: google.maps.StreetViewLocationRequest | { pano: string } = loc.panoId
+      ? { pano: loc.panoId }
+      : { location: { lat, lng }, radius: 150 }
+
+    await new Promise<void>((resolve) => {
+      svService.getPanorama(request, (data, status) => {
+        if (status !== google.maps.StreetViewStatus.OK || !data?.location?.pano) {
+          showToast('error', 'Could not load streetview for this location')
+          setLoading(false)
+          resolve()
+          return
+        }
+
+        svPanorama.setPano(data.location.pano)
+        svPanorama.setPov({
+          heading: loc.heading ?? 0,
+          pitch: loc.pitch ?? 0,
+        })
+        svPanorama.setZoom(loc.zoom ?? 0)
+        svPanorama.setVisible(true)
+
+        undoLocRef.current = []
+        triggerPanoramaResize(svPanorama)
+        setLoading(false)
+        resolve()
       })
-      svPanorama.setZoom(location.zoom || 0)
-      svPanorama.setVisible(true)
-
-      undoLocRef.current = []
     })
-
-    setLoading(false)
   }
 
   const trackLocations = () => {
@@ -163,6 +242,15 @@ const Streetview: FC<Props> = ({
       }
 
       const guessTime = getGuessTime ? getGuessTime() : (new Date().getTime() - (game.startTime as number)) / 1000
+
+      if (duelGuessSubmit) {
+        await duelGuessSubmit({
+          guess: currGuess,
+          guessTime,
+          timedOut,
+        })
+        return
+      }
 
       const body = {
         guess: currGuess || { lat: 0, lng: 0 },
@@ -300,7 +388,7 @@ const Streetview: FC<Props> = ({
       <StyledStreetView showMap={!loading}>
         {loading && <LoadingPage />}
 
-        <div id={panoElementId} className="streetview-pano">
+        <div ref={panoContainerRef} id={panoElementId} className="streetview-pano">
           <StreetViewControls
             handleBackToStart={handleBackToStart}
             handleExitGame={handleExitGame}
@@ -311,7 +399,7 @@ const Streetview: FC<Props> = ({
           {gameData.mode === 'standard' && (
             <GuessMap
               currGuess={currGuess}
-              setCurrGuess={setCurrGuess}
+              setCurrGuess={updateCurrGuess}
               handleSubmitGuess={handleSubmitGuess}
               mobileMapOpen={mobileMapOpen}
               closeMobileMap={() => setMobileMapOpen(false)}

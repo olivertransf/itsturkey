@@ -1,4 +1,8 @@
-const mailman = async (endpoint: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET', body?: BodyInit) => {
+const mailman = async (
+  endpoint: string,
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' = 'GET',
+  body?: BodyInit
+) => {
   const fetchConfig = {
     method,
     headers: {

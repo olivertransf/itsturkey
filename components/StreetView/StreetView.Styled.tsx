@@ -7,11 +7,18 @@ type StyledProps = {
 const StyledStreetView = styled.div<StyledProps>`
   height: 100%;
   width: 100%;
+  min-height: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 
   #streetview,
   .streetview-pano {
+    flex: 1;
+    min-height: 0;
     height: 100%;
     width: 100%;
+    position: relative;
   }
 
   .toggle-map-button {

@@ -1,25 +1,38 @@
 import { ObjectId } from 'mongodb'
 import { collections } from '@backend/utils'
 import getEquitableCountryStreakSourceMapIds from '@backend/utils/getEquitableCountryStreakSourceMapIds'
+import { shuffleArrayInPlace } from '@backend/utils/shuffleArray'
 import { LocationType } from '@types'
 import { COUNTRY_STREAKS_ID, EQUITABLE_COUNTRY_STREAK_ID, OFFICIAL_WORLD_ID } from '@utils/constants/random'
 import { OFFICIAL_COUNTRIES } from '@utils/constants/officialCountries'
 
-const getLocations = async (mapId: string, count: number = 5) => {
+export type GetLocationsOptions = {
+  /** Skip these location doc ids (e.g. rounds already played in an HP duel). */
+  excludeIds?: ObjectId[]
+}
+
+const getLocations = async (mapId: string, count: number = 5, options?: GetLocationsOptions) => {
+  const excludeIds = options?.excludeIds?.filter(Boolean) ?? []
   if (!mapId) return null
 
   if (mapId === COUNTRY_STREAKS_ID) {
+    const match: Record<string, unknown> = {
+      mapId: new ObjectId(OFFICIAL_WORLD_ID),
+      countryCode: { $in: OFFICIAL_COUNTRIES },
+    }
+    if (excludeIds.length > 0) {
+      match._id = { $nin: excludeIds }
+    }
+
     const locations = (await collections.locations
-      ?.aggregate([
-        { $match: { mapId: new ObjectId(OFFICIAL_WORLD_ID), countryCode: { $in: OFFICIAL_COUNTRIES } } },
-        { $sample: { size: count } },
-      ])
+      ?.aggregate([{ $match: match }, { $sample: { size: count } }])
       .toArray()) as LocationType[]
 
     if (!locations || locations.length === 0) {
       return null
     }
 
+    shuffleArrayInPlace(locations)
     return locations
   }
 
@@ -29,22 +42,23 @@ const getLocations = async (mapId: string, count: number = 5) => {
       return null
     }
 
+    const eqMatch: Record<string, unknown> = {
+      mapId: { $in: sourceMapIds },
+      countryCode: { $exists: true, $nin: [null, ''] },
+    }
+    if (excludeIds.length > 0) {
+      eqMatch._id = { $nin: excludeIds }
+    }
+
     const locations = (await collections.locations
-      ?.aggregate([
-        {
-          $match: {
-            mapId: { $in: sourceMapIds },
-            countryCode: { $exists: true, $nin: [null, ''] },
-          },
-        },
-        { $sample: { size: count } },
-      ])
+      ?.aggregate([{ $match: eqMatch }, { $sample: { size: count } }])
       .toArray()) as LocationType[]
 
     if (!locations || locations.length === 0) {
       return null
     }
 
+    shuffleArrayInPlace(locations)
     return locations
   }
 
@@ -57,10 +71,14 @@ const getLocations = async (mapId: string, count: number = 5) => {
 
   const locationCollection = map.creator === 'GeoHub' ? 'locations' : 'userLocations'
 
-  // Get random locations from DB
+  const mapMatch: Record<string, unknown> = { mapId: new ObjectId(mapId) }
+  if (excludeIds.length > 0) {
+    mapMatch._id = { $nin: excludeIds }
+  }
+
   const locations = (await collections[locationCollection]
     ?.aggregate([
-      { $match: { mapId: new ObjectId(mapId) } },
+      { $match: mapMatch },
       { $sample: { size: count } },
       { $group: { _id: '$_id', doc: { $first: '$$ROOT' } } },
       { $replaceRoot: { newRoot: '$doc' } },
@@ -71,6 +89,7 @@ const getLocations = async (mapId: string, count: number = 5) => {
     return null
   }
 
+  shuffleArrayInPlace(locations)
   return locations
 }
 
