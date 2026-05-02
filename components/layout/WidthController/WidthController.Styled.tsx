@@ -8,12 +8,21 @@ type StyledProps = {
 const StyledWidthController = styled.div<StyledProps>`
   max-width: ${({ customWidth }) => customWidth ?? 'var(--mainMaxWidth)'};
   width: 100%;
-  padding: 3.5rem;
+  box-sizing: border-box;
+  padding: var(--space-page-y) var(--space-page-x);
   margin: 0 auto;
-  height: 100%;
+  min-height: 100%;
 
   @media (max-width: 600px) {
-    padding: ${({ mobilePadding }) => mobilePadding ?? '1rem'};
+    padding: ${({ mobilePadding }) => {
+      if (mobilePadding === '0px') {
+        return '0 var(--page-gutter)'
+      }
+      if (mobilePadding != null && mobilePadding !== '') {
+        return mobilePadding
+      }
+      return 'var(--space-page-y-mobile) var(--page-gutter)'
+    }};
   }
 `
 

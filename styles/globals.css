@@ -186,6 +186,43 @@
 
   --focus-border: var(--indigo-700) !important;
   --separator-border: #0e0e10 !important;
+
+  --bg-primary: #101012;
+  --bg-elevated: #161618;
+  --bg-surface: #141416;
+  --text-primary: #fafafa;
+  --text-muted: #a3a3ad;
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --divider-line: rgba(255, 255, 255, 0.055);
+
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-pill: 999px;
+
+  --page-gutter: clamp(14px, 4.2vw, 26px);
+  --space-page-x: clamp(1.25rem, 4vw, 2.75rem);
+  --space-page-y: clamp(1.5rem, 4.5vw, 2.75rem);
+  --space-page-y-mobile: 1rem;
+  --stack-gap-xs: 0.35rem;
+  --stack-gap-sm: 0.6rem;
+  --stack-gap-md: 1.25rem;
+  --stack-gap-lg: 2rem;
+  --grid-gap-cards: 1.25rem;
+
+  --shadow-card: 0 16px 44px rgba(0, 0, 0, 0.38);
+  --backdrop-nav: rgba(16, 16, 18, 0.85);
+
+  --label-upper-size: 0.72rem;
+  --label-upper-tracking: 0.14em;
+}
+
+.page-back-toolbar {
+  width: 100%;
+  padding-bottom: var(--stack-gap-sm);
+  margin-bottom: var(--stack-gap-md);
+  border-bottom: 1px solid var(--divider-line);
 }
 
 body {
@@ -193,9 +230,8 @@ body {
   margin: 0;
   font-family: var(--font-family1);
   font-weight: 500;
-  /* background-color: #0e0e10; */
-  background-color: #0e0e0e;
-  color: var(--color1);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   overflow: hidden;
   /* display: flex;
   flex-direction: column; */
@@ -245,12 +281,17 @@ textarea {
 /* Custom Scrollbar */
 
 ::-webkit-scrollbar {
-  width: 10px;
-  background: #262626;
+  width: 8px;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #424242;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.18);
 }
 
 @media (max-width: 600px) {

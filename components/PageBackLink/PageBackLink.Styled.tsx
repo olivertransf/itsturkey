@@ -1,10 +1,11 @@
 import styled from 'styled-components'
 
 const StyledPageBackLink = styled.div<{ $compact?: boolean }>`
-  padding: ${({ $compact }) => ($compact ? '0' : '8px 0 12px')};
+  padding: ${({ $compact }) => ($compact ? '0' : `0 0 var(--stack-gap-sm)`)};
+  width: ${({ $compact }) => ($compact ? 'auto' : '100%')};
 
   @media (max-width: 600px) {
-    padding: ${({ $compact }) => ($compact ? '0' : '6px 0 10px')};
+    padding: ${({ $compact }) => ($compact ? '0' : `0 0 var(--stack-gap-xs)`)};
   }
 
   .page-back-link {
@@ -13,7 +14,7 @@ const StyledPageBackLink = styled.div<{ $compact?: boolean }>`
     gap: 8px;
     font-size: 14px;
     font-weight: 500;
-    color: var(--color3);
+    color: var(--text-muted);
     text-decoration: none;
 
     svg {
@@ -23,8 +24,9 @@ const StyledPageBackLink = styled.div<{ $compact?: boolean }>`
     }
 
     &:hover {
-      color: var(--color2);
+      color: var(--text-primary);
       text-decoration: underline;
+      text-underline-offset: 3px;
     }
   }
 `

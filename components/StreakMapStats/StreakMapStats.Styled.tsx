@@ -6,7 +6,7 @@ const StyledStreakMapStats = styled.div<StyledProps>`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
-  padding: 15px 20px 20px;
+  padding: var(--stack-gap-md) var(--page-gutter) var(--stack-gap-md);
 
   @media (max-width: 1000px) {
     grid-template-columns: 1fr 1fr;

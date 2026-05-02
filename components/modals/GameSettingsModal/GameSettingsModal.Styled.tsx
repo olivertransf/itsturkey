@@ -2,8 +2,9 @@ import styled from 'styled-components'
 
 const StyledGameSettingsModal = styled.div`
   &.map-play-inline-inner .mainContent {
-    padding: 22px 24px 18px;
-    gap: 1.375rem;
+    padding: var(--stack-gap-md) var(--page-gutter) var(--stack-gap-md);
+    gap: var(--stack-gap-md);
+    background-color: var(--bg-primary);
   }
 
   .mainContent {
@@ -44,11 +45,11 @@ const StyledGameSettingsModal = styled.div`
   }
 
   .sectionEyebrow {
-    font-size: 11px;
+    font-size: var(--label-upper-size);
     font-weight: 600;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--label-upper-tracking);
     text-transform: uppercase;
-    color: #7d7d85;
+    color: var(--text-muted);
   }
 
   .toggleBar {
@@ -56,9 +57,9 @@ const StyledGameSettingsModal = styled.div`
     align-items: stretch;
     gap: 6px;
     padding: 6px;
-    background: #141414;
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: 12px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
 
@@ -287,8 +288,8 @@ const StyledGameSettingsModal = styled.div`
 
   @media (max-width: 600px) {
     &.map-play-inline-inner .mainContent {
-      padding: 18px 18px 14px;
-      gap: 1.25rem;
+      padding: var(--stack-gap-md) var(--page-gutter) var(--stack-gap-sm);
+      gap: var(--stack-gap-md);
     }
 
     .mainContent {

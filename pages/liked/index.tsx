@@ -43,7 +43,9 @@ const LikedMapsPage: NextPage = () => {
     <StyledLikedMapsPage>
       <WidthController>
         <Meta title="Liked Maps" />
-        <PageBackLink href="/" label="Back to home" />
+        <div className="page-back-toolbar">
+          <PageBackLink href="/" label="Back to home" compact />
+        </div>
         <PageHeader>Liked Maps</PageHeader>
 
         {loading && <SkeletonCards numCards={8} />}

@@ -5,11 +5,11 @@ const StyledHomeWorldCard = styled.div<{ $accent: string }>`
   --home-map-accent: ${({ $accent }) => $accent};
 
   .large-card-wrapper {
-    border-radius: 6px;
+    border-radius: 14px;
     background-color: ${({ theme }) => theme.color.gray[900]};
-    border: 1px solid ${({ theme }) => theme.color.gray[800]};
+    border: 1px solid var(--border-subtle);
     border-top: 4px solid var(--home-map-accent);
-    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--shadow-card);
     display: grid;
     gap: 1rem;
     max-height: 300px;
@@ -17,7 +17,7 @@ const StyledHomeWorldCard = styled.div<{ $accent: string }>`
     .map-avatar {
       height: 125px;
       width: 100%;
-      border-radius: 5px 5px 0 0;
+      border-radius: 13px 13px 0 0;
       position: relative;
       background: linear-gradient(
         155deg,
@@ -30,7 +30,7 @@ const StyledHomeWorldCard = styled.div<{ $accent: string }>`
         content: '';
         position: absolute;
         inset: 0;
-        border-radius: 5px 5px 0 0;
+        border-radius: 13px 13px 0 0;
         background: linear-gradient(
           180deg,
           ${({ theme }) => theme.color.gray[900]}00 0%,
@@ -50,10 +50,13 @@ const StyledHomeWorldCard = styled.div<{ $accent: string }>`
 
     .mapNameWrapper {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 10px;
-      flex-wrap: wrap;
+      width: 100%;
+      padding: 0 1.7rem;
+      box-sizing: border-box;
 
       .map-accent-dot {
         width: 11px;
@@ -67,9 +70,10 @@ const StyledHomeWorldCard = styled.div<{ $accent: string }>`
       .mapName {
         font-size: 20px;
         font-weight: 600;
-        padding: 0 1rem;
+        padding: 0;
         z-index: 1;
         margin: 0;
+        width: 100%;
         text-align: center;
         line-height: 1.25;
       }
@@ -103,7 +107,7 @@ const StyledHomeWorldCard = styled.div<{ $accent: string }>`
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 5px;
+      border-radius: 10px;
       height: 40px;
       padding: 0 25px;
       font-size: 1rem;

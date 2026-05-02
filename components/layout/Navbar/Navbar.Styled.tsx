@@ -12,8 +12,10 @@ const StyledNavbar = styled.div`
   //position: sticky;
   //top: 0;
   z-index: 20;
-  background-color: ${({ theme }) => theme.color.gray[900]};
-  border-bottom: 1px solid ${({ theme }) => theme.color.gray[800]};
+  background-color: rgba(16, 16, 18, 0.82);
+  backdrop-filter: saturate(160%) blur(14px);
+  -webkit-backdrop-filter: saturate(160%) blur(14px);
+  border-bottom: 1px solid var(--border-subtle);
   flex-shrink: 0 !important;
 
   .appTitle {
@@ -76,7 +78,27 @@ const StyledNavbar = styled.div`
   .rightWrapper {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+
+    .geoHubSource {
+      display: none;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      padding: 6px 10px;
+      border-radius: 8px;
+      white-space: nowrap;
+
+      &:hover {
+        color: var(--text-primary);
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      @media (min-width: 880px) {
+        display: inline-flex;
+        align-items: center;
+      }
+    }
 
     .mobile-search {
       display: none;
@@ -113,7 +135,7 @@ const StyledNavbar = styled.div`
   }
 
   .username {
-    color: #bec3c9;
+    color: var(--text-muted);
     font-size: 16px;
     white-space: nowrap;
     overflow: hidden;
@@ -143,7 +165,7 @@ const StyledNavbar = styled.div`
 
   @media (max-width: 600px) {
     position: fixed;
-    background-color: #0e0e0e;
+    background-color: rgba(16, 16, 18, 0.94);
   }
 `
 

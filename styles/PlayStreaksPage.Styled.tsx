@@ -48,14 +48,15 @@ const StyledPlayStreaksPage = styled.div`
   }
 
   .map-details {
-    margin-left: 16px;
-    margin-top: 2px;
+    margin: 0;
+    flex: 1;
+    min-width: 0;
     display: grid;
-    gap: 8px;
+    gap: var(--stack-gap-xs);
   }
 
   .description {
-    color: var(--color3);
+    color: var(--text-muted);
     font-weight: 400;
 
     @media (max-width: 1000px) {
@@ -70,19 +71,20 @@ const StyledPlayStreaksPage = styled.div`
   }
 
   .mapDetailsSection {
-    background-color: var(--background2);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 6px;
-    margin-bottom: 1rem;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--stack-gap-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
 
     @media (max-width: 1200px) {
       flex-direction: column;
     }
 
     @media (max-width: 600px) {
-      border-radius: 0;
-      border: none;
-      background-color: transparent;
+      border-radius: var(--radius-md);
+      box-shadow: none;
     }
   }
 
@@ -91,33 +93,51 @@ const StyledPlayStreaksPage = styled.div`
   }
 
   .statsWrapper {
-    display: contents;
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--divider-line);
   }
 
   .descriptionColumnWrapper {
     display: flex;
-    justify-content: space-between;
-    padding: 20px;
+    flex-direction: column;
+    align-items: stretch;
+    padding: var(--stack-gap-md) var(--page-gutter);
     width: 100%;
+    box-sizing: border-box;
+    gap: 0;
 
-    @media (max-width: 600px) {
-      flex-direction: column;
+    .descriptionColumnRow {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--stack-gap-md);
+      width: 100%;
+
+      @media (max-width: 600px) {
+        flex-direction: column;
+        align-items: stretch;
+      }
     }
 
     .play-button {
       width: 148px;
       height: 52px;
       padding: 0;
+      flex-shrink: 0;
 
       @media (max-width: 600px) {
         width: 100%;
-        margin-top: 35px;
+        margin-top: 0;
       }
     }
 
     .descriptionColumn {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
+      gap: var(--stack-gap-md);
+      flex: 1;
+      min-width: 0;
     }
   }
 `

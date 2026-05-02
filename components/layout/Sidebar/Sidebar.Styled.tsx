@@ -7,7 +7,7 @@ const StyledSidebar = styled.div`
     width: var(--sidebarWidth);
     height: 100%;
     background-color: ${({ theme }) => theme.color.gray[900]};
-    border-right: 1px solid ${({ theme }) => theme.color.gray[800]};
+    border-right: 1px solid var(--border-subtle);
     z-index: 1;
     height: 100% !important;
     flex-shrink: 0 !important;
@@ -161,23 +161,26 @@ const StyledSidebar = styled.div`
   }
 
   .support-link {
-    background-color: #333;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    color: #fff;
+    background: rgba(251, 191, 36, 0.12);
+    border: 1px solid rgba(251, 191, 36, 0.22);
+    color: #fde68a;
     display: flex;
     position: relative;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    border-radius: 5px;
+    border-radius: 10px;
     height: 40px;
-    padding: 0 10px;
-    font-size: 1rem;
-    font-weight: 400;
+    padding: 0 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
     user-select: none;
+    text-decoration: none;
 
     &:hover {
-      background-color: #404040;
+      background: rgba(251, 191, 36, 0.18);
+      border-color: rgba(251, 191, 36, 0.35);
+      color: #fef3c7;
     }
 
     svg {
@@ -191,8 +194,8 @@ const StyledSidebar = styled.div`
     display: flex;
     align-items: center;
     gap: 20px;
-    padding: 8px;
-    border-top: 1px solid #262626;
+    padding: 10px 8px;
+    border-top: 1px solid var(--border-subtle);
   }
 
   .social-links {
@@ -222,14 +225,14 @@ const StyledSidebar = styled.div`
     }
 
     .support-link {
-      background-color: transparent;
+      background: transparent;
       border: none;
-      color: #555;
+      color: rgba(251, 191, 36, 0.65);
       height: 20px;
 
       &:hover {
-        background-color: transparent;
-        color: #777;
+        background: rgba(251, 191, 36, 0.08);
+        color: #fcd34d;
       }
 
       svg {

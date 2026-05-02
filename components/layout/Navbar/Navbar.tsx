@@ -2,6 +2,7 @@ import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { FC, useState } from 'react'
 import { PageBackLink } from '@components/PageBackLink'
+import { GEOHUB_UPSTREAM_REPO_URL } from '@utils/constants/site'
 import { Avatar, Button, Searchbar } from '@components/system'
 import { SearchIcon } from '@heroicons/react/outline'
 import { useAppSelector } from '../../../redux-utils'
@@ -46,6 +47,9 @@ const Navbar: FC<NavbarProps> = ({ backHref, backLabel }) => {
 
           <div className="rightContainer">
             <div className="rightWrapper">
+              <a className="geoHubSource" href={GEOHUB_UPSTREAM_REPO_URL} target="_blank" rel="noreferrer">
+                GeoHub code
+              </a>
               <button className="mobile-search" onClick={() => setSearchOpen(true)}>
                 <SearchIcon />
               </button>

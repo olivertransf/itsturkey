@@ -15,6 +15,7 @@ import {
 import { useAppDispatch, useAppSelector } from '@redux/hook'
 import { updateRecentlyPlayed } from '@redux/slices'
 import { MapType } from '@types'
+import { GEOHUB_UPSTREAM_REPO_URL } from '@utils/constants/site'
 import { mailman } from '@utils/helpers'
 import { StyledSidebar } from './'
 import { Item } from './Item'
@@ -88,9 +89,9 @@ const Sidebar: FC = () => {
         </div>
 
         <div className="sidebar-footer">
-          <a className="support-link" href="https://www.buymeacoffee.com/geohubgame" target="_blank" rel="noreferrer">
+          <a className="support-link" href={GEOHUB_UPSTREAM_REPO_URL} target="_blank" rel="noreferrer">
             <HeartIcon />
-            <span>Support</span>
+            <span>GeoHub code</span>
           </a>
           <div className="social-links">
             <a className="social-link" href="https://github.com/benlikescode/geohub" target="_blank" rel="noreferrer">

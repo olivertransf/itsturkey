@@ -5,7 +5,7 @@ type StyledProps = {
 }
 
 const StyledItem = styled.div<StyledProps>`
-  border-radius: 4px;
+  border-radius: var(--radius-md);
   background-color: ${({ isActive }) => (isActive ? 'var(--indigo-800)' : 'transparent')};
   /* background-color: ${({ isActive }) => (isActive ? '#2f2f36' : 'transparent')}; */
   /* background-color: ${({ isActive }) => (isActive ? '#312c40' : 'transparent')}; */
@@ -22,13 +22,13 @@ const StyledItem = styled.div<StyledProps>`
     ${({ isActive }) =>
       !isActive &&
       `
-          background-color: #333;
-          
+          background-color: rgba(255, 255, 255, 0.06);
+
           .item {
-            color: var(--color2);
+            color: var(--text-primary);
 
             svg {
-              color: #aeb1b5;
+              color: var(--text-muted);
             }
           }
     `}
@@ -41,9 +41,8 @@ const StyledItem = styled.div<StyledProps>`
 
   .item {
     background-color: transparent;
-    /* color: ${({ isActive }) => (isActive ? 'var(--color2)' : '#8b8f93')}; */
-    color: ${({ isActive }) => (isActive ? '#fff' : '#8b8f93')};
-    padding: 6px;
+    color: ${({ isActive }) => (isActive ? 'var(--text-primary)' : 'var(--text-muted)')};
+    padding: 8px 10px;
     display: flex;
     align-items: center;
     cursor: pointer;
@@ -56,8 +55,7 @@ const StyledItem = styled.div<StyledProps>`
 
     svg {
       height: 22px;
-      /* color: ${({ isActive }) => (isActive ? '#aeb1b5' : '#555')}; */
-      color: ${({ isActive }) => (isActive ? '#fff' : '#555')};
+      color: ${({ isActive }) => (isActive ? 'var(--text-primary)' : 'var(--text-muted)')};
 
       @media (max-width: 1200px) {
         height: 22px;
@@ -66,10 +64,10 @@ const StyledItem = styled.div<StyledProps>`
   }
 
   .itemText {
-    margin-top: 2px;
-    font-weight: 400;
+    margin-top: 0;
+    font-weight: 500;
     font-size: 14px;
-    margin-left: 8px;
+    margin-left: 10px;
 
     @media (max-width: 1200px) {
       display: none;
@@ -92,10 +90,10 @@ const StyledItem = styled.div<StyledProps>`
       background-color: transparent;
 
       .item {
-        color: ${({ isActive }) => (isActive ? '#fff' : '#8b8f93')};
+        color: ${({ isActive }) => (isActive ? 'var(--text-primary)' : 'var(--text-muted)')};
 
         svg {
-          color: ${({ isActive }) => (isActive ? '#fff' : '#555')};
+          color: ${({ isActive }) => (isActive ? 'var(--text-primary)' : 'var(--text-muted)')};
         }
       }
     }

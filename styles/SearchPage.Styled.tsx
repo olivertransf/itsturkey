@@ -1,19 +1,21 @@
 import styled from 'styled-components'
 
 const StyledSearchPage = styled.div`
+  width: 100%;
+
   .tabs-wrapper {
     display: flex;
     align-items: center;
-    border-bottom: 1px solid #333;
-    gap: 16px;
-    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border-subtle);
+    gap: var(--stack-gap-md);
+    margin-bottom: var(--stack-gap-md);
 
     .page-title {
       font-size: 18px;
       font-weight: 600;
-      color: #d6d6d6;
-      border-right: 1px solid #2e2e2e;
-      padding-right: 16px;
+      color: var(--text-primary);
+      border-right: 1px solid var(--border-subtle);
+      padding-right: var(--stack-gap-md);
     }
 
     .filter-tab {
@@ -23,7 +25,7 @@ const StyledSearchPage = styled.div`
 
       svg {
         height: 20px;
-        color: #737373;
+        color: var(--text-muted);
         margin-left: 6px;
       }
 
@@ -33,13 +35,13 @@ const StyledSearchPage = styled.div`
       }
 
       .result-count-bubble {
-        background-color: #1e1e1e;
-        border-radius: 4px;
+        background-color: var(--bg-elevated);
+        border-radius: var(--radius-sm);
         display: flex;
         align-items: center;
         justify-content: center;
         margin-left: 8px;
-        color: #757575;
+        color: var(--text-muted);
         font-size: 12px;
         height: 18px;
         width: 24px;
@@ -49,19 +51,20 @@ const StyledSearchPage = styled.div`
 
   .search-results-wrapper {
     display: grid;
-    gap: 8px;
+    gap: var(--stack-gap-sm);
 
     .search-result {
       display: flex;
       align-items: center;
       gap: 12px;
-      background-color: #1f1f1f;
-      padding: 12px;
-      border-radius: 4px;
+      background-color: var(--bg-surface);
+      padding: var(--stack-gap-sm) var(--stack-gap-md);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
 
       &:hover {
-        background-color: #252525;
-        box-shadow: 0 0 0 1px #282828;
+        background-color: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.1);
       }
     }
 
@@ -78,7 +81,7 @@ const StyledSearchPage = styled.div`
 
     .num-search-results {
       font-size: 1rem;
-      color: var(--color3);
+      color: var(--text-muted);
       font-weight: 500;
     }
   }

@@ -87,7 +87,9 @@ const OngoingGamesPage: NextPage = () => {
     <StyledOngoingGamesPage>
       <WidthController customWidth="1160px">
         <Meta title="Ongoing Games" />
-        <PageBackLink href="/" label="Back to home" />
+        <div className="page-back-toolbar">
+          <PageBackLink href="/" label="Back to home" compact />
+        </div>
         <PageHeader>Ongoing Games</PageHeader>
 
         <div className="ongoing-banner">

@@ -2,17 +2,18 @@ import styled from 'styled-components'
 
 const StyledOngoingGamesPage = styled.div`
   height: 100%;
+  width: 100%;
 
   .ongoing-banner {
-    background-color: #181818;
-    color: var(--color2);
-    border-radius: 6px;
-    padding: 16px;
-    margin-bottom: 20px;
+    background-color: var(--bg-surface);
+    color: var(--text-muted);
+    border-radius: var(--radius-lg);
+    padding: var(--stack-gap-md);
+    margin-bottom: var(--stack-gap-md);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-subtle);
 
     .message {
       display: flex;
@@ -33,9 +34,11 @@ const StyledOngoingGamesPage = styled.div`
   }
 
   .ongoing-table {
-    background-color: var(--background2);
-    border: 1px solid rgb(30 30 30);
-    border-radius: 6px;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
   }
 
   .ongoing-item {
@@ -46,11 +49,11 @@ const StyledOngoingGamesPage = styled.div`
     padding: 1rem;
 
     &.variant {
-      background-color: #181818;
+      background-color: rgba(255, 255, 255, 0.03);
     }
 
     .game-detail {
-      color: #8e8e8e;
+      color: var(--text-muted);
       font-weight: 400;
       font-size: 1rem;
 
@@ -60,7 +63,7 @@ const StyledOngoingGamesPage = styled.div`
     }
 
     &:not(:last-child) {
-      border-bottom: 1px solid rgb(30 30 30);
+      border-bottom: 1px solid var(--divider-line);
     }
 
     .flex-left {

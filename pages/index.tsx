@@ -5,7 +5,7 @@ import { Meta } from '@components/Meta'
 import { MultiGuessrCard } from '@components/MultiGuessrCard'
 import StyledHomePage from '@styles/HomePage.Styled'
 import type { MapType } from '@types'
-import { SITE_NAME } from '@utils/constants/site'
+import { GEOHUB_UPSTREAM_REPO_URL, SITE_NAME } from '@utils/constants/site'
 import { getHomeMapAccentColor } from '@utils/helpers/homeMapAccent'
 
 const parseHomeMapCards = (): Pick<MapType, '_id' | 'name' | 'description' | 'previewImg'>[] | null => {
@@ -59,7 +59,10 @@ const Home: NextPage = () => {
 
       <div className="main-content">
         <div className="home-stack">
-          <h1 className="site-title">{SITE_NAME}</h1>
+          <header className="home-hero">
+            <h1 className="site-title">{SITE_NAME}</h1>
+            <p className="site-tagline">Street View guessing: maps, country streaks, or four boards at once.</p>
+          </header>
 
           <section className="home-section">
             <h2 className="section-title">Gamemodes</h2>
@@ -91,6 +94,16 @@ const Home: NextPage = () => {
               <code>npm run maps:split-equitable</code>: paste the printed JSON into <code>.env</code>.
             </div>
           )}
+
+          <footer className="home-footer">
+            <p className="home-footer-note">
+              Uses open-source code from{' '}
+              <a href={GEOHUB_UPSTREAM_REPO_URL} target="_blank" rel="noreferrer">
+                GeoHub
+              </a>
+              . APIs and hosting for this site are separate.
+            </p>
+          </footer>
         </div>
       </div>
     </StyledHomePage>

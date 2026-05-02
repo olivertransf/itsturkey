@@ -55,12 +55,11 @@ const MapPage: FC = () => {
 
         {mapDetails ? (
           <div className="mapDetailsSection">
-            <div className="map-page-back-row">
-              <PageBackLink />
-            </div>
-
             <div className="mapDescriptionWrapper">
               <div className="descriptionColumnWrapper">
+                <div className="page-back-toolbar">
+                  <PageBackLink href="/" label="Back to home" compact />
+                </div>
                 <div className="descriptionColumn">
                   <Avatar type="map" src={mapDetails.previewImg} size={50} />
                   <div className="map-details">

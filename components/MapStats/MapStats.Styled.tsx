@@ -1,17 +1,17 @@
 import styled from 'styled-components'
 
 const StyledMapStats = styled.div`
-  padding: 18px 24px 16px;
+  padding: var(--stack-gap-md) var(--page-gutter) var(--stack-gap-md);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--stack-gap-xs);
 
   .locations-eyebrow {
-    font-size: 11px;
+    font-size: var(--label-upper-size);
     font-weight: 600;
-    letter-spacing: 0.1em;
+    letter-spacing: var(--label-upper-tracking);
     text-transform: uppercase;
-    color: #7d7d85;
+    color: var(--text-muted);
   }
 
   .locations-line {
@@ -27,9 +27,9 @@ const StyledMapStats = styled.div`
     justify-content: center;
     width: 38px;
     height: 38px;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border-subtle);
 
     svg {
       height: 20px;
@@ -43,7 +43,7 @@ const StyledMapStats = styled.div`
   }
 
   .locations-text {
-    color: #e4e4e7;
+    color: var(--text-primary);
     font-size: 16px;
     font-weight: 500;
     letter-spacing: 0.01em;

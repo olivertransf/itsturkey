@@ -1,8 +1,8 @@
 import styled from 'styled-components'
 
 export const StyledMapPlayInline = styled.div`
-  border-top: 1px solid rgba(255, 255, 255, 0.055);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.028) 0%, transparent 56px);
+  border-top: 1px solid var(--divider-line);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 52px);
 
   .map-play-actions {
     display: flex;
@@ -10,14 +10,14 @@ export const StyledMapPlayInline = styled.div`
     justify-content: flex-end;
     align-items: center;
     gap: 10px;
-    padding: 18px 24px 22px;
-    background: #0b0b0b;
-    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    padding: var(--stack-gap-md) var(--page-gutter) calc(var(--stack-gap-md) + 4px);
+    background: var(--bg-primary);
+    border-top: 1px solid var(--divider-line);
 
     @media (max-width: 520px) {
       flex-direction: column-reverse;
       align-items: stretch;
-      padding: 16px 18px 20px;
+      padding: var(--stack-gap-md) var(--page-gutter) calc(var(--stack-gap-md) + 4px);
 
       button {
         width: 100%;

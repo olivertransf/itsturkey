@@ -8,10 +8,10 @@ const StyledMapPreviewCard = styled.div<StyledProps>`
   width: 100%;
 
   .large-card-wrapper {
-    border-radius: 6px;
+    border-radius: var(--radius-lg);
     background-color: ${({ theme }) => theme.color.gray[900]};
-    border: 1px solid ${({ theme }) => theme.color.gray[800]};
-    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-card);
     display: grid;
     gap: 1rem;
     max-height: 300px;
@@ -25,11 +25,11 @@ const StyledMapPreviewCard = styled.div<StyledProps>`
     .map-avatar {
       height: 125px;
       width: 100%;
-      border-radius: 5px 5px 0 0;
+      border-radius: calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0 0;
       position: relative;
 
       span img {
-        border-radius: 5px 5px 0 0;
+        border-radius: calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0 0;
       }
 
       .image-gradient {
@@ -55,13 +55,20 @@ const StyledMapPreviewCard = styled.div<StyledProps>`
     }
 
     .mapNameWrapper {
-      display: grid;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      padding: 0 1.7rem;
+      box-sizing: border-box;
 
       .mapName {
         font-size: 20px;
         font-weight: 600;
-        padding: 0 1rem;
+        padding: 0;
         z-index: 1;
+        width: 100%;
+        max-width: 100%;
+        text-align: center;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -95,7 +102,7 @@ const StyledMapPreviewCard = styled.div<StyledProps>`
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 5px;
+      border-radius: var(--radius-md);
       height: 40px;
       padding: 0 25px;
       font-size: 1rem;
@@ -114,7 +121,7 @@ const StyledMapPreviewCard = styled.div<StyledProps>`
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 5px;
+      border-radius: var(--radius-md);
       height: 40px;
       padding: 0 25px;
       font-size: 1rem;
@@ -138,10 +145,10 @@ const StyledMapPreviewCard = styled.div<StyledProps>`
   }
 
   .small-card-wrapper {
-    border-radius: 5px;
+    border-radius: var(--radius-lg);
     background-color: ${({ theme }) => theme.color.gray[900]};
-    border: 1px solid ${({ theme }) => theme.color.gray[800]};
-    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-card);
     position: relative;
 
     .preview-image {
@@ -173,20 +180,27 @@ const StyledMapPreviewCard = styled.div<StyledProps>`
         height: 100%;
         width: 100%;
         opacity: 0.4;
-        border-radius: 5px 5px 0 0;
+        border-radius: calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0 0;
       }
     }
 
     .mapNameWrapper {
-      display: grid;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      padding: 0 1rem;
+      box-sizing: border-box;
 
       .mapName {
         font-size: 20px;
         font-weight: 600;
-        padding: 0 1rem;
+        padding: 0;
         position: relative;
         z-index: 1;
         margin-bottom: 4px;
+        width: 100%;
+        max-width: 100%;
+        text-align: center;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -207,7 +221,7 @@ const StyledMapPreviewCard = styled.div<StyledProps>`
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 5px;
+      border-radius: var(--radius-md);
       padding: 10px;
       font-size: 1rem;
       font-weight: 500;
@@ -233,13 +247,13 @@ const StyledMapPreviewCard = styled.div<StyledProps>`
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 5px;
+      border-radius: var(--radius-md);
       height: 40px;
       padding: 0 25px;
       font-size: 1rem;
       font-weight: 500;
       user-select: none;
-      background-color: var(--mediumPurple);
+      background-color: var(--indigo-700);
       color: #fff;
       width: 100%;
 

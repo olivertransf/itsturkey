@@ -55,7 +55,9 @@ const MapsPage: FC = () => {
     <StyledMapsPage>
       <WidthController>
         <Meta title="Browse Maps" />
-        <PageBackLink href="/" label="Back to home" />
+        <div className="page-back-toolbar">
+          <PageBackLink href="/" label="Back to home" compact />
+        </div>
 
         <div className="page-wrapper">
           <div>

@@ -1,7 +1,6 @@
 import styled from 'styled-components'
 
 const StyledMapPage = styled.div`
-  // Override Horizontal Padding and Max Width In Layout.Styled
   .mainContent {
     max-width: 1100px;
 
@@ -15,36 +14,37 @@ const StyledMapPage = styled.div`
     align-items: center;
 
     .name {
-      font-size: 22px;
+      font-size: clamp(1.15rem, 2.8vw, 1.4rem);
       font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
     }
   }
 
   .map-creator {
     font-size: 14px;
-    color: var(--color3);
-    position: relative;
-    top: 1px;
+    color: var(--text-muted);
   }
 
   .map-creator-link {
-    color: var(--color3);
+    color: var(--text-muted);
 
     &:hover {
       text-decoration: underline;
-      color: var(--color2);
+      color: var(--text-primary);
     }
   }
 
   .map-details {
-    margin-left: 16px;
-    margin-top: 2px;
+    margin: 0;
+    flex: 1;
+    min-width: 0;
     display: grid;
-    gap: 8px;
+    gap: var(--stack-gap-xs);
   }
 
   .description {
-    color: var(--color3);
+    color: var(--text-muted);
     font-weight: 400;
 
     @media (max-width: 1000px) {
@@ -79,42 +79,21 @@ const StyledMapPage = styled.div`
   }
 
   .mapDetailsSection {
-    background-color: var(--background2);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 6px;
-    margin-bottom: 1rem;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--stack-gap-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
 
     @media (max-width: 1200px) {
       flex-direction: column;
     }
 
     @media (max-width: 600px) {
-      border-radius: 0;
-      border: none;
-      background-color: transparent;
-    }
-  }
-
-  .map-page-back-row {
-    padding: 12px 18px 0;
-    border-bottom: none;
-
-    @media (max-width: 600px) {
-      padding: 10px 14px 0;
-    }
-  }
-
-  .map-back-link {
-    display: inline-flex;
-    align-items: center;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--color3);
-    text-decoration: none;
-
-    &:hover {
-      color: var(--color2);
-      text-decoration: underline;
+      border-radius: var(--radius-md);
+      margin-inline: 0;
+      box-shadow: none;
     }
   }
 
@@ -125,22 +104,27 @@ const StyledMapPage = styled.div`
   .statsWrapper {
     display: flex;
     flex-direction: column;
-    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    border-top: 1px solid var(--divider-line);
   }
 
   .descriptionColumnWrapper {
     display: flex;
-    justify-content: flex-start;
-    padding: 22px 24px 20px;
+    flex-direction: column;
+    align-items: stretch;
+    padding: var(--stack-gap-md) var(--page-gutter) var(--stack-gap-md);
     width: 100%;
+    box-sizing: border-box;
+    gap: 0;
 
     @media (max-width: 600px) {
-      flex-direction: column;
+      padding-top: var(--stack-gap-sm);
     }
 
     .descriptionColumn {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
+      gap: var(--stack-gap-md);
+      width: 100%;
     }
   }
 

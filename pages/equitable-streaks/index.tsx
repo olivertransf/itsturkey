@@ -40,27 +40,31 @@ const EquitableStreaksPage = () => {
     <StyledPlayStreaksPage>
       <WidthController customWidth="1100px" mobilePadding="0px">
         <Meta title={`${SITE_NAME} — ${EQUITABLE_COUNTRY_STREAK_DETAILS.name}`} />
-        <PageBackLink href="/" label="Back to home" />
 
         {streakStats ? (
           <div className="mapDetailsSection">
             <div className="mapDescriptionWrapper">
               <div className="descriptionColumnWrapper">
-                <div className="descriptionColumn">
-                  <Avatar type="map" src={EQUITABLE_COUNTRY_STREAK_DETAILS.previewImg} size={50} />
-                  <div className="map-details">
-                    <div className="name-container">
-                      <div className="name-wrapper">
-                        <span className="name">{EQUITABLE_COUNTRY_STREAK_DETAILS.name}</span>
-                      </div>
-                      <VerifiedBadge size={20} />
-                    </div>
-                    <span className="description">{EQUITABLE_COUNTRY_STREAK_DETAILS.description}</span>
-                  </div>
+                <div className="page-back-toolbar">
+                  <PageBackLink href="/" label="Back to home" compact />
                 </div>
-                <Button className="play-button" onClick={() => handleClickPlay()}>
-                  Play Now
-                </Button>
+                <div className="descriptionColumnRow">
+                  <div className="descriptionColumn">
+                    <Avatar type="map" src={EQUITABLE_COUNTRY_STREAK_DETAILS.previewImg} size={50} />
+                    <div className="map-details">
+                      <div className="name-container">
+                        <div className="name-wrapper">
+                          <span className="name">{EQUITABLE_COUNTRY_STREAK_DETAILS.name}</span>
+                        </div>
+                        <VerifiedBadge size={20} />
+                      </div>
+                      <span className="description">{EQUITABLE_COUNTRY_STREAK_DETAILS.description}</span>
+                    </div>
+                  </div>
+                  <Button className="play-button" onClick={() => handleClickPlay()}>
+                    Play Now
+                  </Button>
+                </div>
               </div>
             </div>
 

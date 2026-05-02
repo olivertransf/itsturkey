@@ -1,43 +1,62 @@
 import styled from 'styled-components'
 
 const StyledMapsPage = styled.div`
+  width: 100%;
+
   .page-wrapper {
     display: grid;
-    gap: 40px;
+    gap: var(--stack-gap-lg);
+    width: 100%;
 
     .section-title {
+      font-size: var(--label-upper-size);
       font-weight: 600;
-      color: #fff;
+      letter-spacing: var(--label-upper-tracking);
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-align: left;
       position: sticky;
       top: 0;
-      background-color: #0e0e0e;
       z-index: 12;
-      padding: 24px 0 16px 0;
-      font-size: 20px;
+      margin: 0;
+      padding: var(--stack-gap-md) 0 var(--stack-gap-sm);
+      background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
     }
 
     .maps-wrapper {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1.2rem;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+      gap: var(--grid-gap-cards);
+      align-items: stretch;
+      width: 100%;
     }
 
     .more-btn-wrapper {
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 30px;
+      padding: var(--stack-gap-lg) 0 var(--stack-gap-sm);
 
       button {
-        background-color: #222;
-        color: #fff;
-        border-radius: 50rem;
-        padding: 6px 16px;
+        background-color: var(--bg-elevated);
+        color: var(--text-primary);
+        border-radius: var(--radius-pill);
+        padding: 8px 18px;
         font-size: 13px;
+        font-weight: 600;
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: 1px solid var(--border-subtle);
+        transition: background 0.15s ease, border-color 0.15s ease;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.06);
+          border-color: rgba(255, 255, 255, 0.1);
+        }
       }
     }
   }

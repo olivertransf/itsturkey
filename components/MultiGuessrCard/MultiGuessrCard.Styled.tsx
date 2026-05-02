@@ -7,11 +7,11 @@ const StyledMultiGuessrCard = styled.div`
   --multi-guessr-accent: ${ACCENT};
 
   .large-card-wrapper {
-    border-radius: 6px;
+    border-radius: 14px;
     background-color: ${({ theme }) => theme.color.gray[900]};
-    border: 1px solid ${({ theme }) => theme.color.gray[800]};
+    border: 1px solid var(--border-subtle);
     border-top: 4px solid var(--multi-guessr-accent);
-    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--shadow-card);
     display: grid;
     gap: 1rem;
     max-height: 300px;
@@ -19,25 +19,33 @@ const StyledMultiGuessrCard = styled.div`
     .map-avatar {
       height: 125px;
       width: 100%;
-      border-radius: 5px 5px 0 0;
+      border-radius: 13px 13px 0 0;
       position: relative;
+      overflow: hidden;
       background: linear-gradient(
-        145deg,
+        155deg,
         ${({ theme }) => theme.color.gray[800]} 0%,
-        #164e63 38%,
-        ${({ theme }) => theme.color.gray[900]} 58%,
-        ${({ theme }) => theme.color.gray[800]} 100%
+        #155e75 20%,
+        #164e63 40%,
+        #1e293b 66%,
+        ${({ theme }) => theme.color.gray[900]} 92%,
+        ${({ theme }) => theme.color.gray[900]} 100%
       );
 
       &::after {
         content: '';
         position: absolute;
         inset: 0;
-        border-radius: 5px 5px 0 0;
+        border-radius: inherit;
+        pointer-events: none;
         background: linear-gradient(
           180deg,
-          ${({ theme }) => theme.color.gray[900]}00 0%,
-          ${({ theme }) => theme.color.gray[900]}cc 85%
+          rgba(23, 23, 23, 0) 0%,
+          rgba(23, 23, 23, 0) 28%,
+          rgba(23, 23, 23, 0.38) 52%,
+          rgba(23, 23, 23, 0.78) 74%,
+          rgba(23, 23, 23, 0.96) 91%,
+          rgb(23, 23, 23) 100%
         );
       }
     }
@@ -53,10 +61,13 @@ const StyledMultiGuessrCard = styled.div`
 
     .mapNameWrapper {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 10px;
-      flex-wrap: wrap;
+      width: 100%;
+      padding: 0 1.7rem;
+      box-sizing: border-box;
 
       .map-accent-dot {
         width: 11px;
@@ -70,9 +81,10 @@ const StyledMultiGuessrCard = styled.div`
       .mapName {
         font-size: 20px;
         font-weight: 600;
-        padding: 0 1rem;
+        padding: 0;
         z-index: 1;
         margin: 0;
+        width: 100%;
         text-align: center;
         line-height: 1.25;
         color: #fff;
@@ -108,7 +120,7 @@ const StyledMultiGuessrCard = styled.div`
       align-items: center;
       justify-content: center;
       border: none;
-      border-radius: 5px;
+      border-radius: 10px;
       height: 40px;
       padding: 0 25px;
       font-size: 1rem;

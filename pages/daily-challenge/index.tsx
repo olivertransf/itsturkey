@@ -67,39 +67,43 @@ const DailyChallengePage: FC = () => {
     <StyledDailyChallengePage>
       <WidthController customWidth="1100px" mobilePadding="0px">
         <Meta title={`${SITE_NAME} — ${DAILY_CHALLENGE_DETAILS.name}`} />
-        <PageBackLink href="/" label="Back to home" />
 
         <div className="daily-challenge-wrapper">
           {mapStats && challengeId ? (
             <div className="mapDetailsSection">
               <div className="mapDescriptionWrapper">
                 <div className="descriptionColumnWrapper">
-                  <div className="descriptionColumn">
-                    <Avatar type="map" src={DAILY_CHALLENGE_DETAILS.previewImg} size={50} />
-                    <div className="map-details">
-                      <div className="name-container">
-                        <div className="name-wrapper">
-                          <span className="name">{DAILY_CHALLENGE_DETAILS.name}</span>
-                        </div>
-                        <VerifiedBadge size={20} />
-                      </div>
-
-                      <span className="description">{DAILY_CHALLENGE_DETAILS.description}</span>
-                    </div>
+                  <div className="page-back-toolbar">
+                    <PageBackLink href="/" label="Back to home" compact />
                   </div>
-
-                  <Button className="play-button" onClick={() => startDailyChallenge()}>
-                    {usersGameState === 'started' && 'Continue'}
-                    {usersGameState === 'notStarted' && 'Play Now'}
-                    {usersGameState === 'finished' && (
-                      <div className="completed-wrapper">
-                        <div className="completed-check">
-                          <CheckIcon />
+                  <div className="descriptionColumnRow">
+                    <div className="descriptionColumn">
+                      <Avatar type="map" src={DAILY_CHALLENGE_DETAILS.previewImg} size={50} />
+                      <div className="map-details">
+                        <div className="name-container">
+                          <div className="name-wrapper">
+                            <span className="name">{DAILY_CHALLENGE_DETAILS.name}</span>
+                          </div>
+                          <VerifiedBadge size={20} />
                         </div>
-                        <div className="completed-text">View Results</div>
+
+                        <span className="description">{DAILY_CHALLENGE_DETAILS.description}</span>
                       </div>
-                    )}
-                  </Button>
+                    </div>
+
+                    <Button className="play-button" onClick={() => startDailyChallenge()}>
+                      {usersGameState === 'started' && 'Continue'}
+                      {usersGameState === 'notStarted' && 'Play Now'}
+                      {usersGameState === 'finished' && (
+                        <div className="completed-wrapper">
+                          <div className="completed-check">
+                            <CheckIcon />
+                          </div>
+                          <div className="completed-text">View Results</div>
+                        </div>
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </div>
 

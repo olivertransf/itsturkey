@@ -79,7 +79,9 @@ const MyMapsPage: NextPage = () => {
     <StyledMyMapsPage>
       <WidthController>
         <Meta title="My Maps" />
-        <PageBackLink href="/" label="Back to home" />
+        <div className="page-back-toolbar">
+          <PageBackLink href="/" label="Back to home" compact />
+        </div>
         <PageHeader>My Maps</PageHeader>
 
         {loading ? (
