@@ -32,6 +32,11 @@ const EquitableContinentRowCard: FC<Props> = ({ map, isForDisplayOnly }) => {
           <HomePlayGlyph />
         </span>
       )}
+      <span className="home-play-btn home-play-btn--icon" aria-hidden>
+        <span className="home-play-btn home-play-btn--icon" aria-hidden>
+          <HomePlayGlyph />
+        </span>
+      </span>
     </HomeSectionRowCard>
   )
 }
