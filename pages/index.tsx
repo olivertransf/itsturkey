@@ -66,7 +66,7 @@ const Home: NextPage = () => {
           <header className="home-hero">
             <h1 className="site-title">{SITE_NAME}</h1>
             <p className="site-tagline">
-              Street View guessing: maps, country streaks, four boards at once, or head-to-head duels.
+              Street View guessing: maps, country streaks, four boards at once, or head-to-head duels. yipe!
             </p>
           </header>
 
