@@ -1,62 +1,48 @@
-import { useRouter } from 'next/router'
-import { FC } from 'react'
-import { useState } from 'react'
-import { DEFAULT_MULTI_PER_GUESS_SECONDS, DEFAULT_TOTAL_ROUNDS, MAX_MULTI_PANELS } from '@utils/constants/gameModes'
-import { mailman, showToast } from '@utils/helpers'
-import StyledMultiGuessrCard from './MultiGuessrCard.Styled'
+import { FC, useState } from 'react'
+import { GameSettingsModal } from '@components/modals'
+import HomeSectionRowCard from '@components/HomeSectionRowCard'
+import HomePlayGlyph from '@components/HomeSectionRowCard/HomePlayGlyph'
+import { MapType } from '@types'
+import officialMaps from '@utils/constants/officialMaps.json'
+
+const ACCENT = '#22d3ee'
+
+const defaultMap = officialMaps[0] as Pick<MapType, '_id' | 'name' | 'description' | 'previewImg'>
 
 const MultiGuessrCard: FC = () => {
-  const [isStarting, setIsStarting] = useState(false)
-  const router = useRouter()
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [modalKey, setModalKey] = useState(0)
 
-  const startMultiGuessr = async () => {
-    setIsStarting(true)
-
-    const res = await mailman(
-      'multi',
-      'POST',
-      JSON.stringify({
-        mapId: 'all',
-        mapName: 'All Maps',
-        gameSettings: {
-          timeLimit: DEFAULT_MULTI_PER_GUESS_SECONDS,
-          canMove: true,
-          canPan: true,
-          canZoom: true,
-        },
-        panelCount: MAX_MULTI_PANELS,
-        totalRoundsPerPanel: DEFAULT_TOTAL_ROUNDS,
-        perGuessSeconds: DEFAULT_MULTI_PER_GUESS_SECONDS,
-      })
-    )
-
-    if (res.error) {
-      setIsStarting(false)
-      showToast('error', res.error.message)
-      return
-    }
-
-    await router.push(`/multi/${res._id}`)
+  const openSettings = () => {
+    setModalKey((k) => k + 1)
+    setSettingsOpen(true)
   }
 
   return (
-    <StyledMultiGuessrCard>
-      <div className="large-card-wrapper">
-        <div className="map-avatar" aria-hidden />
-        <div className="contentWrapper">
-          <div className="mapNameWrapper">
-            <span className="map-accent-dot" aria-hidden />
-            <h2 className="mapName">MultiGuessr</h2>
-          </div>
-          <p className="mapDescription">Play up to four Street View games at once and combine every panel score.</p>
-          <div className="playWrapper">
-            <button className="mapPlayBtn" disabled={isStarting} onClick={() => void startMultiGuessr()}>
-              {isStarting ? 'Starting...' : 'Play'}
-            </button>
-          </div>
-        </div>
-      </div>
-    </StyledMultiGuessrCard>
+    <HomeSectionRowCard
+      accentColor={ACCENT}
+      title="MultiGuessr"
+      description="Up to four Street View boards at once — combine every panel score into one run."
+    >
+      <button
+        type="button"
+        className="home-play-btn home-play-btn--icon"
+        aria-label="Play MultiGuessr"
+        onClick={openSettings}
+      >
+        <HomePlayGlyph />
+      </button>
+
+      <GameSettingsModal
+        key={modalKey}
+        isOpen={settingsOpen}
+        closeModal={() => setSettingsOpen(false)}
+        mapDetails={defaultMap}
+        gameMode="standard"
+        initialPlayMode="multi"
+        allowHomeMapPicker
+      />
+    </HomeSectionRowCard>
   )
 }
 

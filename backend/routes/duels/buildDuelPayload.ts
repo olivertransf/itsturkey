@@ -28,6 +28,7 @@ export type DuelClientPayload = {
   damageMultiplierHost: number
   damageMultiplierGuest: number
   useRoundRamp: boolean
+  rematchReady: { host: boolean; guest: boolean }
 }
 
 export const buildDuelPayload = (duel: DuelSession, role: DuelSide | null, mapDetailsRaw: unknown): DuelClientPayload => {
@@ -76,5 +77,9 @@ export const buildDuelPayload = (duel: DuelSession, role: DuelSide | null, mapDe
     damageMultiplierHost: duel.damageMultiplierHost,
     damageMultiplierGuest: duel.damageMultiplierGuest,
     useRoundRamp: duel.useRoundRamp,
+    rematchReady: {
+      host: !!duel.rematchReadyHost,
+      guest: !!duel.rematchReadyGuest,
+    },
   }
 }

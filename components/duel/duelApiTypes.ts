@@ -45,4 +45,5 @@ export type DuelClientPayload = {
   damageMultiplierHost: number
   damageMultiplierGuest: number
   useRoundRamp: boolean
+  rematchReady: { host: boolean; guest: boolean }
 }

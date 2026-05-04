@@ -6,6 +6,7 @@ import queryTopScores from '@backend/queries/topScores'
 import { COUNTRY_STREAKS_ID, DAILY_CHALLENGE_ID, EQUITABLE_COUNTRY_STREAK_ID } from '@utils/constants/random'
 import queryTopStreaks from '@backend/queries/topStreaks'
 import { Game } from '@backend/models'
+import { isEquitableVirtualStandardMapId } from '@backend/utils/equitableCountryMap'
 
 export const LEADERBOARD_LENGTH = 5
 
@@ -136,6 +137,10 @@ const getDailyChallengeScores = async (dailyChallengeId: ObjectId, game: Game) =
 
 // REGULAR MAPS
 const updateMapStats = async (game: Game) => {
+  if (isEquitableVirtualStandardMapId(game.mapId)) {
+    return null
+  }
+
   const mapId = new ObjectId(game.mapId)
 
   const gameStats = await collections.games
@@ -169,6 +174,10 @@ const updateMapStats = async (game: Game) => {
 }
 
 const updateMapLeaderboard = async (game: Game) => {
+  if (isEquitableVirtualStandardMapId(game.mapId)) {
+    return null
+  }
+
   const mapId = new ObjectId(game.mapId)
   const mapLeaderboard = await collections.mapLeaderboard?.findOne({ mapId })
 

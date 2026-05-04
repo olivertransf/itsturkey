@@ -1,5 +1,21 @@
 export { default as createMapMarker } from './createMapMarker'
 export { default as createMapPolyline } from './createMapPolyline'
+export { flagEmojiFromIsoAlpha2 } from './flagEmoji'
+export {
+  EQCOUNTRY_MAP_PREFIX,
+  equitableCountryMapIdFromCode,
+  isEquitableCountryVirtualMapId,
+  isMongoObjectIdHex24,
+  parseEquitableCountryMapKey,
+} from './equitableCountryMapId'
+export { equitableCountryAccentColor } from './equitableCountryAccent'
+export { equitableContinentAccentColor } from './equitableContinentAccent'
+export {
+  EQCONTINENT_MAP_PREFIX,
+  equitableContinentMapIdFromSlug,
+  isEquitableContinentVirtualMapId,
+  parseEquitableContinentMapKey,
+} from './equitableContinentMapId'
 export { default as formatDistance } from './formatDistance'
 export { default as formatApproxLocations } from './formatApproxLocations'
 export { default as formatLargeNumber } from './formatLargeNumber'

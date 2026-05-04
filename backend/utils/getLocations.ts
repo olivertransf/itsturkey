@@ -3,6 +3,8 @@ import { collections } from '@backend/utils'
 import getEquitableCountryStreakSourceMapIds from '@backend/utils/getEquitableCountryStreakSourceMapIds'
 import { shuffleArrayInPlace } from '@backend/utils/shuffleArray'
 import { LocationType } from '@types'
+import { parseEquitableContinentMapKey, parseEquitableCountryMapKey } from '@backend/utils/equitableCountryMap'
+import { COUNTRY_CODES_BY_CONTINENT } from '@utils/constants/iso2ContinentSlug'
 import { COUNTRY_STREAKS_ID, EQUITABLE_COUNTRY_STREAK_ID, OFFICIAL_WORLD_ID } from '@utils/constants/random'
 import { OFFICIAL_COUNTRIES } from '@utils/constants/officialCountries'
 
@@ -45,6 +47,67 @@ const getLocations = async (mapId: string, count: number = 5, options?: GetLocat
     const eqMatch: Record<string, unknown> = {
       mapId: { $in: sourceMapIds },
       countryCode: { $exists: true, $nin: [null, ''] },
+    }
+    if (excludeIds.length > 0) {
+      eqMatch._id = { $nin: excludeIds }
+    }
+
+    const locations = (await collections.locations
+      ?.aggregate([{ $match: eqMatch }, { $sample: { size: count } }])
+      .toArray()) as LocationType[]
+
+    if (!locations || locations.length === 0) {
+      return null
+    }
+
+    shuffleArrayInPlace(locations)
+    return locations
+  }
+
+  const eqCountryCode = parseEquitableCountryMapKey(mapId)
+  if (eqCountryCode) {
+    const sourceMapIds = getEquitableCountryStreakSourceMapIds()
+    if (!sourceMapIds.length) {
+      return null
+    }
+
+    const eqMatch: Record<string, unknown> = {
+      mapId: { $in: sourceMapIds },
+      countryCode: { $exists: true, $nin: [null, ''] },
+      $expr: { $eq: [{ $toLower: '$countryCode' }, eqCountryCode] },
+    }
+    if (excludeIds.length > 0) {
+      eqMatch._id = { $nin: excludeIds }
+    }
+
+    const locations = (await collections.locations
+      ?.aggregate([{ $match: eqMatch }, { $sample: { size: count } }])
+      .toArray()) as LocationType[]
+
+    if (!locations || locations.length === 0) {
+      return null
+    }
+
+    shuffleArrayInPlace(locations)
+    return locations
+  }
+
+  const eqContinentSlug = parseEquitableContinentMapKey(mapId)
+  if (eqContinentSlug) {
+    const sourceMapIds = getEquitableCountryStreakSourceMapIds()
+    if (!sourceMapIds.length) {
+      return null
+    }
+
+    const countryLowerList = COUNTRY_CODES_BY_CONTINENT[eqContinentSlug]
+    if (!countryLowerList?.length) {
+      return null
+    }
+
+    const eqMatch: Record<string, unknown> = {
+      mapId: { $in: sourceMapIds },
+      countryCode: { $exists: true, $nin: [null, ''] },
+      $expr: { $in: [{ $toLower: '$countryCode' }, countryLowerList] },
     }
     if (excludeIds.length > 0) {
       eqMatch._id = { $nin: excludeIds }

@@ -9,6 +9,8 @@ import {
   DEFAULT_TOTAL_ROUNDS,
 } from '@utils/constants/gameModes'
 import { mailman, showToast } from '@utils/helpers'
+import { loadMapPickerOptions } from '@utils/loadMapPickerOptions'
+import type { MapPickerRow } from '@utils/loadMapPickerOptions'
 
 export type PlayMode = 'single' | 'unlimited' | 'multiplayer' | 'multi'
 
@@ -22,6 +24,8 @@ export type UseGameStartFlowOptions = {
   mapDetails: Pick<MapType, '_id' | 'name' | 'description' | 'previewImg'>
   gameMode: GameType['mode']
   onRequestClose?: () => void
+  initialPlayMode?: PlayMode
+  allowHomeMapPicker?: boolean
 }
 
 export type GameStartFlowApi = {
@@ -39,6 +43,10 @@ export type GameStartFlowApi = {
   sliderVal: number
   challengeId: string
   isSubmitting: boolean
+  allowHomeMapPicker: boolean
+  mapPickerOptions: MapPickerRow[]
+  mapPickerLoading: boolean
+  pickMapById: (id: string) => void
   setPlayMode: (m: PlayMode) => void
   setRoundCount: (n: number) => void
   setPanelCount: (n: number) => void
@@ -56,8 +64,14 @@ export function useGameStartFlow({
   mapDetails,
   gameMode,
   onRequestClose,
+  initialPlayMode,
+  allowHomeMapPicker = false,
 }: UseGameStartFlowOptions): GameStartFlowApi {
   const user = useAppSelector((state) => state.user)
+
+  const [activeMapDetails, setActiveMapDetails] = useState(mapDetails)
+  const [mapPickerOptions, setMapPickerOptions] = useState<MapPickerRow[]>([])
+  const [mapPickerLoading, setMapPickerLoading] = useState(false)
 
   const [showDetailedChecked, setShowDetailedChecked] = useState(
     typeof user.gameSettings === 'undefined' ||
@@ -69,7 +83,10 @@ export function useGameStartFlow({
   const [canMove, setCanMove] = useState(user.gameSettings?.canMove ?? true)
   const [canPan, setCanPan] = useState(user.gameSettings?.canPan ?? true)
   const [canZoom, setCanZoom] = useState(user.gameSettings?.canZoom ?? true)
-  const [playMode, setPlayMode] = useState<PlayMode>(() => (gameMode === 'streak' ? 'unlimited' : 'single'))
+  const [playMode, setPlayMode] = useState<PlayMode>(() => {
+    if (gameMode === 'streak') return 'unlimited'
+    return initialPlayMode ?? 'single'
+  })
   const [roundCount, setRoundCount] = useState(DEFAULT_TOTAL_ROUNDS)
   const [panelCount, setPanelCount] = useState(DEFAULT_MULTI_PANEL_COUNT)
   const [perGuessSeconds, setPerGuessSeconds] = useState(DEFAULT_MULTI_PER_GUESS_SECONDS)
@@ -86,6 +103,39 @@ export function useGameStartFlow({
       setPlayMode('unlimited')
     }
   }, [gameMode])
+
+  useEffect(() => {
+    setActiveMapDetails(mapDetails)
+  }, [mapDetails._id, mapDetails.name, mapDetails.description, mapDetails.previewImg])
+
+  useEffect(() => {
+    if (!allowHomeMapPicker) {
+      setMapPickerOptions([])
+      setMapPickerLoading(false)
+      return
+    }
+
+    let cancelled = false
+    setMapPickerLoading(true)
+
+    void loadMapPickerOptions({ includeAllMapsOption: true }).then((opts) => {
+      if (cancelled) return
+      setMapPickerOptions(opts)
+      setMapPickerLoading(false)
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [allowHomeMapPicker])
+
+  const pickMapById = useCallback(
+    (id: string) => {
+      const next = mapPickerOptions.find((m) => String(m._id) === id)
+      if (next) setActiveMapDetails(next)
+    },
+    [mapPickerOptions]
+  )
 
   const footerMeta = useMemo<GameStartFooterMeta>(
     () => ({
@@ -121,8 +171,8 @@ export function useGameStartFlow({
     }
 
     const gameData = {
-      mapId: mapDetails._id,
-      mapName: mapDetails.name,
+      mapId: activeMapDetails._id,
+      mapName: activeMapDetails.name,
       gameSettings,
       mode: gameMode,
       userId: user.id,
@@ -139,8 +189,8 @@ export function useGameStartFlow({
     canMove,
     canPan,
     canZoom,
-    mapDetails._id,
-    mapDetails.name,
+    activeMapDetails._id,
+    activeMapDetails.name,
     gameMode,
     roundCount,
     router,
@@ -158,8 +208,8 @@ export function useGameStartFlow({
 
     if (playMode === 'multi' && gameMode !== 'streak') {
       const gameData = {
-        mapId: mapDetails._id,
-        mapName: mapDetails.name,
+        mapId: activeMapDetails._id,
+        mapName: activeMapDetails.name,
         gameSettings,
         panelCount,
         totalRoundsPerPanel: roundCount,
@@ -181,8 +231,8 @@ export function useGameStartFlow({
     const unlimited = gameMode === 'streak' ? true : playMode === 'unlimited'
 
     const gameData = {
-      mapId: mapDetails._id,
-      mapName: mapDetails.name,
+      mapId: activeMapDetails._id,
+      mapName: activeMapDetails.name,
       gameSettings,
       mode: gameMode,
       unlimited,
@@ -210,8 +260,8 @@ export function useGameStartFlow({
     playMode,
     panelCount,
     perGuessSeconds,
-    mapDetails._id,
-    mapDetails.name,
+    activeMapDetails._id,
+    activeMapDetails.name,
     gameMode,
     roundCount,
     dispatch,
@@ -270,11 +320,12 @@ export function useGameStartFlow({
       setRoundCount(DEFAULT_TOTAL_ROUNDS)
       setPanelCount(DEFAULT_MULTI_PANEL_COUNT)
       setPerGuessSeconds(DEFAULT_MULTI_PER_GUESS_SECONDS)
+      setActiveMapDetails(mapDetails)
     }
-  }, [showDetailedChecked, dispatch])
+  }, [showDetailedChecked, dispatch, mapDetails])
 
   return {
-    mapDetails,
+    mapDetails: activeMapDetails,
     gameMode,
     showDetailedChecked,
     canMove,
@@ -288,6 +339,10 @@ export function useGameStartFlow({
     sliderVal,
     challengeId,
     isSubmitting,
+    allowHomeMapPicker,
+    mapPickerOptions,
+    mapPickerLoading,
+    pickMapById,
     setPlayMode,
     setRoundCount,
     setPanelCount,

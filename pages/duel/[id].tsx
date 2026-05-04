@@ -27,6 +27,7 @@ const DuelRoomPage: PageType = () => {
 
   const [payload, setPayload] = useState<DuelClientPayload | null>()
   const [fatal, setFatal] = useState<string | null>(null)
+  const [rematchLoading, setRematchLoading] = useState(false)
 
   const refresh = useCallback(async () => {
     if (!duelId || !isValidDuelUrlSegment(duelId)) return
@@ -86,6 +87,21 @@ const DuelRoomPage: PageType = () => {
       showToast('error', 'Could not copy link')
     }
   }
+
+  const handleRematchReady = useCallback(async () => {
+    if (!duelId) return
+    setRematchLoading(true)
+    try {
+      const res = await mailman(`duels/${duelId}/rematch-ready`, 'POST', JSON.stringify({}))
+      if (res?.error) {
+        showToast('error', res.error.message)
+        return
+      }
+      setPayload(res as DuelClientPayload)
+    } finally {
+      setRematchLoading(false)
+    }
+  }, [duelId])
 
   if (!router.isReady) {
     return (
@@ -169,7 +185,14 @@ const DuelRoomPage: PageType = () => {
       {lobbyOrFinish && (
         <GamifiedCenterStage>
           {payload.status === 'finished' && (
-            <DuelFinishBanner headline={headline} tone={finishTone} payload={payload} onHome={() => router.push('/')}>
+            <DuelFinishBanner
+              headline={headline}
+              tone={finishTone}
+              payload={payload}
+              onHome={() => router.push('/')}
+              onPlayAgain={you ? () => void handleRematchReady() : undefined}
+              playAgainLoading={rematchLoading}
+            >
               {payload.lastRoundResult && payload.lastRoundActualLocation && (
                 <div style={{ marginBottom: 14 }}>
                   <DuelRoundOverview

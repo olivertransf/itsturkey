@@ -30,7 +30,7 @@ const StyledHomePage = styled.div`
       display: flex;
       flex-direction: column;
       align-items: stretch;
-      gap: clamp(2rem, 4.5vw, 3rem);
+      gap: clamp(1.35rem, 3vw, 2rem);
     }
 
     .home-hero {
@@ -66,7 +66,44 @@ const StyledHomePage = styled.div`
       display: flex;
       flex-direction: column;
       align-items: stretch;
-      gap: var(--stack-gap-md);
+      gap: var(--stack-gap-sm);
+    }
+
+    .home-section-hint {
+      margin: -4px 0 8px;
+      font-size: 12px;
+      line-height: 1.45;
+      color: var(--text-muted);
+      max-width: 52rem;
+
+      code {
+        font-size: 0.85em;
+        color: var(--text-primary);
+      }
+    }
+
+    .home-equitable-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 10px;
+      width: 100%;
+      align-items: stretch;
+    }
+
+    .home-equitable-status {
+      margin: 0;
+      font-size: 12.5px;
+      line-height: 1.45;
+      color: var(--text-muted);
+
+      code {
+        font-size: 0.85em;
+        color: var(--text-primary);
+      }
+
+      &--error {
+        color: #fca5a5;
+      }
     }
 
     .section-title {
@@ -94,10 +131,65 @@ const StyledHomePage = styled.div`
     .card-grid {
       width: 100%;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 272px), 1fr));
-      gap: var(--grid-gap-cards);
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+      gap: 12px;
       align-items: stretch;
       justify-items: stretch;
+    }
+
+    .home-geo-cta-row {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      margin-top: 14px;
+    }
+
+    .home-geo-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 28px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      text-decoration: none;
+      color: #fff;
+      background: linear-gradient(135deg, #6366f1 0%, #7c3aed 55%, #4f46e5 100%);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.12) inset,
+        0 12px 32px rgba(79, 70, 229, 0.35);
+      transition:
+        transform 0.12s ease,
+        box-shadow 0.12s ease,
+        filter 0.12s ease;
+
+      &:hover {
+        filter: brightness(1.06);
+        transform: translateY(-1px);
+        box-shadow:
+          0 0 0 1px rgba(255, 255, 255, 0.16) inset,
+          0 16px 40px rgba(79, 70, 229, 0.42);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+
+    .home-geo-cta--secondary {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      box-shadow: 0 0 0 1px var(--border-subtle) inset;
+      font-weight: 600;
+      font-size: 14px;
+      padding: 10px 22px;
+
+      &:hover {
+        filter: none;
+        background: ${({ theme }) => theme.color.gray[800]};
+        box-shadow: 0 0 0 1px rgba(167, 139, 250, 0.35) inset;
+      }
     }
 
     .home-empty {

@@ -9,6 +9,8 @@ import { GoogleMapsConfigType, LocationType } from '@types'
 import { GUESS_MAP_OPTIONS } from '@utils/constants/googleMapOptions'
 import useGuessMap from '@utils/hooks/useGuessMap'
 import { getMapsKey, googleMapLoaderAsync } from '@utils/helpers'
+import { parseEquitableContinentMapKey } from '@utils/helpers/equitableContinentMapId'
+import { parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
 import { StyledGuessMap } from './'
 import { LockOpenIcon, LockClosedIcon } from '@heroicons/react/solid'
 
@@ -75,9 +77,16 @@ const GuessMap: FC<Props> = ({
     const { map } = googleMapsConfig
 
     const { bounds, scoreFactor } = gameData.mapDetails
+    const mapIdStr = String(gameData.mapDetails._id ?? '')
+    const isVirtualCountryOrContinentMap =
+      parseEquitableCountryMapKey(mapIdStr) !== null || parseEquitableContinentMapKey(mapIdStr) !== null
 
-    // Zoom in for smaller maps
-    if (bounds && scoreFactor && scoreFactor < 1000) {
+    // Regional / custom maps: fit bounds. Virtual country/continent maps ship bounds + world scoreFactor.
+    const shouldFitBounds =
+      bounds &&
+      ((typeof scoreFactor === 'number' && scoreFactor > 0 && scoreFactor < 1000) || isVirtualCountryOrContinentMap)
+
+    if (shouldFitBounds) {
       const { min, max } = bounds
 
       const googleBounds = new google.maps.LatLngBounds(

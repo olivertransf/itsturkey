@@ -1,5 +1,8 @@
 import type { NextPage } from 'next'
+import Link from 'next/link'
 import { CountryStreakCard } from '@components/CountryStreakCard'
+import HomeEquitableContinentGrid from '@components/HomeEquitableContinentGrid'
+import HomeEquitableCountryGrid from '@components/HomeEquitableCountryGrid'
 import { HomeWorldCard } from '@components/HomeWorldCard'
 import { Meta } from '@components/Meta'
 import { DuelGuessrCard } from '@components/DuelGuessrCard'
@@ -88,6 +91,30 @@ const Home: NextPage = () => {
                   accentColor={getHomeMapAccentColor(map.name)}
                 />
               ))}
+            </div>
+          </section>
+
+          <section className="home-section" id="equitable-by-country">
+            <h2 className="section-title">By country</h2>
+            <p className="home-section-hint">Standard games: every round is from Street View pins in that country.</p>
+            <HomeEquitableCountryGrid variant="spotlight" />
+            <div className="home-geo-cta-row">
+              <Link href="/maps#equitable-by-country">
+                <a className="home-geo-cta">All countries</a>
+              </Link>
+            </div>
+          </section>
+
+          <section className="home-section" id="equitable-by-continent">
+            <h2 className="section-title">By continent</h2>
+            <p className="home-section-hint">
+              Standard games pooled across every country in that continent (same equitable source maps as By country).
+            </p>
+            <HomeEquitableContinentGrid />
+            <div className="home-geo-cta-row">
+              <Link href="/maps#equitable-by-continent">
+                <a className="home-geo-cta home-geo-cta--secondary">Continents on Browse maps</a>
+              </Link>
             </div>
           </section>
 

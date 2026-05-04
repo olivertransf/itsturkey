@@ -4,7 +4,7 @@ import { FC, useEffect, useState } from 'react'
 import Game from '@backend/models/game'
 import { StreakCountryList } from '@components/StreakCountryList'
 import { Button } from '@components/system'
-import { useAppDispatch, useAppSelector } from '@redux/hook'
+import { useAppDispatch } from '@redux/hook'
 import { updateStartTime } from '@redux/slices'
 import { GameViewType } from '@types'
 import countries from '@utils/constants/countries'
@@ -25,7 +25,6 @@ const StreakEndedCard: FC<Props> = ({ gameData, setGameData, view, setView }) =>
   const [isLoading, setIsLoading] = useState(false)
   const [showSummary, setShowSummary] = useState(false)
 
-  const user = useAppSelector((state) => state.user)
   const dispatch = useAppDispatch()
   const router = useRouter()
 
@@ -56,10 +55,6 @@ const StreakEndedCard: FC<Props> = ({ gameData, setGameData, view, setView }) =>
   }
 
   const playAgain = async () => {
-    if (!user.id) {
-      return router.push('/register')
-    }
-
     const newGameData = {
       mapId: gameData.mapId,
       mapName: gameData.mapName,

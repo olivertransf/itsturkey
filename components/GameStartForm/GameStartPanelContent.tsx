@@ -1,4 +1,5 @@
 import { FC, useMemo } from 'react'
+import { MapPickerGrid } from '@components/MapPickerGrid'
 import { Avatar, Checkbox, Slider, ToggleSwitch } from '@components/system'
 import { TextWithLinks } from '@components/TextWithLinks'
 import { LightningBoltIcon, UserGroupIcon, UserIcon, ViewGridIcon } from '@heroicons/react/outline'
@@ -34,6 +35,10 @@ const GameStartPanelContent: FC<Props> = ({
   showChallengeView,
   sliderVal,
   challengeId,
+  allowHomeMapPicker,
+  mapPickerOptions,
+  mapPickerLoading,
+  pickMapById,
   setPlayMode,
   setRoundCount,
   setPanelCount,
@@ -64,6 +69,19 @@ const GameStartPanelContent: FC<Props> = ({
           <Challenge challengeId={challengeId} />
         ) : (
           <>
+            {allowHomeMapPicker && gameMode !== 'streak' && (
+              <section className="mapPickerSection" aria-label="Choose map">
+                <span className="sectionEyebrow">Map</span>
+                <MapPickerGrid
+                  options={mapPickerOptions}
+                  value={String(mapDetails._id)}
+                  onChange={pickMapById}
+                  loading={mapPickerLoading}
+                  maxHeight={280}
+                />
+              </section>
+            )}
+
             {!hideMapSummary && (
               <div className="map-details-wrapper">
                 <Avatar type="map" src={mapDetails.previewImg} size={50} />

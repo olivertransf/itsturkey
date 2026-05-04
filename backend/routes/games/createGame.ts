@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb'
 import { NextApiRequest, NextApiResponse } from 'next'
 import Game from '@backend/models/game'
+import { storageMapIdForStandardGame } from '@backend/utils/equitableCountryMap'
 import { collections, getAnonymousGameId, getLocations, getUserId, isUserBanned, throwError } from '@backend/utils'
 import { DEFAULT_TOTAL_ROUNDS, MAX_TOTAL_ROUNDS, UNLIMITED_LOCATION_BATCH } from '@utils/constants/gameModes'
 
@@ -33,7 +34,7 @@ const createGame = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   const newGame = {
-    mapId: mode === 'standard' ? new ObjectId(mapId) : mapId,
+    mapId: mode === 'standard' ? storageMapIdForStandardGame(mapId) : mapId,
     mapName,
     gameSettings,
     mode,

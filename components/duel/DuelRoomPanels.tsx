@@ -8,6 +8,7 @@ import {
   LightningBoltIcon,
   LinkIcon,
   PlayIcon,
+  RefreshIcon,
   SparklesIcon,
   SwitchHorizontalIcon,
   UserGroupIcon,
@@ -164,6 +165,13 @@ const BtnRow = styled.div`
   align-items: center;
 `
 
+const RematchHint = styled.p`
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #a1a1aa;
+`
+
 type FinishTone = 'win' | 'loss' | 'tie' | 'neutral'
 
 export const DuelFinishBanner: FC<{
@@ -172,7 +180,9 @@ export const DuelFinishBanner: FC<{
   payload: DuelClientPayload
   children?: ReactNode
   onHome: () => void
-}> = ({ headline, tone, payload, children, onHome }) => {
+  onPlayAgain?: () => void
+  playAgainLoading?: boolean
+}> = ({ headline, tone, payload, children, onHome, onPlayAgain, playAgainLoading }) => {
   const sumPts = payload.host.totalPoints + payload.guest.totalPoints
   const hostShare = sumPts <= 0 ? 50 : (payload.host.totalPoints / sumPts) * 100
   const guestShare = sumPts <= 0 ? 50 : (payload.guest.totalPoints / sumPts) * 100
@@ -199,6 +209,12 @@ export const DuelFinishBanner: FC<{
     ) : (
       <SparklesIcon />
     )
+
+  const vr = payload.viewerRole
+  const youReady =
+    vr === 'host' ? payload.rematchReady.host : vr === 'guest' ? payload.rematchReady.guest : false
+  const oppReady =
+    vr === 'host' ? payload.rematchReady.guest : vr === 'guest' ? payload.rematchReady.host : false
 
   return (
     <Shell $variant="finish">
@@ -271,6 +287,33 @@ export const DuelFinishBanner: FC<{
       </MeterRow>
 
       {children}
+
+      {vr && onPlayAgain && (
+        <>
+          <RematchHint>
+            {youReady
+              ? oppReady
+                ? 'Starting the next match…'
+                : 'You chose Play again. Waiting for your opponent to tap it too — same map and rules.'
+              : 'Both players must tap Play again to start another match with the same settings.'}
+          </RematchHint>
+          <BtnRow style={{ marginBottom: 12 }}>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={onPlayAgain}
+              disabled={youReady || !!playAgainLoading}
+              isLoading={!!playAgainLoading}
+              spinnerSize={20}
+            >
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                <RefreshIcon style={{ width: 16, height: 16 }} />
+                Play again
+              </span>
+            </Button>
+          </BtnRow>
+        </>
+      )}
 
       <BtnRow>
         <Button variant="solidGray" size="sm" onClick={onHome}>

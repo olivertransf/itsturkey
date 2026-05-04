@@ -6,6 +6,8 @@ type StyledProps = {
 
 const StyledMapPreviewCard = styled.div<StyledProps>`
   width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 
   .large-card-wrapper {
     border-radius: var(--radius-lg);
@@ -13,6 +15,9 @@ const StyledMapPreviewCard = styled.div<StyledProps>`
     border: 1px solid var(--border-subtle);
     box-shadow: var(--shadow-card);
     display: grid;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
     gap: 1rem;
     max-height: 300px;
 
@@ -58,8 +63,25 @@ const StyledMapPreviewCard = styled.div<StyledProps>`
       display: flex;
       justify-content: center;
       width: 100%;
+      min-width: 0;
       padding: 0 1.7rem;
       box-sizing: border-box;
+
+      .mapNameRow {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-width: 0;
+        gap: 5px;
+      }
+
+      .map-flag {
+        font-size: 26px;
+        line-height: 1;
+        user-select: none;
+      }
 
       .mapName {
         font-size: 20px;
@@ -68,6 +90,7 @@ const StyledMapPreviewCard = styled.div<StyledProps>`
         z-index: 1;
         width: 100%;
         max-width: 100%;
+        min-width: 0;
         text-align: center;
         white-space: nowrap;
         overflow: hidden;
@@ -87,6 +110,7 @@ const StyledMapPreviewCard = styled.div<StyledProps>`
       -webkit-box-orient: vertical;
       word-break: break-word;
       height: 50px;
+      font-size: inherit;
     }
 
     .playWrapper {

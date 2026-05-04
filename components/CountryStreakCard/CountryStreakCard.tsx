@@ -1,28 +1,23 @@
 import Link from 'next/link'
 import { FC } from 'react'
-import StyledCountryStreakCard from './CountryStreakCard.Styled'
+import HomeSectionRowCard from '@components/HomeSectionRowCard'
+import HomePlayGlyph from '@components/HomeSectionRowCard/HomePlayGlyph'
+
+const ACCENT = '#a855f7'
 
 const CountryStreakCard: FC = () => {
   return (
-    <StyledCountryStreakCard>
-      <div className="large-card-wrapper">
-        <div className="map-avatar" aria-hidden />
-        <div className="contentWrapper">
-          <div className="mapNameWrapper">
-            <span className="map-accent-dot" aria-hidden />
-            <h2 className="mapName">Country Streak</h2>
-          </div>
-          <p className="mapDescription">
-            Guess the country from Street View — Equitable World coverage only. Keep your streak going.
-          </p>
-          <div className="playWrapper">
-            <Link href="/equitable-streaks">
-              <a className="mapPlayBtn">Play</a>
-            </Link>
-          </div>
-        </div>
-      </div>
-    </StyledCountryStreakCard>
+    <HomeSectionRowCard
+      accentColor={ACCENT}
+      title="Country Streak"
+      description="Guess the country from Street View — equitable world coverage only. Keep your streak going."
+    >
+      <Link href="/equitable-streaks">
+        <a className="home-play-btn home-play-btn--icon" aria-label="Play Country Streak">
+          <HomePlayGlyph />
+        </a>
+      </Link>
+    </HomeSectionRowCard>
   )
 }
 

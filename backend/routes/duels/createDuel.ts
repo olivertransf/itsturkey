@@ -33,7 +33,8 @@ const createDuel = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   const mapDetails = await getMapFromGame({ mapId: cfg.mapId } as unknown as Game)
-  const scoreFactor = typeof mapDetails?.scoreFactor === 'number' ? mapDetails.scoreFactor : undefined
+  const md = mapDetails as { scoreFactor?: number } | null | undefined
+  const scoreFactor = typeof md?.scoreFactor === 'number' ? md.scoreFactor : undefined
 
   let shortCode = randomDuelShortCode(4)
   let clash = await collections.duelSessions?.findOne({ shortCode })

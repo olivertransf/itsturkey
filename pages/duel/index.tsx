@@ -1,15 +1,19 @@
 import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { HeartIcon, LightningBoltIcon, SparklesIcon } from '@heroicons/react/outline'
+import { MapPickerGrid } from '@components/MapPickerGrid'
 import { Meta } from '@components/Meta'
 import { PageBackLink } from '@components/PageBackLink'
 import { Button } from '@components/system'
 import ToggleSwitch from '@components/system/ToggleSwitch/ToggleSwitch'
 import StyledMultiGamePage from '@styles/MultiGamePage.Styled'
 import { GamifiedCenterStage, GamifiedFormCard } from '@styles/GamifiedHubShell.Styled'
+import { isMapExcludedFromPicker } from '@utils/constants/mapPicker'
 import { OFFICIAL_WORLD_ID } from '@utils/constants/random'
 import { DEFAULT_TOTAL_ROUNDS, MAX_TOTAL_ROUNDS } from '@utils/constants/gameModes'
+import { loadMapPickerOptions } from '@utils/loadMapPickerOptions'
+import type { MapPickerRow } from '@utils/loadMapPickerOptions'
 import { mailman, showToast } from '@utils/helpers'
 import styled from 'styled-components'
 
@@ -121,12 +125,49 @@ const FieldGrow = styled.div`
 const DuelLobbyPage: NextPage = () => {
   const router = useRouter()
   const [mapField, setMapField] = useState(OFFICIAL_WORLD_ID)
+  const [mapOptions, setMapOptions] = useState<MapPickerRow[]>([])
+  const [mapsLoading, setMapsLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    setMapsLoading(true)
+    void loadMapPickerOptions({ includeAllMapsOption: false }).then((opts) => {
+      if (cancelled) return
+      setMapOptions(opts)
+      setMapsLoading(false)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     if (!router.isReady) return
     const q = router.query.mapId
-    if (typeof q === 'string' && q.length > 0) setMapField(q)
+    if (typeof q === 'string' && q.length > 0 && !isMapExcludedFromPicker(q)) {
+      setMapField(q)
+    }
   }, [router.isReady, router.query.mapId])
+
+  useEffect(() => {
+    if (isMapExcludedFromPicker(mapField)) {
+      setMapField(OFFICIAL_WORLD_ID)
+    }
+  }, [mapField])
+
+  const selectOptions = useMemo(() => {
+    const base = mapOptions.filter((m) => !isMapExcludedFromPicker(m._id))
+    const q = typeof router.query.mapId === 'string' && router.query.mapId.length > 0 ? router.query.mapId : ''
+    if (q && !isMapExcludedFromPicker(q) && !base.some((m) => m._id === q)) {
+      return [...base, { _id: q, name: q, description: undefined, previewImg: '' }]
+    }
+    return base
+  }, [mapOptions, router.query.mapId])
+
+  const mapNameForField = useMemo(
+    () => selectOptions.find((m) => m._id === mapField)?.name,
+    [selectOptions, mapField]
+  )
 
   const [mode, setMode] = useState<'hp' | 'points'>('hp')
   const [rounds, setRounds] = useState(DEFAULT_TOTAL_ROUNDS)
@@ -145,6 +186,7 @@ const DuelLobbyPage: NextPage = () => {
 
     const body = {
       mapId: mapField,
+      ...(mapNameForField ? { mapName: mapNameForField } : {}),
       gameSettings: {
         timeLimit: 90,
         canMove: true,
@@ -201,8 +243,14 @@ const DuelLobbyPage: NextPage = () => {
             </div>
           </CardHero>
 
-          <FieldLabel htmlFor="mapId">Map ID</FieldLabel>
-          <FieldInput id="mapId" type="text" value={mapField} onChange={(e) => setMapField(e.target.value)} />
+          <FieldLabel>Map</FieldLabel>
+          <MapPickerGrid
+            options={selectOptions}
+            value={mapField}
+            onChange={setMapField}
+            loading={mapsLoading}
+            maxHeight={380}
+          />
 
           <FieldLabel>Mode</FieldLabel>
           <ModeStrip>

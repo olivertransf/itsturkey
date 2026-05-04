@@ -26,12 +26,26 @@ const StyledMapsPage = styled.div`
       border-bottom: 1px solid var(--border-subtle);
     }
 
+    .section-subtext {
+      margin: -6px 0 14px;
+      font-size: 13px;
+      line-height: 1.45;
+      color: var(--text-muted);
+      max-width: 52rem;
+    }
+
     .maps-wrapper {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
       gap: var(--grid-gap-cards);
       align-items: stretch;
       width: 100%;
+    }
+
+    .maps-wrapper.equitable-countries-grid {
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 10px;
+      align-items: stretch;
     }
 
     .more-btn-wrapper {

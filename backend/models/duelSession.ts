@@ -78,6 +78,9 @@ export type DuelSession = {
   mapScoreFactor?: number
   createdAt?: Date
   finishedAt?: Date
+  /** After `finished`, both players must opt in before a rematch resets the session. */
+  rematchReadyHost?: boolean
+  rematchReadyGuest?: boolean
 }
 
 export default DuelSession

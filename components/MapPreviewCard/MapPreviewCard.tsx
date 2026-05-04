@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { FC } from 'react'
 import { TrashIcon } from '@heroicons/react/outline'
 import { MapType } from '@types'
+import { flagEmojiFromIsoAlpha2 } from '@utils/helpers/flagEmoji'
+import { parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
 import { MAP_AVATAR_PATH } from '../../utils/constants/random'
 import { StyledMapPreviewCard } from './'
 
@@ -14,7 +16,17 @@ type Props = {
   isForDisplayOnly?: boolean
 }
 
-const MapPreviewCard: FC<Props> = ({ map, showDescription, type = 'large', openDeleteModal, isForDisplayOnly }) => {
+const MapPreviewCard: FC<Props> = ({
+  map,
+  showDescription,
+  type = 'large',
+  openDeleteModal,
+  isForDisplayOnly,
+}) => {
+  const countryCode = typeof map._id === 'string' ? parseEquitableCountryMapKey(map._id) : null
+  const flag = countryCode ? flagEmojiFromIsoAlpha2(countryCode) : ''
+  const playHref = `/map/${encodeURIComponent(String(map._id))}`
+
   return (
     <StyledMapPreviewCard isForDisplayOnly={isForDisplayOnly}>
       {type === 'large' && (
@@ -25,12 +37,21 @@ const MapPreviewCard: FC<Props> = ({ map, showDescription, type = 'large', openD
           </div>
           <div className="contentWrapper">
             <div className="mapNameWrapper">
-              <div className="mapName">{map.name}</div>
+              {countryCode && flag ? (
+                <div className="mapNameRow">
+                  <span className="map-flag" title={map.name} aria-hidden>
+                    {flag}
+                  </span>
+                  <div className="mapName">{map.name}</div>
+                </div>
+              ) : (
+                <div className="mapName">{map.name}</div>
+              )}
             </div>
             {showDescription && <div className="mapDescription">{map.description}</div>}
             <div className="playWrapper">
               {!isForDisplayOnly ? (
-                <Link href={`/map/${map._id}`}>
+                <Link href={playHref}>
                   <a className="mapPlayBtn">Play</a>
                 </Link>
               ) : (

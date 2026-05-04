@@ -15,6 +15,12 @@ const StyledGameSettingsModal = styled.div`
     background-color: #101010;
   }
 
+  .mapPickerSection {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
   .map-details-wrapper {
     display: flex;
     align-items: center;

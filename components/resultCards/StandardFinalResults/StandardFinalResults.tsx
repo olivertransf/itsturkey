@@ -3,7 +3,7 @@ import { FC, useEffect, useState } from 'react'
 import { Game } from '@backend/models'
 import { Button, ProgressBar } from '@components/system'
 import { ChartPieIcon, MapIcon } from '@heroicons/react/outline'
-import { useAppDispatch, useAppSelector } from '@redux/hook'
+import { useAppDispatch } from '@redux/hook'
 import { updateStartTime } from '@redux/slices'
 import { GameViewType } from '@types'
 import { KEY_CODES } from '@utils/constants/keyCodes'
@@ -21,7 +21,6 @@ type Props = {
 const StandardFinalResults: FC<Props> = ({ gameData, setGameData, view, setView }) => {
   const [isLoading, setIsLoading] = useState(false)
 
-  const user = useAppSelector((state) => state.user)
   const dispatch = useAppDispatch()
 
   const IS_CHALLENGE = !!gameData.challengeId
@@ -56,10 +55,6 @@ const StandardFinalResults: FC<Props> = ({ gameData, setGameData, view, setView 
   }
 
   const playAgain = async () => {
-    if (!user.id) {
-      return router.push('/register')
-    }
-
     const newGameData = {
       mapId: gameData.mapId,
       mapName: gameData.mapName,

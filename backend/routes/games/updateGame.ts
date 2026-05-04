@@ -174,7 +174,8 @@ const updateGame = async (req: NextApiRequest, res: NextApiResponse) => {
     imperial: imperialDistance,
   }
 
-  const points = calculateRoundScore(metricDistance, mapDetails?.scoreFactor)
+  const mapScoreFactor = (mapDetails as { scoreFactor?: number } | null | undefined)?.scoreFactor
+  const points = calculateRoundScore(metricDistance, mapScoreFactor)
 
   const newGuess: GuessType = {
     lat: guess.lat,
