@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { FC, useEffect, useState } from 'react'
+import { FC, useCallback, useEffect, useState } from 'react'
 import { NotFound } from '@components/errorViews'
 import { PageBackLink } from '@components/PageBackLink'
 import { MapPlayInline } from '@components/GameStartForm'
@@ -25,13 +25,33 @@ const MapPage: FC = () => {
   const rawMapId = router.query.id
   const mapId = Array.isArray(rawMapId) ? rawMapId[0] : rawMapId
 
+  const fetchMapDetails = useCallback(async () => {
+    if (!mapId) return
+    const res = await mailman(`maps/${mapId}?stats=true`)
+
+    if (res.error) {
+      return setMapDetails(null)
+    }
+
+    setMapDetails(res)
+  }, [mapId])
+
+  const fetchLeaderboards = useCallback(async () => {
+    if (!mapId) return
+    const highPath = `scores/${encodeURIComponent(mapId)}`
+    const lowPath = `scores/${encodeURIComponent(mapId)}?variant=low`
+    const [highRes, lowRes] = await Promise.all([mailman(highPath), mailman(lowPath)])
+    setTopScores(Array.isArray(highRes) ? highRes : [])
+    setLowScores(Array.isArray(lowRes) ? lowRes : [])
+  }, [mapId])
+
   useEffect(() => {
     if (!mapId) {
       return
     }
 
     fetchMapDetails()
-  }, [mapId])
+  }, [mapId, fetchMapDetails])
 
   useEffect(() => {
     if (!mapId) {
@@ -49,20 +69,28 @@ const MapPage: FC = () => {
       setLowScores(Array.isArray(lowRes) ? lowRes : [])
     })()
 
+    const handlePageVisibleRefresh = () => {
+      if (document.visibilityState === 'visible') {
+        void fetchLeaderboards()
+      }
+    }
+
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        void fetchLeaderboards()
+      }
+    }, 12000)
+
+    window.addEventListener('focus', handlePageVisibleRefresh)
+    document.addEventListener('visibilitychange', handlePageVisibleRefresh)
+
     return () => {
       cancelled = true
+      window.clearInterval(intervalId)
+      window.removeEventListener('focus', handlePageVisibleRefresh)
+      document.removeEventListener('visibilitychange', handlePageVisibleRefresh)
     }
-  }, [mapId])
-
-  const fetchMapDetails = async () => {
-    const res = await mailman(`maps/${mapId}?stats=true`)
-
-    if (res.error) {
-      return setMapDetails(null)
-    }
-
-    setMapDetails(res)
-  }
+  }, [mapId, fetchLeaderboards])
 
   if (mapDetails === null) {
     return (
