@@ -25,6 +25,8 @@ export type DuelClientPayload = {
   status: 'waiting' | 'in_progress' | 'finished'
   mode: 'hp' | 'points'
   outcome?: 'host_win' | 'guest_win' | 'tie'
+  /** Present on API responses after mapId was added to duel payload. */
+  mapId?: string
   mapDetails: MapType | null
   gameSettings: GameSettingsType
   viewerRole: DuelViewerRole

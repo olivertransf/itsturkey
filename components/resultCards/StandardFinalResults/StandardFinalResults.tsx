@@ -9,6 +9,7 @@ import { GameViewType } from '@types'
 import { KEY_CODES } from '@utils/constants/keyCodes'
 import { DEFAULT_TOTAL_ROUNDS } from '@utils/constants/gameModes'
 import { formatLargeNumber, mailman, showToast } from '@utils/helpers'
+import { PlonkitGuideLauncher } from '@components/PlonkitCountryGuide'
 import { StyledStandardFinalResults } from './'
 
 type Props = {
@@ -16,9 +17,18 @@ type Props = {
   setGameData: (gameData: any) => void
   view: GameViewType
   setView: (view: GameViewType) => void
+  plonkitCountryIso?: string | null
+  plonkitMapLabel?: string
 }
 
-const StandardFinalResults: FC<Props> = ({ gameData, setGameData, view, setView }) => {
+const StandardFinalResults: FC<Props> = ({
+  gameData,
+  setGameData,
+  view,
+  setView,
+  plonkitCountryIso,
+  plonkitMapLabel,
+}) => {
   const [isLoading, setIsLoading] = useState(false)
 
   const dispatch = useAppDispatch()
@@ -102,6 +112,12 @@ const StandardFinalResults: FC<Props> = ({ gameData, setGameData, view, setView 
         <div className="progress-bar">
           <ProgressBar progress={calculateProgress()} />
         </div>
+
+        {plonkitCountryIso ? (
+          <div style={{ marginTop: 12, marginBottom: 4 }}>
+            <PlonkitGuideLauncher variant="compact" countryIso={plonkitCountryIso} mapLabel={plonkitMapLabel} />
+          </div>
+        ) : null}
 
         {IS_CHALLENGE ? (
           <div className="buttons-wrapper">

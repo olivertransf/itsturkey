@@ -1,4 +1,5 @@
 import { FC, useMemo } from 'react'
+import { PlonkitCountryGuideInline } from '@components/PlonkitCountryGuide'
 import { MapPickerGrid } from '@components/MapPickerGrid'
 import { Avatar, Checkbox, Slider, ToggleSwitch } from '@components/system'
 import { TextWithLinks } from '@components/TextWithLinks'
@@ -12,11 +13,14 @@ import {
   MAX_TOTAL_ROUNDS,
   MIN_MULTI_PER_GUESS_SECONDS,
 } from '@utils/constants/gameModes'
+import { parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
 import { formatTimeLimit } from '@utils/helpers'
 import type { GameStartFlowApi } from './useGameStartFlow'
 
 type Props = Omit<GameStartFlowApi, 'primaryAction' | 'cancelAction' | 'footerMeta' | 'isSubmitting'> & {
   hideMapSummary?: boolean
+  /** Country tips render below modal actions instead */
+  hideCountryTips?: boolean
   className?: string
 }
 
@@ -24,6 +28,7 @@ const GameStartPanelContent: FC<Props> = ({
   mapDetails,
   gameMode,
   hideMapSummary,
+  hideCountryTips,
   className,
   showDetailedChecked,
   canMove,
@@ -49,6 +54,11 @@ const GameStartPanelContent: FC<Props> = ({
   handleCheck,
 }) => {
   const defaultsLocked = !!showDetailedChecked
+
+  const equitableCountryIso = useMemo(
+    () => parseEquitableCountryMapKey(String(mapDetails._id)),
+    [mapDetails._id]
+  )
 
   const defaultSettingsLabel = useMemo(() => {
     if (playMode === 'multi') {
@@ -281,6 +291,10 @@ const GameStartPanelContent: FC<Props> = ({
                 </div>
               </div>
             </section>
+
+            {!hideCountryTips && equitableCountryIso && gameMode !== 'streak' && !showChallengeView ? (
+              <PlonkitCountryGuideInline isoCode={equitableCountryIso} mapLabel={mapDetails.name} variant="default" />
+            ) : null}
           </>
         )}
       </div>

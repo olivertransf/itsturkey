@@ -10,7 +10,7 @@ import ToggleSwitch from '@components/system/ToggleSwitch/ToggleSwitch'
 import StyledMultiGamePage from '@styles/MultiGamePage.Styled'
 import { GamifiedCenterStage, GamifiedFormCard } from '@styles/GamifiedHubShell.Styled'
 import { isMapExcludedFromPicker } from '@utils/constants/mapPicker'
-import { OFFICIAL_WORLD_ID } from '@utils/constants/random'
+import { EQUITABLE_COUNTRY_STREAK_DETAILS, EQUITABLE_COUNTRY_STREAK_ID } from '@utils/constants/random'
 import { DEFAULT_TOTAL_ROUNDS, MAX_TOTAL_ROUNDS } from '@utils/constants/gameModes'
 import { loadMapPickerOptions } from '@utils/loadMapPickerOptions'
 import type { MapPickerRow } from '@utils/loadMapPickerOptions'
@@ -122,9 +122,17 @@ const FieldGrow = styled.div`
   min-width: 140px;
 `
 
+/** Same pool duels already draw rounds from (`DUEL_ROUND_LOCATION_POOL_ID`); default scoring/UI map matches. */
+const EQUITABLE_STREAK_PICKER_ROW: MapPickerRow = {
+  _id: EQUITABLE_COUNTRY_STREAK_DETAILS._id,
+  name: EQUITABLE_COUNTRY_STREAK_DETAILS.name,
+  description: EQUITABLE_COUNTRY_STREAK_DETAILS.description,
+  previewImg: EQUITABLE_COUNTRY_STREAK_DETAILS.previewImg,
+}
+
 const DuelLobbyPage: NextPage = () => {
   const router = useRouter()
-  const [mapField, setMapField] = useState(OFFICIAL_WORLD_ID)
+  const [mapField, setMapField] = useState(EQUITABLE_COUNTRY_STREAK_ID)
   const [mapOptions, setMapOptions] = useState<MapPickerRow[]>([])
   const [mapsLoading, setMapsLoading] = useState(true)
 
@@ -151,17 +159,19 @@ const DuelLobbyPage: NextPage = () => {
 
   useEffect(() => {
     if (isMapExcludedFromPicker(mapField)) {
-      setMapField(OFFICIAL_WORLD_ID)
+      setMapField(EQUITABLE_COUNTRY_STREAK_ID)
     }
   }, [mapField])
 
   const selectOptions = useMemo(() => {
     const base = mapOptions.filter((m) => !isMapExcludedFromPicker(m._id))
+    const withEquitableDefault =
+      base.some((m) => m._id === EQUITABLE_COUNTRY_STREAK_ID) ? base : [EQUITABLE_STREAK_PICKER_ROW, ...base]
     const q = typeof router.query.mapId === 'string' && router.query.mapId.length > 0 ? router.query.mapId : ''
-    if (q && !isMapExcludedFromPicker(q) && !base.some((m) => m._id === q)) {
-      return [...base, { _id: q, name: q, description: undefined, previewImg: '' }]
+    if (q && !isMapExcludedFromPicker(q) && !withEquitableDefault.some((m) => m._id === q)) {
+      return [...withEquitableDefault, { _id: q, name: q, description: undefined, previewImg: '' }]
     }
-    return base
+    return withEquitableDefault
   }, [mapOptions, router.query.mapId])
 
   const mapNameForField = useMemo(

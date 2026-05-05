@@ -7,6 +7,8 @@ export type DuelClientPayload = {
   status: DuelSession['status']
   mode: DuelSession['mode']
   outcome?: DuelSession['outcome']
+  /** Lobby map id (e.g. equitable-country-streak); differs from mapDetails._id for virtual maps. */
+  mapId: DuelSession['mapId']
   mapDetails: MapType | null
   gameSettings: DuelSession['gameSettings']
   viewerRole: DuelSide | null
@@ -57,6 +59,7 @@ export const buildDuelPayload = (duel: DuelSession, role: DuelSide | null, mapDe
     status: duel.status,
     mode: duel.mode,
     outcome: duel.outcome,
+    mapId: duel.mapId,
     mapDetails,
     gameSettings: duel.gameSettings,
     viewerRole: role,

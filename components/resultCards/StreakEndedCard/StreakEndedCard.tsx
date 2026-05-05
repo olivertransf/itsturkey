@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import { useRouter } from 'next/router'
-import { FC, useEffect, useState } from 'react'
+import { FC, useEffect, useMemo, useState } from 'react'
 import Game from '@backend/models/game'
 import { StreakCountryList } from '@components/StreakCountryList'
 import { Button } from '@components/system'
@@ -13,6 +13,8 @@ import { getStreakLobbyPath } from '@utils/constants/random'
 import { mailman, showToast } from '@utils/helpers'
 import { StyledStreakEndedCard } from './'
 import { getRealCountryCode } from '@utils/helpers/getRealCountryCode'
+import { PlonkitGuideLauncher } from '@components/PlonkitCountryGuide'
+import { lastCompletedRoundLocation, resolvePlonkitGuideCountryIso } from '@utils/helpers/resolvePlonkitGuideCountryIso'
 
 type Props = {
   gameData: Game
@@ -26,6 +28,11 @@ const StreakEndedCard: FC<Props> = ({ gameData, setGameData, view, setView }) =>
   const [showSummary, setShowSummary] = useState(false)
 
   const dispatch = useAppDispatch()
+
+  const plonkIso = useMemo(() => {
+    const loc = lastCompletedRoundLocation(gameData)
+    return resolvePlonkitGuideCountryIso(gameData.mapId, loc)
+  }, [gameData.mapId, gameData.rounds, gameData.guesses])
   const router = useRouter()
 
   const guessedCountryCode = gameData.guesses[gameData.guesses.length - 1].streakLocationCode
@@ -102,6 +109,12 @@ const StreakEndedCard: FC<Props> = ({ gameData, setGameData, view, setView }) =>
             <StreakCountryList gameData={gameData} />
           </div>
 
+          {plonkIso ? (
+            <div style={{ marginTop: 12 }}>
+              <PlonkitGuideLauncher variant="compact" countryIso={plonkIso} mapLabel={gameData.mapDetails?.name} />
+            </div>
+          ) : null}
+
           <div className="buttons-wrapper">
             <Button className="play-again-btn" onClick={() => playAgain()} isLoading={isLoading} spinnerSize={24}>
               Play Again
@@ -145,6 +158,12 @@ const StreakEndedCard: FC<Props> = ({ gameData, setGameData, view, setView }) =>
           <p className="streak-count">
             {`Your streak ended at ${gameData.streak} ${gameData.streak === 1 ? 'country' : 'countries'}`}.
           </p>
+
+          {plonkIso ? (
+            <div style={{ marginTop: 12 }}>
+              <PlonkitGuideLauncher variant="compact" countryIso={plonkIso} mapLabel={gameData.mapDetails?.name} />
+            </div>
+          ) : null}
 
           <div className="buttons-wrapper">
             <Button className="play-again-btn" onClick={() => playAgain()} isLoading={isLoading} spinnerSize={24}>

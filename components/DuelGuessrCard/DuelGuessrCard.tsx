@@ -1,6 +1,5 @@
 import { useRouter } from 'next/router'
 import { FC } from 'react'
-import { OFFICIAL_WORLD_ID } from '@utils/constants/random'
 import HomeSectionRowCard from '@components/HomeSectionRowCard'
 
 const ACCENT = '#fb923c'
@@ -9,7 +8,7 @@ const DuelGuessrCard: FC = () => {
   const router = useRouter()
 
   const goCreate = () => {
-    void router.push(`/duel?mapId=${OFFICIAL_WORLD_ID}`)
+    void router.push('/duel')
   }
 
   const goJoin = () => {

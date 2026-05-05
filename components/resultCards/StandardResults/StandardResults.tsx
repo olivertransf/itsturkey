@@ -7,6 +7,7 @@ import { DEFAULT_TOTAL_ROUNDS } from '@utils/constants/gameModes'
 import { formatLargeNumber } from '@utils/helpers'
 import formatDistance from '@utils/helpers/formatDistance'
 import { DistanceType, GameViewType } from '../../../@types'
+import { PlonkitGuideLauncher } from '@components/PlonkitCountryGuide'
 import { StyledStandardResults } from './'
 
 type Props = {
@@ -19,6 +20,8 @@ type Props = {
   view: GameViewType
   setView: (view: GameViewType) => void
   onEndUnlimitedSession?: () => Promise<void>
+  plonkitCountryIso?: string | null
+  plonkitMapLabel?: string
 }
 
 const StandardResults: FC<Props> = ({
@@ -31,6 +34,8 @@ const StandardResults: FC<Props> = ({
   view,
   setView,
   onEndUnlimitedSession,
+  plonkitCountryIso,
+  plonkitMapLabel,
 }) => {
   const dispatch = useAppDispatch()
   const user = useAppSelector((state) => state.user)
@@ -103,6 +108,12 @@ const StandardResults: FC<Props> = ({
           </span>
         )}
       </div>
+
+      {plonkitCountryIso ? (
+        <div style={{ marginTop: 16, width: '100%' }}>
+          <PlonkitGuideLauncher variant="compact" countryIso={plonkitCountryIso} mapLabel={plonkitMapLabel} />
+        </div>
+      ) : null}
 
       <div className="actionButton">
         <button className="next-round-btn" onClick={() => handleNextRound()}>

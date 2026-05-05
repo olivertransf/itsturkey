@@ -44,6 +44,7 @@ const StyledStreetViewControls = styled.div`
 
       svg {
         height: 22px;
+        width: 22px;
         color: #fff;
       }
   }

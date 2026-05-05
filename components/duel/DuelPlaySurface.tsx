@@ -354,7 +354,7 @@ const buildSyntheticGame = (payload: DuelClientPayload, role: DuelViewerRole): G
 
   return {
     _id: payload.id as unknown as Game['_id'],
-    mapId: mapDetails?._id ? String(mapDetails._id) : payload.id,
+    mapId: payload.mapId || (mapDetails?._id != null ? String(mapDetails._id) : String(payload.id)),
     mapName: mapDetails?.name,
     mapDetails,
     mode: 'standard',
@@ -697,6 +697,7 @@ const DuelPlaySurface: FC<Props> = ({ duelId, payload, role, onRefresh }) => {
     [
       role,
       payload.id,
+      payload.mapId,
       payload.completedRounds,
       payload.host.hp,
       payload.host.totalPoints,
@@ -825,6 +826,8 @@ const DuelPlaySurface: FC<Props> = ({ duelId, payload, role, onRefresh }) => {
             hostMaxHp={payload.startingHpHost}
             guestMaxHp={payload.startingHpGuest}
             viewerRole={role}
+            sessionMapId={payload.mapId}
+            plonkMapLabel={payload.mapDetails?.name}
             onContinue={() => void dismissRecap()}
           />
         ) : (

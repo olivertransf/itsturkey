@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useEffect, useRef, useState } from 'react'
+import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/router'
 import { Game } from '@backend/models'
 import { GameStatus } from '@components/GameStatus'
@@ -14,6 +14,8 @@ import { KEY_CODES } from '@utils/constants/keyCodes'
 import { mailman, showToast } from '@utils/helpers'
 import { StyledStreetView } from './'
 import { DailyQuotaModal } from '@components/modals/DailyQuotaModal'
+import { PlonkitGuideLauncher } from '@components/PlonkitCountryGuide'
+import { resolvePlonkitGuideCountryIso } from '@utils/helpers/resolvePlonkitGuideCountryIso'
 
 const triggerPanoramaResize = (pano: google.maps.StreetViewPanorama | null) => {
   if (!pano) return
@@ -70,8 +72,21 @@ const Streetview: FC<Props> = ({
   const [mobileMapOpen, setMobileMapOpen] = useState(false)
   const [googleMapsConfig, setGoogleMapsConfig] = useState<GoogleMapsConfigType>()
   const [showQuotaModal, setShowQuotaModal] = useState(false)
-
   const location = gameData.rounds[gameData.round - 1]
+
+  const plonkCountryIsoGame = useMemo(
+    () => resolvePlonkitGuideCountryIso(gameData.mapId, location),
+    [gameData.mapId, gameData.round, location]
+  )
+
+  const countryGuideLeadingControl =
+    view === 'Game' && plonkCountryIsoGame ? (
+      <PlonkitGuideLauncher
+        variant="streetControl"
+        countryIso={plonkCountryIsoGame}
+        mapLabel={gameData.mapDetails?.name}
+      />
+    ) : null
   const game = useAppSelector((state) => state.game)
   const user = useAppSelector((state) => state.user)
 
@@ -393,6 +408,7 @@ const Streetview: FC<Props> = ({
             handleBackToStart={handleBackToStart}
             handleExitGame={handleExitGame}
             handleUndoLastMove={gameData.gameSettings.canMove ? handleUndoLastMove : undefined}
+            leadingPrimaryControls={countryGuideLeadingControl}
           />
           {view === 'Game' && <GameStatus gameData={gameData} handleSubmitGuess={handleSubmitGuess} />}
 
@@ -427,6 +443,7 @@ const Streetview: FC<Props> = ({
           <button className="toggle-map-button" onClick={() => setMobileMapOpen(true)}>
             <MapIcon />
           </button>
+
         </div>
       </StyledStreetView>
 

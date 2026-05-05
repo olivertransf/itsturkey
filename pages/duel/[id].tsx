@@ -204,6 +204,8 @@ const DuelRoomPage: PageType = () => {
                     hostMaxHp={payload.startingHpHost}
                     guestMaxHp={payload.startingHpGuest}
                     viewerRole={you}
+                    sessionMapId={payload.mapId}
+                    plonkMapLabel={payload.mapDetails?.name}
                   />
                 </div>
               )}

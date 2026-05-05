@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import { FC, useEffect } from 'react'
+import { FC, useEffect, useMemo } from 'react'
 import Game from '@backend/models/game'
 import { useAppDispatch } from '@redux/hook'
 import { updateStartTime } from '@redux/slices'
@@ -8,6 +8,8 @@ import countries from '@utils/constants/countries'
 import { KEY_CODES } from '@utils/constants/keyCodes'
 import { StyledStreakContinueCard } from './'
 import { getRealCountryCode } from '@utils/helpers/getRealCountryCode'
+import { PlonkitGuideLauncher } from '@components/PlonkitCountryGuide'
+import { lastCompletedRoundLocation, resolvePlonkitGuideCountryIso } from '@utils/helpers/resolvePlonkitGuideCountryIso'
 
 type Props = {
   gameData: Game
@@ -17,6 +19,11 @@ type Props = {
 
 const StreakContinueCard: FC<Props> = ({ gameData, view, setView }) => {
   const dispatch = useAppDispatch()
+
+  const plonkIso = useMemo(() => {
+    const loc = lastCompletedRoundLocation(gameData)
+    return resolvePlonkitGuideCountryIso(gameData.mapId, loc)
+  }, [gameData.mapId, gameData.rounds, gameData.guesses])
 
   useEffect(() => {
     if (view !== 'Result') return
@@ -71,6 +78,12 @@ const StreakContinueCard: FC<Props> = ({ gameData, view, setView }) => {
         <p className="streak-count">
           {`Your streak is now at ${gameData.streak} ${gameData.streak === 1 ? 'country' : 'countries'}`}.
         </p>
+
+        {plonkIso ? (
+          <div style={{ marginTop: 14 }}>
+            <PlonkitGuideLauncher variant="compact" countryIso={plonkIso} mapLabel={gameData.mapDetails?.name} />
+          </div>
+        ) : null}
       </div>
 
       <div className="actionButton">

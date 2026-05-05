@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 
 /**
- * ObjectIds of GeoHub maps whose locations power **Equitable Country Streak**.
+ * ObjectIds of GeoHub maps whose locations power **Equitable World** (country streak pool).
  * Override with `EQUITABLE_COUNTRY_STREAK_MAP_IDS` (comma-separated hex ids).
  * If unset, ids are taken from `NEXT_PUBLIC_HOME_MAP_CARDS` entries named `Equitable World*`.
  */

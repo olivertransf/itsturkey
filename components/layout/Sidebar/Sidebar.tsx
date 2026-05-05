@@ -69,7 +69,7 @@ const Sidebar: FC = () => {
 
             <Item text="Country Streaks" icon={<LightningBoltIcon />} route="/streaks" />
 
-            <Item text="Equitable Streak" icon={<GlobeAltIcon />} route="/equitable-streaks" />
+            <Item text="Equitable World" icon={<GlobeAltIcon />} route="/equitable-streaks" />
 
             <Item text="Daily Challenge" icon={<LocationMarkerIcon />} route="/daily-challenge" />
           </div>

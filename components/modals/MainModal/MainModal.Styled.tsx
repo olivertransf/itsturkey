@@ -46,6 +46,15 @@ const StyledMainModal = styled.div<StyledProps>`
     display: flex;
     justify-content: flex-end;
     gap: 12px;
+    flex-shrink: 0;
+    background-color: #1a1a1a;
+  }
+
+  .modal-below-footer {
+    border-top: 1px solid #222;
+    padding: 0;
+    background-color: #121212;
+    flex-shrink: 0;
   }
 `
 

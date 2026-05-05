@@ -2,7 +2,7 @@ import { EQUITABLE_COUNTRY_STREAK_ID } from '@utils/constants/random'
 
 /**
  * Duels sample rounds from the equitable-world GeoHub map union (~125k locations),
- * same pool as Equitable Country Streak. The lobby map still drives scoring (`mapScoreFactor`) and UI metadata.
+ * same pool as the Equitable World streak map. The lobby map still drives scoring (`mapScoreFactor`) and UI metadata.
  */
 export const DUEL_ROUND_LOCATION_POOL_ID = EQUITABLE_COUNTRY_STREAK_ID
 

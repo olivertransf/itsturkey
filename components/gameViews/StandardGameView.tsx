@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import { FC, useMemo } from 'react'
 import Game from '@backend/models/game'
 import { StandardFinalResults, StandardResults } from '@components/resultCards'
 import { ResultMap } from '@components/ResultMap'
@@ -8,6 +8,7 @@ import { ChevronLeftIcon } from '@heroicons/react/outline'
 import { GameViewType, MapType } from '@types'
 import { DEFAULT_TOTAL_ROUNDS } from '@utils/constants/gameModes'
 import { mailman, showToast } from '@utils/helpers'
+import { lastCompletedRoundLocation, resolvePlonkitGuideCountryIso } from '@utils/helpers/resolvePlonkitGuideCountryIso'
 import { StyledGameView } from './'
 
 type Props = {
@@ -21,6 +22,11 @@ const RESULT_VIEWS = ['Result', 'FinalResults', 'Leaderboard']
 
 const StandardGameView: FC<Props> = ({ gameData, setGameData, view, setView }) => {
   const totalRounds = gameData.totalRounds ?? gameData.rounds?.length ?? DEFAULT_TOTAL_ROUNDS
+
+  const plonkLastRoundIso = useMemo(() => {
+    const loc = lastCompletedRoundLocation(gameData)
+    return resolvePlonkitGuideCountryIso(gameData.mapId, loc)
+  }, [gameData.mapId, gameData.rounds, gameData.guesses])
 
   const handleEndUnlimitedSession = async () => {
     const res = await mailman(`games/${gameData._id}`, 'PUT', JSON.stringify({ endGame: true }))
@@ -64,11 +70,20 @@ const StandardGameView: FC<Props> = ({ gameData, setGameData, view, setView }) =
               }
               view={view}
               setView={setView}
+              plonkitCountryIso={plonkLastRoundIso}
+              plonkitMapLabel={gameData.mapDetails?.name}
             />
           )}
 
           {view === 'FinalResults' && (
-            <StandardFinalResults gameData={gameData} setGameData={setGameData} view={view} setView={setView} />
+            <StandardFinalResults
+              gameData={gameData}
+              setGameData={setGameData}
+              view={view}
+              setView={setView}
+              plonkitCountryIso={plonkLastRoundIso}
+              plonkitMapLabel={gameData.mapDetails?.name}
+            />
           )}
 
           {view === 'Leaderboard' && (

@@ -15,8 +15,11 @@ import type { DuelRoundResultClient, DuelViewerRole } from './duelApiTypes'
 import type { GuessType, LocationType } from '@types'
 import { DUEL_DEFAULT_HP } from '@backend/utils/duelConstants'
 import { RESULT_MAP_OPTIONS } from '@utils/constants/googleMapOptions'
+import { EQUITABLE_COUNTRY_STREAK_ID } from '@utils/constants/random'
 import createMapPolyline from '@utils/helpers/createMapPolyline'
 import { formatDistance } from '@utils/helpers'
+import { PlonkitGuideLauncher } from '@components/PlonkitCountryGuide'
+import { resolvePlonkitGuideCountryIso } from '@utils/helpers/resolvePlonkitGuideCountryIso'
 import { getMapsKey, googleMapLoaderAsync } from '@utils/helpers'
 import styled, { css, keyframes } from 'styled-components'
 import StyledResultMap from '@components/ResultMap/ResultMap.Styled'
@@ -280,6 +283,9 @@ type Props = {
   hostMaxHp?: number
   guestMaxHp?: number
   viewerRole?: DuelViewerRole
+  /** Lobby virtual map id (e.g. equitable-country-streak). */
+  sessionMapId?: string
+  plonkMapLabel?: string
   onContinue?: () => void
 }
 
@@ -292,6 +298,8 @@ const DuelRoundOverview: FC<Props> = ({
   hostMaxHp,
   guestMaxHp,
   viewerRole,
+  sessionMapId,
+  plonkMapLabel,
   onContinue,
 }) => {
   const user = useAppSelector((state) => state.user)
@@ -424,6 +432,9 @@ const DuelRoundOverview: FC<Props> = ({
   const hostYou = viewerRole === 'host'
   const guestYou = viewerRole === 'guest'
 
+  const guideMapKey = sessionMapId?.trim() ? sessionMapId : EQUITABLE_COUNTRY_STREAK_ID
+  const plonkIso = resolvePlonkitGuideCountryIso(guideMapKey, actual)
+
   return (
     <OverlayRoot $fullscreen={variant === 'fullscreen'}>
       <RoundTag>
@@ -435,6 +446,10 @@ const DuelRoundOverview: FC<Props> = ({
         {result.winner === 'tie' ? <SwitchHorizontalIcon /> : <LightningBoltIcon />}
         {winnerLabel}
       </WinnerBanner>
+
+      {plonkIso ? (
+        <PlonkitGuideLauncher variant="compact" countryIso={plonkIso} mapLabel={plonkMapLabel} />
+      ) : null}
 
       <BattleRow>
         <FighterCard

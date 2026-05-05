@@ -21,7 +21,7 @@ const MobileNav: FC = () => {
 
       <Item text="Country Streaks" icon={<LightningBoltIcon />} route="/streaks" />
 
-      <Item text="Eq. Streak" icon={<GlobeAltIcon />} route="/equitable-streaks" />
+      <Item text="Equitable World" icon={<GlobeAltIcon />} route="/equitable-streaks" />
 
       <Item text="Daily Challenge" icon={<LocationMarkerIcon />} route="/daily-challenge" />
     </StyledMobileNav>

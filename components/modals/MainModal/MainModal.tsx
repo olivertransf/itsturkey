@@ -8,6 +8,8 @@ type Props = {
   actionButtonText?: string
   cancelButtonText?: string
   children: ReactNode
+  /** Rendered below Cancel / primary actions (e.g. reference content after Start). */
+  belowFooter?: ReactNode
   isOpen: boolean
   onClose: () => void
   onAction: () => void
@@ -21,6 +23,7 @@ const MainModal: FC<Props> = ({
   actionButtonText,
   cancelButtonText,
   children,
+  belowFooter,
   isOpen,
   onClose,
   onAction,
@@ -48,6 +51,8 @@ const MainModal: FC<Props> = ({
             {actionButtonText || 'Confirm'}
           </Button>
         </div>
+
+        {belowFooter ? <div className="modal-below-footer">{belowFooter}</div> : null}
       </StyledMainModal>
     </Modal>
   )

@@ -16,13 +16,13 @@ export const COUNTRY_STREAK_DETAILS = {
 
 export const EQUITABLE_COUNTRY_STREAK_DETAILS = {
   _id: EQUITABLE_COUNTRY_STREAK_ID,
-  name: 'Equitable Country Streak',
-  description: 'Country streak on Equitable World coverage only — guess the country from Street View.',
+  name: 'Equitable World',
+  description: 'Country streak — rounds use only locations from the Equitable World map pool.',
   previewImg: 'custom-map.svg',
   creator: 'GeoHub',
 }
 
-/** Hub route for Country Streak (equitable sampling). */
+/** Hub route for Equitable World country streak. */
 export function getStreakLobbyPath(): '/equitable-streaks' {
   return '/equitable-streaks'
 }
