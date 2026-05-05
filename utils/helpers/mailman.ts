@@ -1,8 +1,9 @@
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- API responses are heterogeneous (arrays, envelopes, primitives)
 const mailman = async (
   endpoint: string,
   method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' = 'GET',
   body?: BodyInit
-) => {
+): Promise<any> => {
   const fetchConfig = {
     method,
     headers: {
@@ -16,19 +17,37 @@ const mailman = async (
     const serverUrl = `/api/${endpoint}`
 
     const responseRaw = await fetch(serverUrl, fetchConfig)
-    const response = await responseRaw.json()
+    const rawText = await responseRaw.text()
 
-    // If response is not defined (likely a DB connection issue) -> return a 500 error
-    if (!response) {
+    let parsed: unknown = null
+    const trimmed = rawText.trim()
+    if (trimmed) {
+      try {
+        parsed = JSON.parse(trimmed) as unknown
+      } catch {
+        console.log(`mailman JSON parse failed for ${endpoint}`)
+        return {
+          error: {
+            message: 'Invalid server response',
+            code: responseRaw.status || 500,
+          },
+        }
+      }
+    }
+
+    if (!responseRaw.ok) {
+      if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return parsed
+      }
       return {
         error: {
-          message: 'There was a problem connecting to the server, please try again later',
-          code: 500,
+          message: responseRaw.statusText || 'Request failed',
+          code: responseRaw.status,
         },
       }
     }
 
-    return response
+    return parsed as any
   } catch (err) {
     console.log(`ERR FROM CATCH: ${err}}`)
     return null

@@ -1,3 +1,4 @@
+import { useSession } from 'next-auth/react'
 import { FC } from 'react'
 import { Item } from '@components/layout'
 import {
@@ -7,13 +8,19 @@ import {
   LightningBoltIcon,
   LocationMarkerIcon,
   MapIcon,
+  UserCircleIcon,
+  ViewGridIcon,
 } from '@heroicons/react/outline'
 import { StyledMobileNav } from './'
 
 const MobileNav: FC = () => {
+  const { data: session } = useSession()
+
   return (
     <StyledMobileNav>
       <Item text="Home" icon={<HomeIcon />} route="/" />
+
+      <Item text="Find Maps" icon={<ViewGridIcon />} route="/maps" />
 
       <Item text="My Maps" icon={<MapIcon />} route="/my-maps" />
 
@@ -24,6 +31,12 @@ const MobileNav: FC = () => {
       <Item text="Equitable World" icon={<GlobeAltIcon />} route="/equitable-streaks" />
 
       <Item text="Daily Challenge" icon={<LocationMarkerIcon />} route="/daily-challenge" />
+
+      {session?.user?.id ? (
+        <Item text="Profile" icon={<UserCircleIcon />} route={`/user/${session.user.id}`} />
+      ) : (
+        <Item text="Log In" icon={<UserCircleIcon />} route="/login" />
+      )}
     </StyledMobileNav>
   )
 }

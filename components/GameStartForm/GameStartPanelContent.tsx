@@ -1,5 +1,5 @@
 import { FC, useMemo } from 'react'
-import { PlonkitCountryGuideInline } from '@components/PlonkitCountryGuide'
+import { PlonkitGuideLauncher } from '@components/PlonkitCountryGuide'
 import { MapPickerGrid } from '@components/MapPickerGrid'
 import { Avatar, Checkbox, Slider, ToggleSwitch } from '@components/system'
 import { TextWithLinks } from '@components/TextWithLinks'
@@ -293,7 +293,7 @@ const GameStartPanelContent: FC<Props> = ({
             </section>
 
             {!hideCountryTips && equitableCountryIso && gameMode !== 'streak' && !showChallengeView ? (
-              <PlonkitCountryGuideInline isoCode={equitableCountryIso} mapLabel={mapDetails.name} variant="default" />
+              <PlonkitGuideLauncher variant="compact" countryIso={equitableCountryIso} mapLabel={mapDetails.name} />
             ) : null}
           </>
         )}

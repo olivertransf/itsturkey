@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
 import { CountItem } from '@components/Admin/Analytics/CountItem'
@@ -20,7 +21,7 @@ import StyledProfilePage from '@styles/ProfilePage.Styled'
 import { SITE_NAME } from '@utils/constants/site'
 import { MapType, UserGameHistoryType } from '@types'
 import { USER_AVATAR_PATH } from '@utils/constants/random'
-import { mailman, showToast } from '@utils/helpers'
+import { formatLargeNumber, formatRoundTime, mailman, showToast } from '@utils/helpers'
 
 import type { NextPage } from 'next'
 type NewProfileValuesType = {
@@ -33,6 +34,15 @@ type UserStatsType = { label: string; data: number }[]
 type ProfileTabsType = 'stats' | 'games' | 'maps'
 type UserGamesPaginationType = { page: number; hasMore: boolean }
 
+type PersonalBestRow = {
+  leaderboardKey: string
+  label: string
+  totalPoints: number
+  totalTime: number
+  gameId: string
+  mapPageId: string
+}
+
 const ProfilePage: NextPage = () => {
   const [userDetails, setUserDetails] = useState<any>()
   const [userStats, setUserStats] = useState<UserStatsType>()
@@ -44,6 +54,7 @@ const ProfilePage: NextPage = () => {
   const [isEditing, setIsEditing] = useState(false)
   const [loading, setLoading] = useState(true)
   const [avatarModalOpen, setAvatarModalOpen] = useState(false)
+  const [personalBests, setPersonalBests] = useState<PersonalBestRow[]>([])
 
   const user = useAppSelector((state) => state.user)
   const router = useRouter()
@@ -57,6 +68,19 @@ const ProfilePage: NextPage = () => {
     }
 
     getUserDetails()
+  }, [userId])
+
+  useEffect(() => {
+    if (!userId) {
+      return
+    }
+
+    ;(async () => {
+      const res = await mailman(`scores/user/${userId}/bests`)
+      if (Array.isArray(res)) {
+        setPersonalBests(res as PersonalBestRow[])
+      }
+    })()
   }, [userId])
 
   useEffect(() => {
@@ -278,11 +302,34 @@ const ProfilePage: NextPage = () => {
             </div>
 
             {selectedTab === 'stats' && userStats && (
-              <div className="user-stats">
-                {userStats.map((statItem) => (
-                  <CountItem key={statItem.label} title={statItem.label} count={statItem.data} />
-                ))}
-              </div>
+              <>
+                <div className="user-stats">
+                  {userStats.map((statItem) => (
+                    <CountItem key={statItem.label} title={statItem.label} count={statItem.data} />
+                  ))}
+                </div>
+
+                {personalBests.length > 0 && (
+                  <div className="personal-bests">
+                    <h3 className="personal-bests-title">Personal bests (standard)</h3>
+                    <ul className="personal-bests-list">
+                      {personalBests.map((row) => (
+                        <li key={row.leaderboardKey} className="personal-best-row">
+                          <Link href={`/map/${encodeURIComponent(row.mapPageId)}`}>
+                            <a>{row.label}</a>
+                          </Link>
+                          <span className="personal-best-meta">
+                            {`${formatLargeNumber(row.totalPoints)} pts · ${formatRoundTime(row.totalTime)} · `}
+                            <Link href={`/results/${row.gameId}`}>
+                              <a className="personal-best-results">Results</a>
+                            </Link>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </>
             )}
 
             {selectedTab === 'games' && (

@@ -18,18 +18,29 @@ import { DEFAULT_TOTAL_ROUNDS } from '@utils/constants/gameModes'
 import { getRealCountryCode } from '@utils/helpers/getRealCountryCode'
 
 const triggerScoresUpdate = async (req: NextApiRequest, game: Game) => {
+  const secret = process.env.INTERNAL_API_SECRET
+  if (!secret) {
+    console.error('[triggerScoresUpdate] INTERNAL_API_SECRET is unset; leaderboard will not refresh')
+    return
+  }
+
   const host = req.headers.host
   const protocol = req.headers['x-forwarded-proto'] || 'http'
   const baseUrl = `${protocol}://${host}`
 
-  await fetch(`${baseUrl}/api/scores/update`, {
+  const scoresRes = await fetch(`${baseUrl}/api/scores/update`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      authorization: process.env.INTERNAL_API_SECRET ?? '',
+      authorization: secret,
     },
     body: JSON.stringify({ game }),
   })
+
+  if (!scoresRes.ok) {
+    const body = await scoresRes.text().catch(() => '')
+    console.error(`[triggerScoresUpdate] /api/scores/update ${scoresRes.status}: ${body.slice(0, 500)}`)
+  }
 }
 
 const updateGame = async (req: NextApiRequest, res: NextApiResponse) => {

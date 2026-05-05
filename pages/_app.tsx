@@ -7,6 +7,7 @@ import { PersistGate } from 'redux-persist/integration/react'
 import { ThemeProvider } from 'styled-components'
 import { Layout } from '@components/layout'
 import { Meta } from '@components/Meta'
+import SessionSync from '@components/SessionSync'
 import { persistor, store } from '@redux/store'
 import { PageType } from '@types'
 import { theme } from '@utils/theme'
@@ -26,6 +27,7 @@ const App = ({ Component, pageProps }: AppPropsWithLayout) => {
         <RedudxProvider store={store}>
           <PersistGate persistor={persistor}>
             <ThemeProvider theme={theme}>
+              <SessionSync />
               {getLayout(<Component {...pageProps} />)}
 
               <Toaster

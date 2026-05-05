@@ -1,6 +1,6 @@
 import { FC, useMemo } from 'react'
 import { Button } from '@components/system'
-import { PlonkitCountryGuideInline } from '@components/PlonkitCountryGuide'
+import { PlonkitGuideLauncher } from '@components/PlonkitCountryGuide'
 import GameStartPanelContent from './GameStartPanelContent'
 import { useGameStartFlow } from './useGameStartFlow'
 import { StyledMapPlayInline } from './MapPlayInline.Styled'
@@ -22,9 +22,14 @@ const MapPlayInline: FC<Props> = ({ mapDetails, gameMode }) => {
     [mapDetails._id]
   )
 
-  const countryTipsBelowActions =
+  const countryTipsRow =
     equitableCountryIso && gameMode !== 'streak' && !panelState.showChallengeView ? (
-      <PlonkitCountryGuideInline isoCode={equitableCountryIso} mapLabel={mapDetails.name} variant="settings" />
+      <PlonkitGuideLauncher
+        variant="compact"
+        countryIso={equitableCountryIso}
+        mapLabel={mapDetails.name}
+        compactAlign="start"
+      />
     ) : null
 
   return (
@@ -32,28 +37,29 @@ const MapPlayInline: FC<Props> = ({ mapDetails, gameMode }) => {
       <GameStartPanelContent
         {...panelState}
         hideMapSummary
-        hideCountryTips={Boolean(countryTipsBelowActions)}
+        hideCountryTips={Boolean(countryTipsRow)}
         className="map-play-inline-inner"
       />
 
       <div className="map-play-actions">
-        {panelState.showChallengeView ? (
-          <>
-            <Button variant="solidGray" size="md" onClick={cancelAction}>
-              {footerMeta.cancelLabel}
-            </Button>
+        <div className="map-play-actions-lead">{countryTipsRow}</div>
+        <div className="map-play-actions-buttons">
+          {panelState.showChallengeView ? (
+            <>
+              <Button variant="solidGray" size="md" onClick={cancelAction}>
+                {footerMeta.cancelLabel}
+              </Button>
+              <Button size="md" onClick={() => void primaryAction()} isLoading={isSubmitting}>
+                {footerMeta.actionLabel}
+              </Button>
+            </>
+          ) : (
             <Button size="md" onClick={() => void primaryAction()} isLoading={isSubmitting}>
               {footerMeta.actionLabel}
             </Button>
-          </>
-        ) : (
-          <Button size="md" onClick={() => void primaryAction()} isLoading={isSubmitting}>
-            {footerMeta.actionLabel}
-          </Button>
-        )}
+          )}
+        </div>
       </div>
-
-      {countryTipsBelowActions}
     </StyledMapPlayInline>
   )
 }

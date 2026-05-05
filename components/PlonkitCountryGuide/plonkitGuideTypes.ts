@@ -5,8 +5,6 @@ export type PlonkitGuideAttribution = {
   guideUrl: string
 }
 
-export type PlonkitInlineVariant = 'default' | 'settings'
-
 export type PlonkitGuidePayload = {
   attribution: PlonkitGuideAttribution
   meta: { title: string; slug: string; code: string }

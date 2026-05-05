@@ -10,9 +10,17 @@ type Props = {
   onClose: () => void
   isoCode: string | null
   mapLabel?: string
+  /** Full viewport panel (e.g. game settings modal); drawer is default side sheet. */
+  presentation?: 'drawer' | 'fullscreen'
 }
 
-const PlonkitCountryGuideOverlay: FC<Props> = ({ open, onClose, isoCode, mapLabel }) => {
+const PlonkitCountryGuideOverlay: FC<Props> = ({
+  open,
+  onClose,
+  isoCode,
+  mapLabel,
+  presentation = 'drawer',
+}) => {
   const { loading, error, payload } = usePlonkitGuide(isoCode, Boolean(open && isoCode))
 
   useEffect(() => {
@@ -39,8 +47,12 @@ const PlonkitCountryGuideOverlay: FC<Props> = ({ open, onClose, isoCode, mapLabe
 
   return createPortal(
     <>
-      <StyledPlonkitBackdrop role="presentation" onClick={onClose} />
-      <StyledPlonkitPanel aria-label="Plonk It country guide">
+      <StyledPlonkitBackdrop
+        role="presentation"
+        onClick={onClose}
+        $elevated={presentation === 'fullscreen'}
+      />
+      <StyledPlonkitPanel aria-label="Plonk It country guide" $presentation={presentation}>
         <header className="plonkit-panel-header">
           <div className="plonkit-panel-header-text">
             <h2>{headline}</h2>

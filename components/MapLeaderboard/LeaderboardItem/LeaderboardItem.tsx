@@ -38,6 +38,10 @@ const LeaderboardItem: FC<Props> = ({ finishPlace, row, removeResults }) => {
           )}
 
           <FlexGroup gap={5}>
+            {'playedAt' in row && row.playedAt && (
+              <span className="playedAt">{new Date(row.playedAt).toLocaleString()}</span>
+            )}
+
             {row.totalTime && <span className="totalTime">{formatRoundTime(row.totalTime)}</span>}
 
             {!removeResults && (

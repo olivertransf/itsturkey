@@ -8,6 +8,8 @@ type Props = {
   actionButtonText?: string
   cancelButtonText?: string
   children: ReactNode
+  /** Rendered between title and close control (e.g. country tips). */
+  headerAccessory?: ReactNode
   /** Rendered below Cancel / primary actions (e.g. reference content after Start). */
   belowFooter?: ReactNode
   isOpen: boolean
@@ -23,6 +25,7 @@ const MainModal: FC<Props> = ({
   actionButtonText,
   cancelButtonText,
   children,
+  headerAccessory,
   belowFooter,
   isOpen,
   onClose,
@@ -36,9 +39,12 @@ const MainModal: FC<Props> = ({
       <StyledMainModal>
         <div className="modal-header">
           <h1 className="modal-title">{title}</h1>
-          <button className="close-button" onClick={onClose}>
-            <XIcon />
-          </button>
+          <div className="modal-header-trailing">
+            {headerAccessory}
+            <button type="button" className="close-button" onClick={onClose} aria-label="Close">
+              <XIcon />
+            </button>
+          </div>
         </div>
         <div className="modal-body">{children}</div>
 

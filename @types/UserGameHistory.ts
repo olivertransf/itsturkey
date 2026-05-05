@@ -6,6 +6,7 @@ type UserGameHistory = {
   gameId: string
   totalPoints: number
   totalTime: number
+  playedAt?: string
 }
 
 export default UserGameHistory

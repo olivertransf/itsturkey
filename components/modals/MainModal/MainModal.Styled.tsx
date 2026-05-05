@@ -8,12 +8,22 @@ const StyledMainModal = styled.div<StyledProps>`
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
     border-bottom: 1px solid #222;
     background-color: #1d1d1d;
 
     .modal-title {
       font-size: 16px;
       font-weight: 400;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .modal-header-trailing {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
     }
 
     .close-button {
@@ -52,7 +62,7 @@ const StyledMainModal = styled.div<StyledProps>`
 
   .modal-below-footer {
     border-top: 1px solid #222;
-    padding: 0;
+    padding: 12px 16px 18px;
     background-color: #121212;
     flex-shrink: 0;
   }

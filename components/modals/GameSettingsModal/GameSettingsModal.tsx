@@ -1,7 +1,7 @@
 import { FC, useMemo } from 'react'
 import { GameStartPanelContent, useGameStartFlow } from '@components/GameStartForm'
 import type { PlayMode } from '@components/GameStartForm'
-import { PlonkitCountryGuideInline } from '@components/PlonkitCountryGuide'
+import { PlonkitGuideLauncher } from '@components/PlonkitCountryGuide'
 import { GameType, MapType } from '@types'
 import { parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
 import { MainModal } from '../MainModal'
@@ -38,9 +38,19 @@ const GameSettingsModal: FC<Props> = ({
     [mapDetails._id]
   )
 
-  const countryTipsBelowFooter =
-    equitableCountryIso && gameMode !== 'streak' && !panelState.showChallengeView ? (
-      <PlonkitCountryGuideInline isoCode={equitableCountryIso} mapLabel={mapDetails.name} variant="settings" />
+  const showCountryTips =
+    Boolean(equitableCountryIso && gameMode !== 'streak' && !panelState.showChallengeView)
+
+  const countryTipsHeader =
+    showCountryTips && equitableCountryIso ? (
+      <PlonkitGuideLauncher
+        variant="compact"
+        countryIso={equitableCountryIso}
+        mapLabel={mapDetails.name}
+        presentation="fullscreen"
+        compactShowLabel={false}
+        compactShrinkWrap
+      />
     ) : null
 
   return (
@@ -53,9 +63,9 @@ const GameSettingsModal: FC<Props> = ({
       onCancel={cancelAction}
       onAction={() => void primaryAction()}
       isSubmitting={isSubmitting}
-      belowFooter={countryTipsBelowFooter}
+      headerAccessory={countryTipsHeader}
     >
-      <GameStartPanelContent {...panelState} hideCountryTips={Boolean(countryTipsBelowFooter)} />
+      <GameStartPanelContent {...panelState} hideCountryTips={showCountryTips} />
     </MainModal>
   )
 }

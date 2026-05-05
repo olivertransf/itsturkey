@@ -1,15 +1,16 @@
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 import { plonkitReadableGuideCss } from './plonkitGuideReadable.styles'
 
-export const StyledPlonkitBackdrop = styled.div`
+/** Above app Modal (z-index 50); fullscreen uses higher stack for settings modal. */
+export const StyledPlonkitBackdrop = styled.div<{ $elevated?: boolean }>`
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.55);
-  z-index: 40;
+  z-index: ${({ $elevated }) => ($elevated ? 119 : 59)};
   backdrop-filter: blur(2px);
 `
 
-export const StyledPlonkitPanel = styled.aside`
+export const StyledPlonkitPanel = styled.aside<{ $presentation?: 'drawer' | 'fullscreen' }>`
   ${plonkitReadableGuideCss}
 
   .plonkit-guide-body {
@@ -18,12 +19,29 @@ export const StyledPlonkitPanel = styled.aside`
   }
 
   position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: min(460px, 100vw);
-  max-width: 100%;
-  z-index: 41;
+  ${({ $presentation }) =>
+    $presentation === 'fullscreen'
+      ? css`
+          inset: 0;
+          left: 0;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          width: 100%;
+          max-width: none;
+          z-index: 120;
+          border-radius: 0;
+          box-shadow: none;
+        `
+      : css`
+          top: 0;
+          right: 0;
+          bottom: 0;
+          left: auto;
+          width: min(460px, 100vw);
+          max-width: 100%;
+          z-index: 61;
+        `}
   background: linear-gradient(180deg, #1e1730 0%, #171022 42%, #14101c 100%);
   color: #ebebf5;
   box-shadow: -12px 0 40px rgba(0, 0, 0, 0.45);
@@ -150,4 +168,24 @@ export const StyledPlonkitPanel = styled.aside`
     line-height: 1.5;
     color: #d4d4dc;
   }
+
+  ${({ $presentation }) =>
+    $presentation === 'fullscreen' &&
+    css`
+      .plonkit-scroll {
+        max-width: min(720px, 100%);
+        margin-inline: auto;
+        padding-left: clamp(16px, 4vw, 28px);
+        padding-right: clamp(16px, 4vw, 28px);
+      }
+
+      .plonkit-panel-header {
+        padding-left: clamp(16px, 4vw, 28px);
+        padding-right: clamp(16px, 4vw, 28px);
+      }
+
+      .plonkit-panel-header-text {
+        max-width: min(720px, 100%);
+      }
+    `}
 `

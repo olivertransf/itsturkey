@@ -107,6 +107,29 @@ const StyledMapPage = styled.div`
     border-top: 1px solid var(--divider-line);
   }
 
+  .mapLeaderboardSection {
+    margin-top: var(--stack-gap-md);
+  }
+
+  .mapLeaderboardGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--stack-gap-md);
+
+    @media (max-width: 900px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .mapLeaderboardPanel {
+    padding: var(--stack-gap-md) var(--page-gutter);
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    min-width: 0;
+  }
+
   .descriptionColumnWrapper {
     display: flex;
     flex-direction: column;

@@ -1,3 +1,4 @@
+import { useSession } from 'next-auth/react'
 import type { NextPage } from 'next'
 import Link from 'next/link'
 import { CountryStreakCard } from '@components/CountryStreakCard'
@@ -7,6 +8,7 @@ import { HomeWorldCard } from '@components/HomeWorldCard'
 import { Meta } from '@components/Meta'
 import { DuelGuessrCard } from '@components/DuelGuessrCard'
 import { MultiGuessrCard } from '@components/MultiGuessrCard'
+import { Avatar, Button } from '@components/system'
 import StyledHomePage from '@styles/HomePage.Styled'
 import type { MapType } from '@types'
 import { GEOHUB_UPSTREAM_REPO_URL, SITE_NAME } from '@utils/constants/site'
@@ -55,6 +57,7 @@ const getHomeMaps = (): Pick<MapType, '_id' | 'name' | 'description' | 'previewI
 }
 
 const Home: NextPage = () => {
+  const { data: session } = useSession()
   const homeMaps = getHomeMaps()
 
   return (
@@ -63,6 +66,34 @@ const Home: NextPage = () => {
 
       <div className="main-content">
         <div className="home-stack">
+          <div className="home-auth-row">
+            {session?.user?.id ? (
+              <Link href={`/user/${session.user.id}`}>
+                <a className="home-auth-profile">
+                  {session.user.name ? <span>{session.user.name}</span> : <span>Profile</span>}
+                  {session.user.avatar && (
+                    <Avatar type="user" src={session.user.avatar.emoji} backgroundColor={session.user.avatar.color} />
+                  )}
+                </a>
+              </Link>
+            ) : (
+              <>
+                <Link href="/login">
+                  <a>
+                    <Button variant="solidCustom" size="sm" backgroundColor="#3d3d3d" color="#fff" hoverColor="#444">
+                      Log In
+                    </Button>
+                  </a>
+                </Link>
+                <Link href="/register">
+                  <a>
+                    <Button size="sm">Sign Up</Button>
+                  </a>
+                </Link>
+              </>
+            )}
+          </div>
+
           <header className="home-hero">
             <h1 className="site-title">{SITE_NAME}</h1>
             <p className="site-tagline">

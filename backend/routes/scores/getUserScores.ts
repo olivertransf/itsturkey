@@ -1,6 +1,23 @@
 import { ObjectId } from 'mongodb'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { collections } from '@backend/utils'
+import countries from '@utils/constants/countries'
+import { CONTINENT_NAMES } from '@utils/constants/iso2ContinentSlug'
+import { parseEquitableContinentMapKey } from '@utils/helpers/equitableContinentMapId'
+import { parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
+
+function labelForNonDbMap(mapId: unknown): string {
+  const s = String(mapId ?? '')
+  const cc = parseEquitableCountryMapKey(s)
+  if (cc) {
+    return countries.find((c) => c.code === cc)?.name ?? s
+  }
+  const ct = parseEquitableContinentMapKey(s)
+  if (ct) {
+    return CONTINENT_NAMES[ct]
+  }
+  return s
+}
 
 const getUserScores = async (req: NextApiRequest, res: NextApiResponse) => {
   const userId = req.query.id as string
@@ -11,13 +28,16 @@ const getUserScores = async (req: NextApiRequest, res: NextApiResponse) => {
   const games = await collections.games
     ?.aggregate([
       { $match: query },
-      { $sort: { totalPoints: -1 } },
+      { $sort: { createdAt: -1 } },
       { $skip: page * gamesPerPage },
       { $limit: gamesPerPage + 1 },
       {
         $project: {
-          rounds: 0,
-          guesses: 0,
+          _id: 1,
+          mapId: 1,
+          totalPoints: 1,
+          totalTime: 1,
+          createdAt: 1,
         },
       },
       {
@@ -29,7 +49,18 @@ const getUserScores = async (req: NextApiRequest, res: NextApiResponse) => {
         },
       },
       {
-        $unwind: '$mapDetails',
+        $addFields: {
+          mapDetails: {
+            $cond: {
+              if: { $gt: [{ $size: '$mapDetails' }, 0] },
+              then: { $arrayElemAt: ['$mapDetails', 0] },
+              else: {
+                name: '',
+                previewImg: 'custom-map.svg',
+              },
+            },
+          },
+        },
       },
     ])
     .toArray()
@@ -41,10 +72,11 @@ const getUserScores = async (req: NextApiRequest, res: NextApiResponse) => {
   const data = games.slice(0, gamesPerPage).map((item) => ({
     _id: item._id,
     mapId: item.mapId,
-    mapName: item.mapDetails.name,
-    mapAvatar: item.mapDetails.previewImg,
+    mapName: item.mapDetails?.name?.trim() ? item.mapDetails.name : labelForNonDbMap(item.mapId),
+    mapAvatar: item.mapDetails?.previewImg ?? 'custom-map.svg',
     totalPoints: item.totalPoints,
     totalTime: item.totalTime,
+    playedAt: item.createdAt ? new Date(item.createdAt).toISOString() : undefined,
   }))
 
   // We set limit to gamesPerPage + 1 so we know if there is atleast 1 more game after this batch

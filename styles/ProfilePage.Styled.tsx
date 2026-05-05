@@ -191,6 +191,58 @@ const StyledProfilePage = styled.div<StyledProps>`
       }
     }
 
+    .personal-bests {
+      margin-top: 28px;
+
+      .personal-bests-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--color2);
+        margin-bottom: 12px;
+      }
+
+      .personal-bests-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .personal-best-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 8px 16px;
+        padding: 14px 16px;
+        border-radius: 12px;
+        background-color: #2a2a2a;
+        border: 1px solid #333;
+
+        a {
+          color: var(--color2);
+          font-weight: 500;
+
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+
+        .personal-best-meta {
+          font-size: 13px;
+          color: rgb(255, 255, 255, 0.55);
+        }
+
+        .personal-best-results {
+          font-size: 13px;
+          font-weight: 500;
+          color: rgb(255, 255, 255, 0.75);
+        }
+      }
+    }
+
     .user-maps {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));

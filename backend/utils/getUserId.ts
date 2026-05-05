@@ -1,12 +1,11 @@
-import { NextApiRequest, NextApiResponse } from 'next'
-import { getSession } from 'next-auth/react'
+import type { NextApiRequest, NextApiResponse } from 'next'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@utils/nextAuthOptions'
 
 const getUserId = async (req: NextApiRequest, res: NextApiResponse) => {
-  const session = await getSession({ req })
+  const session = await getServerSession(req, res, authOptions)
 
-  if (!session) return undefined
-
-  return session.user.id
+  return session?.user?.id
 }
 
 export default getUserId

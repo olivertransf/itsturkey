@@ -1,9 +1,10 @@
 import { ObjectId } from 'mongodb'
-import { TopScore } from '@backend/models'
+import type { TopScore } from '@backend/models'
 import { collections } from '@backend/utils'
 
-const topScoresStagesAfterMatch = (limit: number) => [
-  { $sort: { totalPoints: -1, totalTime: 1 } },
+/** Per user: worst game (lowest points; ties break on longer time). Then take the worst 5 players. */
+const lowestScoresStagesAfterMatch = (limit: number) => [
+  { $sort: { totalPoints: 1, totalTime: -1 } },
   {
     $group: {
       _id: '$userId',
@@ -12,7 +13,7 @@ const topScoresStagesAfterMatch = (limit: number) => [
       totalPoints: { $first: '$totalPoints' },
     },
   },
-  { $sort: { totalPoints: -1, totalTime: 1 } },
+  { $sort: { totalPoints: 1, totalTime: -1 } },
   { $limit: limit },
   {
     $project: {
@@ -25,19 +26,18 @@ const topScoresStagesAfterMatch = (limit: number) => [
   },
 ]
 
-const queryTopScores = async (query: Record<string, unknown>, limit: number) => {
+export const queryLowestScores = async (query: Record<string, unknown>, limit: number) => {
   const data = await collections.games
     ?.aggregate([
       { $match: { ...query, notForLeaderboard: { $ne: true } } },
-      ...topScoresStagesAfterMatch(limit),
+      ...lowestScoresStagesAfterMatch(limit),
     ])
     .toArray()
 
   return data as TopScore[] | undefined
 }
 
-/** Best single game per user across several hub world maps (combined leaderboard). */
-export async function queryTopScoresMultiMap(
+export async function queryLowestScoresMultiMap(
   mapIds: ObjectId[],
   limit: number,
   query: Record<string, unknown>
@@ -47,11 +47,9 @@ export async function queryTopScoresMultiMap(
   const data = await collections.games
     ?.aggregate([
       { $match: { ...query, mapId: { $in: mapIds }, notForLeaderboard: { $ne: true } } },
-      ...topScoresStagesAfterMatch(limit),
+      ...lowestScoresStagesAfterMatch(limit),
     ])
     .toArray()
 
   return data as TopScore[] | undefined
 }
-
-export default queryTopScores

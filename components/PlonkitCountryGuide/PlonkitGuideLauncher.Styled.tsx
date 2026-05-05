@@ -1,9 +1,14 @@
 import styled from 'styled-components'
 
-export const StyledCompactPlonkLauncher = styled.div`
+export const StyledCompactPlonkLauncher = styled.div<{
+  $align?: 'center' | 'start' | 'end'
+  $shrinkWrap?: boolean
+}>`
   display: flex;
-  justify-content: center;
-  width: 100%;
+  justify-content: ${({ $align }) =>
+    $align === 'end' ? 'flex-end' : $align === 'start' ? 'flex-start' : 'center'};
+  width: ${({ $shrinkWrap }) => ($shrinkWrap ? 'auto' : '100%')};
+  flex-shrink: 0;
 
   .plonk-inline-btn {
     display: inline-flex;
@@ -28,5 +33,10 @@ export const StyledCompactPlonkLauncher = styled.div`
       height: 18px;
       flex-shrink: 0;
     }
+  }
+
+  .plonk-inline-btn--icon-only {
+    padding: 10px;
+    border-radius: 12px;
   }
 `

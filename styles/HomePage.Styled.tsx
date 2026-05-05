@@ -33,6 +33,30 @@ const StyledHomePage = styled.div`
       gap: clamp(1.35rem, 3vw, 2rem);
     }
 
+    .home-auth-row {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    .home-auth-profile {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+    }
+
     .home-hero {
       display: flex;
       flex-direction: column;
