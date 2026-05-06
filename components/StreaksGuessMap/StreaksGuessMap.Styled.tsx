@@ -19,6 +19,41 @@ const StyledStreaksGuessMap = styled.div<StyledProps>`
     bottom: 20px;
     right: 20px;
     z-index: 3;
+    /* Match standard GuessMap width behavior */
+    width: min(
+      calc(${({ mapWidth }) => mapWidth}vmin * 1.18),
+      calc(100vw - 32px)
+    );
+    min-width: 0;
+    max-width: calc(100vw - 24px);
+
+    @media (max-width: 720px) and (min-width: 601px) {
+      width: min(
+        calc(${({ mapWidth }) => mapWidth}vmin * 1.7),
+        min(352px, calc(100vw - 24px))
+      );
+    }
+
+    @media (max-width: 780px) and (min-width: 721px) {
+      width: min(
+        calc(${({ mapWidth }) => mapWidth}vmin * 1.53),
+        min(344px, calc(100vw - 24px))
+      );
+    }
+
+    @media (max-width: 840px) and (min-width: 781px) {
+      width: min(
+        calc(${({ mapWidth }) => mapWidth}vmin * 1.36),
+        min(356px, calc(100vw - 26px))
+      );
+    }
+
+    @media (max-width: 900px) and (min-width: 841px) {
+      width: min(
+        calc(${({ mapWidth }) => mapWidth}vmin * 1.24),
+        min(368px, calc(100vw - 28px))
+      );
+    }
 
     @media (max-width: 600px) {
       display: flex;
@@ -40,15 +75,17 @@ const StyledStreaksGuessMap = styled.div<StyledProps>`
   }
 
   .map {
-    height: ${({ mapHeight }) => mapHeight}vh;
-    width: ${({ mapWidth }) => mapWidth}vw;
-    opacity: ${({ mapDimmed, mobileMapOpen }) => (mobileMapOpen || !mapDimmed ? 1 : 0.55)};
+    width: 100%;
+    height: auto;
+    aspect-ratio: ${({ mapWidth, mapHeight }) => `${mapWidth} / ${mapHeight}`};
+    opacity: ${({ mapDimmed, mobileMapOpen }) => (mobileMapOpen || !mapDimmed ? 1 : 0.63)};
     border-radius: 4px;
-    transition: opacity 0.15s ease, width 0.1s ease, height 0.1s ease;
+    transition: opacity 0.15s ease, width 0.15s ease;
     position: relative;
     margin-bottom: 10px;
 
     @media (max-width: 600px) {
+      aspect-ratio: unset;
       height: 100%;
       width: 100%;
       border-radius: 0;
@@ -86,7 +123,7 @@ const StyledStreaksGuessMap = styled.div<StyledProps>`
     padding: 6px;
     border-radius: 4px 4px 0 0;
 
-    @media (max-width: 600px) {
+    @media (max-width: 1100px) {
       display: none;
     }
   }

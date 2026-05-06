@@ -742,7 +742,6 @@ const DuelStreetSection = memo(
             view={view}
             setView={setView}
             isDuel
-            compactGuessMapIdle
             duelGuessSubmit={duelGuessSubmit}
             duelGuessLocked={youLocked}
             onGuessCoordinateChange={onGuessCoordinateChange}

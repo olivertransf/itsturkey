@@ -1,5 +1,4 @@
 import styled, { css, keyframes } from 'styled-components'
-import { GUESS_MAP_MAX_WIDTH_PX } from '@utils/helpers/getGuessMapSize'
 
 type StyledProps = {
   mapHeight: number
@@ -21,25 +20,39 @@ const StyledGuessMap = styled.div<StyledProps>`
     bottom: 20px;
     right: 20px;
     z-index: 3;
-    /* vmin + cap; extra width factor on small tablets so corner map starts smaller */
+    /* vmin sizing; no fixed wide-screen cap, only viewport edge clamp */
     width: min(
-      calc(${({ mapWidth }) => mapWidth}vmin * 0.9),
-      min(${GUESS_MAP_MAX_WIDTH_PX}px, calc(100vw - 32px))
+      calc(${({ mapWidth }) => mapWidth}vmin * 1.18),
+      calc(100vw - 32px)
     );
     min-width: 0;
     max-width: calc(100vw - 24px);
 
-    @media (max-width: 900px) and (min-width: 601px) {
+    @media (max-width: 720px) and (min-width: 601px) {
       width: min(
-        calc(${({ mapWidth }) => mapWidth}vmin * 0.74),
-        min(300px, calc(100vw - 28px))
+        calc(${({ mapWidth }) => mapWidth}vmin * 1.7),
+        min(352px, calc(100vw - 24px))
       );
     }
 
-    @media (max-width: 720px) and (min-width: 601px) {
+    @media (max-width: 780px) and (min-width: 721px) {
       width: min(
-        calc(${({ mapWidth }) => mapWidth}vmin * 0.62),
-        min(252px, calc(100vw - 24px))
+        calc(${({ mapWidth }) => mapWidth}vmin * 1.53),
+        min(344px, calc(100vw - 24px))
+      );
+    }
+
+    @media (max-width: 840px) and (min-width: 781px) {
+      width: min(
+        calc(${({ mapWidth }) => mapWidth}vmin * 1.36),
+        min(356px, calc(100vw - 26px))
+      );
+    }
+
+    @media (max-width: 900px) and (min-width: 841px) {
+      width: min(
+        calc(${({ mapWidth }) => mapWidth}vmin * 1.24),
+        min(368px, calc(100vw - 28px))
       );
     }
 

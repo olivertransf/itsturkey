@@ -40,7 +40,6 @@ type Props = {
   panoElementId?: string
   enableGlobalShortcuts?: boolean
   getGuessTime?: () => number
-  compactGuessMapIdle?: boolean
   /** Duel flow: no undo, no status card, larger guess map, minimal map chrome. */
   isDuel?: boolean
   duelGuessSubmit?: (payload: DuelGuessSubmitPayload) => Promise<void>
@@ -57,7 +56,6 @@ const Streetview: FC<Props> = ({
   panoElementId = 'streetview',
   enableGlobalShortcuts = true,
   getGuessTime,
-  compactGuessMapIdle,
   isDuel = false,
   duelGuessSubmit,
   duelGuessLocked = false,
@@ -436,7 +434,6 @@ const Streetview: FC<Props> = ({
               setGoogleMapsConfig={setGoogleMapsConfig}
               resetMap={view === 'Game'}
               gameData={gameData}
-              compactIdle={compactGuessMapIdle}
               duelLayout={isDuel}
               guessLocked={isDuel && duelGuessLocked}
             />

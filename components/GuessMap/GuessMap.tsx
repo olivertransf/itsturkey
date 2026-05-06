@@ -24,7 +24,6 @@ type Props = {
   setGoogleMapsConfig: (googleMapsConfig: GoogleMapsConfigType) => void
   resetMap?: boolean
   gameData: Game
-  compactIdle?: boolean
   /** Duel: full-size idle map, wider wrapper, text-only map controls. */
   duelLayout?: boolean
   /** Duel: after guess is locked server-side, block map interaction and submit. */
@@ -41,7 +40,6 @@ const GuessMap: FC<Props> = ({
   setGoogleMapsConfig,
   resetMap,
   gameData,
-  compactIdle,
   duelLayout = false,
   guessLocked = false,
 }) => {
@@ -58,7 +56,7 @@ const GuessMap: FC<Props> = ({
     handleMapLeave,
     changeMapSize,
     resetGuessMapDimensions,
-  } = useGuessMap({ idleScale: compactIdle ? (duelLayout ? 0.88 : 0.45) : 1 })
+  } = useGuessMap()
   const user = useAppSelector((state) => state.user)
 
   useEffect(() => {

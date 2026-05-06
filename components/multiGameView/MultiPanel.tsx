@@ -85,7 +85,6 @@ const MultiPanel: FC<Props> = ({ game, panelIndex, cooldownSeconds, onGameChange
             panoElementId={`streetview-${panelGame._id ?? panelIndex}`}
             enableGlobalShortcuts={false}
             getGuessTime={() => (new Date().getTime() - roundStartedAtRef.current) / 1000}
-            compactGuessMapIdle
           />
         )}
       </div>
