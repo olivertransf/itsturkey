@@ -11,7 +11,7 @@
 export const GUESS_MAP_VMIN_MULTIPLIER = 0.94
 
 /** Hard cap (px) on corner-map width; height follows via CSS aspect-ratio. */
-export const GUESS_MAP_MAX_WIDTH_PX = 700
+export const GUESS_MAP_MAX_WIDTH_PX = 800
 
 /** Hover/pin: scale idle width+height by this (same aspect ratio as uncovered). */
 export const GUESS_MAP_HOVER_UNIFORM_SCALE = 2.05
