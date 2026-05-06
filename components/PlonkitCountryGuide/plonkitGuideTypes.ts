@@ -8,5 +8,6 @@ export type PlonkitGuideAttribution = {
 export type PlonkitGuidePayload = {
   attribution: PlonkitGuideAttribution
   meta: { title: string; slug: string; code: string }
-  guide: unknown
+  /** Null when returned from `plonkit-guide?random=1&lightweight=1` (meta only). */
+  guide: unknown | null
 }

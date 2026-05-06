@@ -1,6 +1,16 @@
 import styled from 'styled-components'
 
 const StyledGameSettingsModal = styled.div`
+  &.lobby-game-settings-inner {
+    background: transparent;
+  }
+
+  &.lobby-game-settings-inner .mainContent {
+    padding: 0;
+    gap: var(--stack-gap-md);
+    background-color: transparent;
+  }
+
   &.map-play-inline-inner .mainContent {
     padding: var(--stack-gap-md) var(--page-gutter) var(--stack-gap-md);
     gap: var(--stack-gap-md);
@@ -12,7 +22,7 @@ const StyledGameSettingsModal = styled.div`
     display: flex;
     flex-direction: column;
     gap: 1.75rem;
-    background-color: #101010;
+    background-color: var(--bg-primary);
   }
 
   .mapPickerSection {
@@ -115,9 +125,9 @@ const StyledGameSettingsModal = styled.div`
   }
 
   .toggleItemWrapper.active {
-    background: linear-gradient(180deg, #6d54d6 0%, var(--mediumPurple) 100%);
+    background-color: var(--accent-primary);
     color: #fff;
-    box-shadow: 0 2px 8px rgba(67, 56, 202, 0.35);
+    box-shadow: 0 2px 8px rgba(47, 127, 255, 0.25);
 
     .toggleIcon {
       color: #fff;
@@ -126,6 +136,18 @@ const StyledGameSettingsModal = styled.div`
 
   .roundsSection {
     margin-top: 0;
+  }
+
+  .roundUnlimitedRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .roundUnlimitedLabel {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
   }
 
   .controlCard {
@@ -239,7 +261,8 @@ const StyledGameSettingsModal = styled.div`
     }
   }
 
-  .detailedSettings.controlCard > .roundTimeLabel {
+  .detailedSettings.controlCard > .roundTimeLabel,
+  .unifiedSettingsCard > .roundTimeLabel {
     justify-content: space-between;
     align-items: center;
     width: 100%;
@@ -265,6 +288,32 @@ const StyledGameSettingsModal = styled.div`
     flex-direction: column;
     gap: 14px;
     padding-top: 2px;
+  }
+
+  .gameSettingsUnified {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-top: 2px;
+  }
+
+  .unifiedSettingsCard .roundsSection {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 0;
+  }
+
+  .unifiedSettingsDivider {
+    height: 1px;
+    margin: 4px 0 2px;
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    flex-shrink: 0;
+  }
+
+  .unifiedSettingsCard > .sectionEyebrow {
+    margin-bottom: -4px;
   }
 
   .checkboxWrapper {

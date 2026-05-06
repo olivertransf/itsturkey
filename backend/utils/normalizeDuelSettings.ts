@@ -27,6 +27,8 @@ export const createDuelBodySchema = z.object({
   damageMultiplierHost: z.number().min(0.1).max(10).optional(),
   damageMultiplierGuest: z.number().min(0.1).max(10).optional(),
   useRoundRamp: z.boolean().optional(),
+  /** Shown as room creator when hosting without an account */
+  displayName: z.string().max(32).optional(),
 })
 
 export type NormalizedCreateDuelBody = {
@@ -42,6 +44,7 @@ export type NormalizedCreateDuelBody = {
   damageMultiplierHost: number
   damageMultiplierGuest: number
   useRoundRamp: boolean
+  displayName?: string
 }
 
 export const normalizeCreateDuelBody = (raw: unknown): { ok: true; value: NormalizedCreateDuelBody } | { ok: false; message: string } => {
@@ -76,6 +79,9 @@ export const normalizeCreateDuelBody = (raw: unknown): { ok: true; value: Normal
         damageMultiplierHost: data.damageMultiplierHost ?? 1,
         damageMultiplierGuest: data.damageMultiplierGuest ?? 1,
         useRoundRamp: data.useRoundRamp ?? true,
+        ...(data.displayName != null && data.displayName !== ''
+          ? { displayName: data.displayName }
+          : {}),
       },
     }
   }
@@ -94,6 +100,9 @@ export const normalizeCreateDuelBody = (raw: unknown): { ok: true; value: Normal
       damageMultiplierHost: data.damageMultiplierHost ?? 1,
       damageMultiplierGuest: data.damageMultiplierGuest ?? 1,
       useRoundRamp: data.useRoundRamp ?? true,
+      ...(data.displayName != null && data.displayName !== ''
+        ? { displayName: data.displayName }
+        : {}),
     },
   }
 }

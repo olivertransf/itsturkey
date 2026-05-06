@@ -42,7 +42,7 @@ export const StyledPlonkitPanel = styled.aside<{ $presentation?: 'drawer' | 'ful
           max-width: 100%;
           z-index: 61;
         `}
-  background: linear-gradient(180deg, #1e1730 0%, #171022 42%, #14101c 100%);
+  background-color: var(--bg-elevated);
   color: #ebebf5;
   box-shadow: -12px 0 40px rgba(0, 0, 0, 0.45);
   display: flex;

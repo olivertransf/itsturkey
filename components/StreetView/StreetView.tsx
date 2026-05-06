@@ -41,7 +41,11 @@ type Props = {
   enableGlobalShortcuts?: boolean
   getGuessTime?: () => number
   compactGuessMapIdle?: boolean
+  /** Duel flow: no undo, no status card, larger guess map, minimal map chrome. */
+  isDuel?: boolean
   duelGuessSubmit?: (payload: DuelGuessSubmitPayload) => Promise<void>
+  /** Duel: server has locked this viewer’s guess; block further submits and map edits. */
+  duelGuessLocked?: boolean
   onGuessCoordinateChange?: (loc: LocationType | null) => void
 }
 
@@ -54,7 +58,9 @@ const Streetview: FC<Props> = ({
   enableGlobalShortcuts = true,
   getGuessTime,
   compactGuessMapIdle,
+  isDuel = false,
   duelGuessSubmit,
+  duelGuessLocked = false,
   onGuessCoordinateChange,
 }) => {
   const router = useRouter()
@@ -251,6 +257,8 @@ const Streetview: FC<Props> = ({
   }
 
   const handleSubmitGuess = async (timedOut?: boolean) => {
+    if (duelGuessLocked) return
+
     if (currGuess || countryStreakGuess || timedOut) {
       if (!getGuessTime && !game.startTime) {
         return showToast('error', 'Something went wrong')
@@ -346,14 +354,14 @@ const Streetview: FC<Props> = ({
   }
 
   useEffect(() => {
-    if (view !== 'Game' || !enableGlobalShortcuts) return
+    if (view !== 'Game' || !enableGlobalShortcuts || isDuel) return
 
     document.addEventListener('keydown', handleUndoLastMoveKeys)
 
     return () => {
       document.removeEventListener('keydown', handleUndoLastMoveKeys)
     }
-  }, [view, enableGlobalShortcuts])
+  }, [view, enableGlobalShortcuts, isDuel])
 
   const handleSubmitGuessKeys = async (e: KeyboardEvent) => {
     const submitGuessKeys = [KEY_CODES.SPACE, KEY_CODES.SPACE_IE11, KEY_CODES.ENTER]
@@ -371,7 +379,7 @@ const Streetview: FC<Props> = ({
     return () => {
       document.removeEventListener('keydown', handleSubmitGuessKeys)
     }
-  }, [currGuess, countryStreakGuess, view, enableGlobalShortcuts])
+  }, [currGuess, countryStreakGuess, view, enableGlobalShortcuts, duelGuessLocked])
 
   const handleMovingArrowKeys = (e: KeyboardEvent) => {
     const movingArrowKeys = [
@@ -407,10 +415,15 @@ const Streetview: FC<Props> = ({
           <StreetViewControls
             handleBackToStart={handleBackToStart}
             handleExitGame={handleExitGame}
-            handleUndoLastMove={gameData.gameSettings.canMove ? handleUndoLastMove : undefined}
-            leadingPrimaryControls={countryGuideLeadingControl}
+            hideExit={isDuel}
+            hudPrimaryStyle={isDuel}
+            handleUndoLastMove={
+              !isDuel && gameData.gameSettings.canMove ? handleUndoLastMove : undefined
+            }
           />
-          {view === 'Game' && <GameStatus gameData={gameData} handleSubmitGuess={handleSubmitGuess} />}
+          {view === 'Game' && !isDuel && (
+            <GameStatus gameData={gameData} handleSubmitGuess={handleSubmitGuess} />
+          )}
 
           {gameData.mode === 'standard' && (
             <GuessMap
@@ -424,6 +437,8 @@ const Streetview: FC<Props> = ({
               resetMap={view === 'Game'}
               gameData={gameData}
               compactIdle={compactGuessMapIdle}
+              duelLayout={isDuel}
+              guessLocked={isDuel && duelGuessLocked}
             />
           )}
 
@@ -439,6 +454,8 @@ const Streetview: FC<Props> = ({
               resetMap={view === 'Game'}
             />
           )}
+
+          {countryGuideLeadingControl ? <div className="country-tip-corner">{countryGuideLeadingControl}</div> : null}
 
           <button className="toggle-map-button" onClick={() => setMobileMapOpen(true)}>
             <MapIcon />

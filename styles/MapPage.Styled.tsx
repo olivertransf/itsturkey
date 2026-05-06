@@ -97,6 +97,67 @@ const StyledMapPage = styled.div`
     }
   }
 
+  .mapPageHero {
+    position: relative;
+    min-height: 220px;
+    border-bottom: 1px solid var(--divider-line);
+  }
+
+  .mapPageHeroMedia {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    background-color: var(--bg-elevated);
+  }
+
+  .mapPageHeroMedia--placeholder {
+    background-image: none;
+    /* Match custom-map.svg stops without rendering the embedded title copy */
+    background: linear-gradient(135deg, #1d4ed8 0%, #0d9488 52%, #16a34a 100%);
+  }
+
+  .mapPageHeroScrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.78) 0%, rgba(0, 0, 0, 0.38) 42%, rgba(0, 0, 0, 0.18) 100%);
+    pointer-events: none;
+  }
+
+  .mapPageHeroInner {
+    position: relative;
+    z-index: 1;
+    min-height: 220px;
+    padding: var(--stack-gap-md) var(--page-gutter);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: var(--stack-gap-sm);
+  }
+
+  .mapPageHeroInner .page-back-toolbar {
+    align-self: flex-start;
+  }
+
+  .mapPageHeroInner .page-back-link {
+    color: rgba(255, 255, 255, 0.88);
+
+    &:hover {
+      color: #ffffff;
+    }
+  }
+
+  .mapPageHeroTitle {
+    margin: auto 0 0;
+    padding: 0;
+    font-size: clamp(1.35rem, 4vw, 1.75rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    color: #fafafa;
+    text-shadow: 0 1px 20px rgba(0, 0, 0, 0.55);
+  }
+
   .mapDescriptionWrapper {
     width: 100%;
   }

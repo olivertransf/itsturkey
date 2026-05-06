@@ -1,5 +1,11 @@
 import type { GameSettingsType, LocationType, MapType } from '@types'
 
+/** SVG key under `/images/userAvatars` + pin ring color; matches `User.avatar` shape. */
+export type DuelGuessAvatar = { emoji: string; color: string }
+
+/** Default marker when user is anonymous or API has no avatar (8-ball asset). */
+export const DUEL_GUESS_MARKER_FALLBACK: DuelGuessAvatar = { emoji: '1f3b1', color: '#94a3b8' }
+
 export type DuelViewerRole = 'host' | 'guest' | null
 
 export type DuelRoundResultClient = {
@@ -48,4 +54,6 @@ export type DuelClientPayload = {
   damageMultiplierGuest: number
   useRoundRamp: boolean
   rematchReady: { host: boolean; guest: boolean }
+  playerNames: { host: string; guest: string }
+  playerAvatars: { host: DuelGuessAvatar; guest: DuelGuessAvatar }
 }

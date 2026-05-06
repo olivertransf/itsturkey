@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450" role="img" aria-label="Map">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e3a5f"/>
+      <stop offset="55%" stop-color="#0f766e"/>
+      <stop offset="100%" stop-color="#14532d"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" rx="20" fill="url(#bg)"/>
+  <g opacity="0.22" fill="none" stroke="#e2e8f0" stroke-width="1.2">
+    <path d="M80 120 L720 120 M80 200 L720 200 M80 280 L720 280 M80 360 L720 360"/>
+    <path d="M140 60 L140 390 M260 60 L260 390 M380 60 L380 390 M500 60 L500 390 M620 60 L620 390"/>
+  </g>
+  <path fill="rgba(255,255,255,0.14)" stroke="rgba(255,255,255,0.35)" stroke-width="2"
+    d="M180 280c40-80 120-120 220-95 85 20 150 75 175 145 12 35 8 72-15 100-35 45-95 55-155 40-70-18-130-62-165-115-25-38-30-55-60-75z"/>
+  <circle cx="520" cy="175" r="14" fill="#fbbf24" stroke="#78350f" stroke-width="2"/>
+  <path fill="#fbbf24" stroke="#78350f" stroke-width="1.5" d="M520 155l8 22 22 2-17 14 6 22-19-12-19 12 6-22-17-14 22-2z"/>
+</svg>

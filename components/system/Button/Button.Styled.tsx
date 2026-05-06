@@ -17,7 +17,7 @@ const StyledButton = styled.button<StyledProps>`
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border-radius: 5px;
+  border-radius: var(--radius-md);
   height: ${({ height }) => height ?? '40px'};
   width: ${({ width }) => width ?? 'fit-content'};
   padding: 0 25px;
@@ -46,9 +46,9 @@ const StyledButton = styled.button<StyledProps>`
     size === 'sm' &&
     `
       height: 36px;
-      font-size: 16px;
-      border-radius: 3px;
-      padding: 0 12px;
+      font-size: 15px;
+      border-radius: var(--radius-sm);
+      padding: 0 14px;
   `}
 
   ${({ size }) =>
@@ -56,11 +56,27 @@ const StyledButton = styled.button<StyledProps>`
     `
       height: 38px;
       font-size: 15px;
-      padding: 0 16px;
+      padding: 0 18px;
 
       .button-content {
         position: relative;
         top: 1px;
+      }
+    `}
+
+  ${({ size }) =>
+    size === 'lg' &&
+    `
+      height: 48px;
+      min-height: 48px;
+      font-size: 16px;
+      font-weight: 600;
+      padding: 0 32px;
+      border-radius: 12px;
+
+      .button-content {
+        position: relative;
+        top: 0;
       }
     `}
 
@@ -72,7 +88,7 @@ const StyledButton = styled.button<StyledProps>`
       min-width: 60px;
 
       :hover {
-        background-color: var(--indigo-600);
+        background-color: var(--accent-primary-hover);
       }
     `}
 

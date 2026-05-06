@@ -12,9 +12,9 @@ const StyledNavbar = styled.div`
   //position: sticky;
   //top: 0;
   z-index: 20;
-  background-color: rgba(16, 16, 18, 0.82);
-  backdrop-filter: saturate(160%) blur(14px);
-  -webkit-backdrop-filter: saturate(160%) blur(14px);
+  background-color: rgba(16, 18, 20, 0.78);
+  backdrop-filter: saturate(140%) blur(16px);
+  -webkit-backdrop-filter: saturate(140%) blur(16px);
   border-bottom: 1px solid var(--border-subtle);
   flex-shrink: 0 !important;
 

@@ -4,11 +4,12 @@ import styled from 'styled-components'
 export const GamifiedCenterStage = styled.div`
   flex: 1;
   width: 100%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: clamp(16px, 4vw, 36px);
+  justify-content: safe center;
+  padding: var(--pad-card-sm) var(--page-gutter);
   box-sizing: border-box;
   overflow-y: auto;
 `
@@ -17,14 +18,46 @@ export const GamifiedCenterStage = styled.div`
 export const GamifiedFormCard = styled.div`
   width: 100%;
   max-width: 520px;
-  padding: clamp(20px, 3.5vw, 28px);
-  border-radius: 20px;
-  background: linear-gradient(165deg, rgba(22, 22, 34, 0.94), rgba(12, 12, 22, 0.97));
-  border: 1px solid rgba(167, 139, 250, 0.22);
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.35),
-    0 28px 90px rgba(0, 0, 0, 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  color: #e4e4e7;
+  padding: var(--pad-card);
+  border-radius: var(--radius-xl);
+  background-color: var(--bg-elevated);
+  border: var(--border-default);
+  box-shadow: var(--shadow-card);
+  color: var(--text-primary);
   box-sizing: border-box;
+`
+
+/** Wider shell for duel create (map column + settings). */
+export const GamifiedFormCardWide = styled(GamifiedFormCard)`
+  max-width: min(960px, 100%);
+  overflow: visible;
+`
+
+/** Two columns on large screens: map list + settings stack. */
+export const GamifiedDuelGrid = styled.div`
+  display: grid;
+  gap: clamp(18px, 2.5vw, 26px);
+  width: 100%;
+  align-items: start;
+
+  @media (min-width: 900px) {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+  }
+`
+
+export const GamifiedDuelMapColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+`
+
+export const GamifiedDuelSettingsColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+  padding: var(--pad-card-sm);
+  border-radius: var(--radius-lg);
+  background-color: var(--bg-surface);
+  border: var(--border-default);
 `

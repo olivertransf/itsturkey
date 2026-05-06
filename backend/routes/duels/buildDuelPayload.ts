@@ -1,5 +1,8 @@
+import type { NextApiResponse } from 'next'
 import type { LocationType, MapType } from '@types'
 import type { DuelSession, DuelSide } from '@backend/models/duelSession'
+import type { DuelGuessAvatar } from '@backend/utils/resolveDuelPlayerNames'
+import { resolveDuelPlayerAvatars, resolveDuelPlayerNames } from '@backend/utils/resolveDuelPlayerNames'
 
 export type DuelClientPayload = {
   id: string
@@ -31,9 +34,19 @@ export type DuelClientPayload = {
   damageMultiplierGuest: number
   useRoundRamp: boolean
   rematchReady: { host: boolean; guest: boolean }
+  /** Display labels for the two sides (room creator vs joiner). */
+  playerNames: { host: string; guest: string }
+  /** Emoji SVG keys + pin colors for guess markers (from user profile or default). */
+  playerAvatars: { host: DuelGuessAvatar; guest: DuelGuessAvatar }
 }
 
-export const buildDuelPayload = (duel: DuelSession, role: DuelSide | null, mapDetailsRaw: unknown): DuelClientPayload => {
+export const buildDuelPayload = (
+  duel: DuelSession,
+  role: DuelSide | null,
+  mapDetailsRaw: unknown,
+  playerNames: { host: string; guest: string },
+  playerAvatars: { host: DuelGuessAvatar; guest: DuelGuessAvatar }
+): DuelClientPayload => {
   const mapDetails = (mapDetailsRaw as MapType | null | undefined) ?? null
 
   const playing = duel.status === 'in_progress'
@@ -84,5 +97,21 @@ export const buildDuelPayload = (duel: DuelSession, role: DuelSide | null, mapDe
       host: !!duel.rematchReadyHost,
       guest: !!duel.rematchReadyGuest,
     },
+    playerNames,
+    playerAvatars,
   }
+}
+
+export async function replyWithDuelPayload(
+  res: NextApiResponse,
+  duel: DuelSession,
+  role: DuelSide | null,
+  mapDetailsRaw: unknown,
+  statusCode = 200
+) {
+  const [playerNames, playerAvatars] = await Promise.all([
+    resolveDuelPlayerNames(duel),
+    resolveDuelPlayerAvatars(duel),
+  ])
+  res.status(statusCode).send(buildDuelPayload(duel, role, mapDetailsRaw, playerNames, playerAvatars))
 }

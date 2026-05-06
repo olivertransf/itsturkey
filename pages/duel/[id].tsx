@@ -1,5 +1,6 @@
+import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import DuelPlaySurface from '@components/duel/DuelPlaySurface'
 import DuelRoundOverview from '@components/duel/DuelRoundOverview'
 import {
@@ -8,6 +9,7 @@ import {
   DuelLobbyGuestWaitingPanel,
   DuelLobbyHostStartPanel,
   DuelLobbyHostWaitingPanel,
+  DuelOpponentRematchModal,
 } from '@components/duel/DuelRoomPanels'
 import type { DuelClientPayload } from '@components/duel/duelApiTypes'
 import { NotFound } from '@components/errorViews'
@@ -18,16 +20,38 @@ import { GamifiedCenterStage } from '@styles/GamifiedHubShell.Styled'
 import type { PageType } from '@types'
 import { mailman, showToast } from '@utils/helpers'
 import { isValidDuelUrlSegment } from '@utils/helpers/duelInvite'
-import { DUEL_POLL_MS, duelPollTier } from '@utils/duelPollTier'
+import {
+  DUEL_POLL_MS,
+  DUEL_POLL_PUSH_CONNECTED_MS,
+  duelPollTier,
+} from '@utils/duelPollTier'
+import { duelPrivateChannel } from '@utils/pusherChannels'
+import { usePusherRealtimeHealthy } from '@utils/usePusherRealtimeHealthy'
+import { usePusherSubscription } from '@utils/usePusherSubscription'
+
+/** Dedupes concurrent auto-join attempts (e.g. React Strict Mode double mount). */
+const duelInviteAutojoinTasks = new Map<string, Promise<void>>()
+
+type FriendRow = { id: string; name: string; friendCode?: string }
 
 const DuelRoomPage: PageType = () => {
   const router = useRouter()
+  const { status } = useSession()
   const duelId =
     router.isReady && typeof router.query.id === 'string' ? router.query.id.trim() : ''
 
   const [payload, setPayload] = useState<DuelClientPayload | null>()
   const [fatal, setFatal] = useState<string | null>(null)
   const [rematchLoading, setRematchLoading] = useState(false)
+  const [friends, setFriends] = useState<FriendRow[]>([])
+  const [invitingFriendId, setInvitingFriendId] = useState<string | null>(null)
+  const [rematchNudgeDismissed, setRematchNudgeDismissed] = useState(false)
+
+  const isAuthenticated = status === 'authenticated'
+  const loginHref =
+    router.isReady && duelId
+      ? `/login?callbackUrl=${encodeURIComponent(`/duel/${duelId}`)}`
+      : '/login'
 
   const refresh = useCallback(async () => {
     if (!duelId || !isValidDuelUrlSegment(duelId)) return
@@ -44,8 +68,23 @@ const DuelRoomPage: PageType = () => {
     setFatal(null)
   }, [duelId])
 
+  const duelPushChannel = useMemo(() => {
+    if (!duelId || !isValidDuelUrlSegment(duelId)) return null
+    const role = payload?.viewerRole
+    if (role !== 'host' && role !== 'guest') return null
+    return duelPrivateChannel(duelId)
+  }, [duelId, payload?.viewerRole])
+
+  const pushHealthy = usePusherRealtimeHealthy()
+  const pushConfigured = !!process.env.NEXT_PUBLIC_PUSHER_KEY
+
   const pollTier = duelPollTier(payload ?? undefined)
-  const pollMs = DUEL_POLL_MS[pollTier]
+  const pollMs = useMemo(() => {
+    if (!pushConfigured || !pushHealthy) return DUEL_POLL_MS[pollTier]
+    return DUEL_POLL_PUSH_CONNECTED_MS[pollTier]
+  }, [pollTier, pushHealthy, pushConfigured])
+
+  usePusherSubscription(duelPushChannel, 'duel.updated', () => void refresh(), !!duelPushChannel)
 
   useEffect(() => {
     if (!duelId || !isValidDuelUrlSegment(duelId)) return
@@ -56,16 +95,90 @@ const DuelRoomPage: PageType = () => {
     return () => window.clearInterval(id)
   }, [duelId, refresh, pollMs])
 
-  const handleJoin = async () => {
-    const res = await mailman(`duels/${duelId}/join`, 'POST', JSON.stringify({}))
+  useEffect(() => {
+    if (!isAuthenticated || !payload) return
+    if (payload.status !== 'waiting' || payload.guestJoined || payload.viewerRole !== 'host') return
 
-    if (res?.error) {
-      showToast('error', res.error.message)
+    void mailman('users/friends').then((res) => {
+      if (!res || typeof res !== 'object') return
+      if ('error' in res && res.error) return
+      if (!Array.isArray(res)) return
+      setFriends(res as FriendRow[])
+    })
+  }, [isAuthenticated, payload?.status, payload?.guestJoined, payload?.viewerRole, payload])
+
+  useEffect(() => {
+    if (payload?.status !== 'finished') setRematchNudgeDismissed(false)
+  }, [payload?.status])
+
+  const handleJoin = useCallback(
+    async (opts?: { displayName?: string }) => {
+      const res = await mailman(
+        `duels/${duelId}/join`,
+        'POST',
+        JSON.stringify(opts?.displayName ? { displayName: opts.displayName } : {})
+      )
+
+      if (res?.error) {
+        showToast('error', res.error.message)
+        return
+      }
+
+      setPayload(res as DuelClientPayload)
+    },
+    [duelId]
+  )
+
+  const inviteFriend = async (friend: { id: string; name: string }) => {
+    setInvitingFriendId(friend.id)
+    try {
+      const res = await mailman(
+        `duels/${duelId}/invite-friend`,
+        'POST',
+        JSON.stringify({ peerId: friend.id })
+      )
+      if (res?.error) {
+        showToast('error', res.error.message)
+        return
+      }
+      showToast('success', `Invited ${friend.name}`)
+    } finally {
+      setInvitingFriendId(null)
+    }
+  }
+
+  useEffect(() => {
+    if (!router.isReady) return
+    if (!duelId || !isValidDuelUrlSegment(duelId)) return
+    if (router.query.invite !== '1') return
+    if (!isAuthenticated) return
+    if (!payload) return
+
+    if (payload.viewerRole === 'host') {
+      void router.replace(`/duel/${encodeURIComponent(duelId)}`)
+      return
+    }
+    if (payload.status !== 'waiting') {
+      void router.replace(`/duel/${encodeURIComponent(duelId)}`)
+      return
+    }
+    if (payload.guestJoined) {
+      void router.replace(`/duel/${encodeURIComponent(duelId)}`)
       return
     }
 
-    setPayload(res as DuelClientPayload)
-  }
+    let existing = duelInviteAutojoinTasks.get(duelId)
+    if (!existing) {
+      existing = (async () => {
+        await handleJoin()
+      })().finally(() => {
+        duelInviteAutojoinTasks.delete(duelId)
+        void router.replace(`/duel/${encodeURIComponent(duelId)}`)
+      })
+      duelInviteAutojoinTasks.set(duelId, existing)
+    }
+    void existing
+  }, [router.isReady, router.query.invite, duelId, isAuthenticated, payload, router, handleJoin])
 
   const handleStartGame = async () => {
     const res = await mailman(`duels/${duelId}/start`, 'POST', JSON.stringify({}))
@@ -76,16 +189,6 @@ const DuelRoomPage: PageType = () => {
     }
 
     setPayload(res as DuelClientPayload)
-  }
-
-  const copyInvite = async () => {
-    const url = `${window.location.origin}/duel/${encodeURIComponent(duelId)}`
-    try {
-      await navigator.clipboard.writeText(url)
-      showToast('success', 'Invite link copied')
-    } catch {
-      showToast('error', 'Could not copy link')
-    }
   }
 
   const handleRematchReady = useCallback(async () => {
@@ -159,9 +262,9 @@ const DuelRoomPage: PageType = () => {
       : you
       ? 'You lost'
       : payload.outcome === 'host_win'
-      ? 'Host wins'
+      ? `${payload.playerNames.host} wins`
       : payload.outcome === 'guest_win'
-      ? 'Guest wins'
+      ? `${payload.playerNames.guest} wins`
       : 'Match finished'
 
   const finishTone =
@@ -178,12 +281,33 @@ const DuelRoomPage: PageType = () => {
     waitingLobby ||
     lobbyGuestReady
 
+  const opponentRematchLabel =
+    you === 'host' ? payload.playerNames.guest : you === 'guest' ? payload.playerNames.host : 'Opponent'
+  const opponentWantsRematch =
+    !!you &&
+    payload.status === 'finished' &&
+    (you === 'host' ? payload.rematchReady.guest : payload.rematchReady.host) &&
+    !(you === 'host' ? payload.rematchReady.host : payload.rematchReady.guest)
+
   return (
     <StyledMultiGamePage>
       <Meta title="Duel" />
 
       {lobbyOrFinish && (
         <GamifiedCenterStage>
+          {payload.status === 'finished' && you && (
+            <DuelOpponentRematchModal
+              open={opponentWantsRematch && !rematchNudgeDismissed}
+              opponentLabel={opponentRematchLabel}
+              onPlayAgain={() => {
+                setRematchNudgeDismissed(false)
+                void handleRematchReady()
+              }}
+              onDismiss={() => setRematchNudgeDismissed(true)}
+              loading={rematchLoading}
+            />
+          )}
+
           {payload.status === 'finished' && (
             <DuelFinishBanner
               headline={headline}
@@ -194,26 +318,33 @@ const DuelRoomPage: PageType = () => {
               playAgainLoading={rematchLoading}
             >
               {payload.lastRoundResult && payload.lastRoundActualLocation && (
-                <div style={{ marginBottom: 14 }}>
-                  <DuelRoundOverview
-                    variant="compact"
-                    roundOneBased={payload.lastRoundResult.roundIndex + 1}
-                    mode={payload.mode}
-                    actual={payload.lastRoundActualLocation}
-                    result={payload.lastRoundResult}
-                    hostMaxHp={payload.startingHpHost}
-                    guestMaxHp={payload.startingHpGuest}
-                    viewerRole={you}
-                    sessionMapId={payload.mapId}
-                    plonkMapLabel={payload.mapDetails?.name}
-                  />
-                </div>
+                <DuelRoundOverview
+                  variant="compact"
+                  roundOneBased={payload.lastRoundResult.roundIndex + 1}
+                  mode={payload.mode}
+                  actual={payload.lastRoundActualLocation}
+                  result={payload.lastRoundResult}
+                  hostMaxHp={payload.startingHpHost}
+                  guestMaxHp={payload.startingHpGuest}
+                  viewerRole={you}
+                  sessionMapId={payload.mapId}
+                  plonkMapLabel={payload.mapDetails?.name}
+                  hostPlayerName={payload.playerNames.host}
+                  guestPlayerName={payload.playerNames.guest}
+                  playerAvatars={payload.playerAvatars}
+                  omitScoreRow
+                />
               )}
             </DuelFinishBanner>
           )}
 
           {waitingLobby && you === 'host' && (
-            <DuelLobbyHostWaitingPanel shortCode={payload.shortCode} onCopyInvite={() => void copyInvite()} />
+            <DuelLobbyHostWaitingPanel
+              shortCode={payload.shortCode}
+              friends={friends}
+              invitingFriendId={invitingFriendId}
+              onInviteFriend={isAuthenticated ? (f) => void inviteFriend(f) : undefined}
+            />
           )}
 
           {waitingLobby && you !== 'host' && (
@@ -221,15 +352,22 @@ const DuelRoomPage: PageType = () => {
               shortCode={payload.shortCode}
               mode={payload.mode}
               totalRounds={payload.totalRounds}
-              onJoin={() => void handleJoin()}
+              onJoin={(o) => void handleJoin(o)}
+              isAuthenticated={isAuthenticated}
+              loginHref={loginHref}
             />
           )}
 
           {lobbyGuestReady && you === 'host' && (
-            <DuelLobbyHostStartPanel onStart={() => void handleStartGame()} />
+            <DuelLobbyHostStartPanel
+              onStart={() => void handleStartGame()}
+              opponentName={payload.playerNames.guest !== 'Waiting' ? payload.playerNames.guest : undefined}
+            />
           )}
 
-          {lobbyGuestReady && you === 'guest' && <DuelLobbyGuestWaitingPanel />}
+          {lobbyGuestReady && you === 'guest' && (
+            <DuelLobbyGuestWaitingPanel hostPlayerName={payload.playerNames.host} />
+          )}
         </GamifiedCenterStage>
       )}
 

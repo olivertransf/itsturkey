@@ -13,10 +13,8 @@ const StyledStandardFinalResults = styled.div<StyledProps>`
   padding: 20px;
   height: 100%;
   width: 100%;
-  background-color: #121212;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  background: linear-gradient(360deg, rgba(25, 26, 27, 0) 0%, rgb(12 13 15 / 57%) 47.4%, #00274e 100%);
-  background: linear-gradient(360deg, rgba(25, 26, 27, 0) 0%, rgb(8 8 8 / 57%) 47.4%, #000 100%);
+  border-top: var(--border-default);
+  background-color: var(--bg-primary);
 
   .results-card {
     /* max-width: 550px; */
@@ -30,8 +28,11 @@ const StyledStandardFinalResults = styled.div<StyledProps>`
 
   .buttons-wrapper {
     display: flex;
-    align-items: center;
-    gap: 25px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: center;
+    gap: clamp(16px, 4vw, 28px);
+    max-width: min(560px, 100%);
 
     .side-button {
       display: flex;
@@ -44,42 +45,50 @@ const StyledStandardFinalResults = styled.div<StyledProps>`
     }
 
     .play-again-btn {
-      border-radius: 50rem;
+      border-radius: var(--radius-pill, 999px);
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      height: 56px;
-      width: 180px;
-      font-size: 18px;
-      font-weight: 400;
+      min-height: 52px;
+      min-width: min(200px, 100%);
+      padding-inline: 22px;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
       user-select: none;
-      background-color: var(--mediumPurple);
+      background-color: var(--accent-primary, var(--mediumPurple));
       color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 
       :hover {
-        background-color: var(--indigo-600);
+        background-color: var(--accent-primary-hover, #4a8ac4);
       }
     }
 
     .results-btn,
     .map-btn {
-      border-radius: 50rem;
+      border-radius: var(--radius-pill, 999px);
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 56px;
-      width: 56px;
-      background-color: #202020;
-      color: #959595;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      height: 52px;
+      width: 52px;
+      background-color: rgba(255, 255, 255, 0.06);
+      color: #a3a3ad;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 
       &:hover {
-        background-color: #282828;
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #e4e4e7;
+        border-color: rgba(255, 255, 255, 0.12);
       }
 
       svg {
-        height: 24px;
+        height: 22px;
       }
     }
   }

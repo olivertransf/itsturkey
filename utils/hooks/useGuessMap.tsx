@@ -1,20 +1,25 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '@redux/hook'
 import { updateGuessMapSize } from '@redux/slices'
-import { getGuessMapExpandedSize, getGuessMapIdleSize } from '@utils/helpers/getGuessMapSize'
+import {
+  GUESS_MAP_HOVER_UNIFORM_SCALE,
+  GUESS_MAP_VMIN_MULTIPLIER,
+  getGuessMapIdleSize,
+} from '@utils/helpers/getGuessMapSize'
 
 type UseGuessMapOptions = {
   idleScale?: number
 }
 
-const scaleBox = (box: { width: number; height: number }, scale: number) => ({
-  width: box.width * scale,
-  height: box.height * scale,
-})
-
 const useGuessMap = ({ idleScale = 1 }: UseGuessMapOptions = {}) => {
   const user = useAppSelector((state) => state.user)
-  const idleBaseline = scaleBox(getGuessMapIdleSize(user.guessMapSize as number), idleScale)
+  const m = GUESS_MAP_VMIN_MULTIPLIER
+  const idle0 = getGuessMapIdleSize(user.guessMapSize as number)
+  const hov = GUESS_MAP_HOVER_UNIFORM_SCALE
+  const idleBaseline = {
+    width: idle0.width * idleScale * m,
+    height: idle0.height * idleScale * m,
+  }
 
   const [mapHeight, setMapHeight] = useState(idleBaseline.height)
   const [mapWidth, setMapWidth] = useState(idleBaseline.width)
@@ -26,26 +31,20 @@ const useGuessMap = ({ idleScale = 1 }: UseGuessMapOptions = {}) => {
   const dispatch = useAppDispatch()
 
   useEffect(() => {
-    const expanded = getGuessMapExpandedSize(user.guessMapSize as number)
     const idle = getGuessMapIdleSize(user.guessMapSize as number)
+    const s = hovering || isPinned ? hov : 1
 
-    if (hovering || isPinned) {
-      setMapWidth(expanded.width)
-      setMapHeight(expanded.height)
-      return
-    }
-
-    setMapWidth(idle.width * idleScale)
-    setMapHeight(idle.height * idleScale)
-  }, [user.guessMapSize, hovering, isPinned, idleScale])
+    setMapWidth(idle.width * idleScale * m * s)
+    setMapHeight(idle.height * idleScale * m * s)
+  }, [user.guessMapSize, hovering, isPinned, idleScale, m, hov])
 
   const handleMapHover = () => {
     clearTimeout(hoverDelay.current)
     setHovering(true)
 
-    const { width, height } = getGuessMapExpandedSize(user.guessMapSize as number)
-    setMapHeight(height)
-    setMapWidth(width)
+    const idle = getGuessMapIdleSize(user.guessMapSize as number)
+    setMapWidth(idle.width * idleScale * m * hov)
+    setMapHeight(idle.height * idleScale * m * hov)
   }
 
   const handleMapLeave = () => {
@@ -54,8 +53,8 @@ const useGuessMap = ({ idleScale = 1 }: UseGuessMapOptions = {}) => {
     hoverDelay.current = setTimeout(() => {
       setHovering(false)
       const { width, height } = getGuessMapIdleSize(user.guessMapSize as number)
-      setMapHeight(height * idleScale)
-      setMapWidth(width * idleScale)
+      setMapHeight(height * idleScale * m)
+      setMapWidth(width * idleScale * m)
     }, 700)
   }
 
@@ -68,16 +67,11 @@ const useGuessMap = ({ idleScale = 1 }: UseGuessMapOptions = {}) => {
       newMapSize = (user.guessMapSize as number) - 1
     }
 
-    const expanded = getGuessMapExpandedSize(newMapSize)
     const idle = getGuessMapIdleSize(newMapSize)
+    const s = hovering || isPinned ? hov : 1
 
-    if (hovering || isPinned) {
-      setMapHeight(expanded.height)
-      setMapWidth(expanded.width)
-    } else {
-      setMapHeight(idle.height * idleScale)
-      setMapWidth(idle.width * idleScale)
-    }
+    setMapHeight(idle.height * idleScale * m * s)
+    setMapWidth(idle.width * idleScale * m * s)
 
     dispatch(updateGuessMapSize({ guessMapSize: newMapSize }))
   }
@@ -95,17 +89,11 @@ const useGuessMap = ({ idleScale = 1 }: UseGuessMapOptions = {}) => {
     handleMapLeave,
     changeMapSize,
     resetGuessMapDimensions: () => {
-      const expanded = getGuessMapExpandedSize(user.guessMapSize as number)
       const idle = getGuessMapIdleSize(user.guessMapSize as number)
+      const s = hovering || isPinned ? hov : 1
 
-      if (hovering || isPinned) {
-        setMapHeight(expanded.height)
-        setMapWidth(expanded.width)
-        return
-      }
-
-      setMapHeight(idle.height * idleScale)
-      setMapWidth(idle.width * idleScale)
+      setMapHeight(idle.height * idleScale * m * s)
+      setMapWidth(idle.width * idleScale * m * s)
     },
   }
 }

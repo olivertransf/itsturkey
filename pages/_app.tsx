@@ -7,6 +7,7 @@ import { PersistGate } from 'redux-persist/integration/react'
 import { ThemeProvider } from 'styled-components'
 import { Layout } from '@components/layout'
 import { Meta } from '@components/Meta'
+import DuelInviteNotifier from '@components/duel/DuelInviteNotifier'
 import SessionSync from '@components/SessionSync'
 import { persistor, store } from '@redux/store'
 import { PageType } from '@types'
@@ -28,6 +29,7 @@ const App = ({ Component, pageProps }: AppPropsWithLayout) => {
           <PersistGate persistor={persistor}>
             <ThemeProvider theme={theme}>
               <SessionSync />
+              <DuelInviteNotifier />
               {getLayout(<Component {...pageProps} />)}
 
               <Toaster

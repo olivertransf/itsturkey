@@ -28,12 +28,20 @@ const MultiGamePage: PageType = () => {
     const fetchMultiSession = async () => {
       const res = await mailman(`multi/${sessionId}`)
 
-      if (res.error) {
+      if (
+        !res ||
+        (typeof res === 'object' && res.error) ||
+        typeof res !== 'object' ||
+        !('session' in res && 'panels' in res)
+      ) {
         setMultiData(null)
         return
       }
 
-      setMultiData({ session: res.session, panels: res.panels })
+      setMultiData({
+        session: (res as { session: MultiSession }).session,
+        panels: (res as { panels: Game[] }).panels,
+      })
     }
 
     void fetchMultiSession()

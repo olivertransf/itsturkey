@@ -177,23 +177,36 @@
   --lightYellow: #fcd34d;
   --lightRed: #f87171;
   --lightPurple: #a5adff;
-  /* --mediumPurple: #7c3aed; */
-  --mediumPurple: var(--indigo-700);
-  --darkPurple: #6d28d9;
+
+  /*
+   * App palette (5 swatches): saturated accent blue + layered dark cool greys.
+   * Maps to surfaces and --accent-* for buttons, links, and highlights.
+   */
+  --palette-accent: #2f7fff;
+  --palette-surface: #1a1e26;
+  --palette-surface-deep: #14181f;
+  --palette-bg-raised: #0f1218;
+  --palette-bg-root: #080a0f;
+
+  --accent-primary: var(--palette-accent);
+  --accent-primary-hover: #2566e6;
+  /* Legacy: shared token for primary actions */
+  --mediumPurple: var(--accent-primary);
+  --darkPurple: var(--accent-primary-hover);
   --bronze: #6a3805;
   --silver: #d7d7d7;
   --gold: #c9b037;
 
-  --focus-border: var(--indigo-700) !important;
-  --separator-border: #0e0e10 !important;
+  --focus-border: var(--accent-primary) !important;
+  --separator-border: var(--palette-bg-root) !important;
 
-  --bg-primary: #101012;
-  --bg-elevated: #161618;
-  --bg-surface: #141416;
+  --bg-primary: var(--palette-bg-root);
+  --bg-elevated: var(--palette-surface-deep);
+  --bg-surface: var(--palette-bg-raised);
   --text-primary: #fafafa;
-  --text-muted: #a3a3ad;
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --divider-line: rgba(255, 255, 255, 0.055);
+  --text-muted: #8b9099;
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --divider-line: rgba(255, 255, 255, 0.045);
 
   --radius-sm: 8px;
   --radius-md: 10px;
@@ -216,6 +229,15 @@
 
   --label-upper-size: 0.72rem;
   --label-upper-tracking: 0.14em;
+
+  /* Layout: consistent padding and borders (no gradient backgrounds). */
+  --pad-page-y: clamp(1.5rem, 4.5vw, 2.75rem);
+  --pad-page-y-lg: clamp(2rem, 10vh, 5.5rem);
+  --pad-page-y-bottom: clamp(2.5rem, 8vh, 5rem);
+  --pad-card: 24px;
+  --pad-card-sm: 16px;
+  --pad-row-card: 14px 16px;
+  --border-default: 1px solid var(--border-subtle);
 }
 
 .page-back-toolbar {
@@ -231,10 +253,6 @@ body {
   font-family: var(--font-family1);
   font-weight: 500;
   background-color: var(--bg-primary);
-  background-image:
-    radial-gradient(ellipse 110% 72% at 50% -38%, rgba(124, 58, 237, 0.13), transparent 52%),
-    radial-gradient(ellipse 58% 48% at 96% 12%, rgba(59, 130, 246, 0.08), transparent 46%);
-  background-attachment: fixed;
   color: var(--text-primary);
   overflow: hidden;
   /* display: flex;

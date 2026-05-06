@@ -3,7 +3,6 @@ import { FC } from 'react'
 import HomeSectionRowCard from '@components/HomeSectionRowCard'
 import HomePlayGlyph from '@components/HomeSectionRowCard/HomePlayGlyph'
 import { MapType } from '@types'
-import { equitableCountryAccentColor } from '@utils/helpers/equitableCountryAccent'
 import { flagEmojiFromIsoAlpha2 } from '@utils/helpers/flagEmoji'
 import { parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
 
@@ -18,12 +17,10 @@ const EquitableCountryRowCard: FC<Props> = ({ map, isForDisplayOnly }) => {
 
   const countryName = map.name?.trim() || code.toUpperCase()
   const flag = flagEmojiFromIsoAlpha2(code)
-  const accent = equitableCountryAccentColor(code)
   const href = `/map/${encodeURIComponent(String(map._id))}`
 
   return (
     <HomeSectionRowCard
-      accentColor={accent}
       title={countryName}
       titleLeading={
         flag ? (

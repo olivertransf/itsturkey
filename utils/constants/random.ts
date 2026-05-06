@@ -10,7 +10,7 @@ export const COUNTRY_STREAK_DETAILS = {
   _id: COUNTRY_STREAKS_ID,
   name: 'Country Streaks',
   description: 'How many countries can you guess in a row?',
-  previewImg: 'official22.jpg',
+  previewImg: 'official15.jpg',
   creator: 'GeoHub',
 }
 
@@ -18,19 +18,19 @@ export const EQUITABLE_COUNTRY_STREAK_DETAILS = {
   _id: EQUITABLE_COUNTRY_STREAK_ID,
   name: 'Equitable World',
   description: 'Country streak — rounds use only locations from the Equitable World map pool.',
-  previewImg: 'custom-map.svg',
+  previewImg: 'official15.jpg',
   creator: 'GeoHub',
 }
 
-/** Hub route for Equitable World country streak. */
-export function getStreakLobbyPath(): '/equitable-streaks' {
-  return '/equitable-streaks'
+/** Hub route for Equitable World country streak (play lobby). */
+export function getStreakLobbyPath(): '/streak' {
+  return '/streak'
 }
 
 export const DAILY_CHALLENGE_DETAILS = {
   name: 'The Daily Challenge',
   description: 'A brand new challenge everyday. See how you compare!',
-  previewImg: 'official8.jpg',
+  previewImg: 'official15.jpg',
 }
 
 export const MAP_AVATAR_PATH = '/images/mapAvatars'

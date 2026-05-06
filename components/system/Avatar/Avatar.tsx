@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import { FC, ImgHTMLAttributes } from 'react'
-import { MAP_AVATAR_PATH, USER_AVATAR_PATH } from '@utils/constants/random'
+import { USER_AVATAR_PATH } from '@utils/constants/random'
+import { resolveMapImageSrc } from '@utils/helpers/mapPreviewSrc'
 import { StyledAvatar } from './'
 
 type Props = {
@@ -20,11 +21,13 @@ const Avatar: FC<Props> = ({ type, size, backgroundColor, src, alt, className, .
     )
   }
 
+  const mapSrc = resolveMapImageSrc(typeof src === 'string' ? src : undefined)
+
   return (
     <StyledAvatar size={size || 32} {...rest}>
       <div className="map-avatar">
         <Image
-          src={`${MAP_AVATAR_PATH}/${src}`}
+          src={mapSrc}
           alt={alt || 'Map Avatar'}
           layout="fill"
           objectFit="cover"

@@ -3,7 +3,15 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import type Game from '@backend/models/game'
 import type DuelSession from '@backend/models/duelSession'
 import getMapFromGame from '@backend/queries/getMapFromGame'
-import { collections, getAnonymousGameId, getLocations, getUserId, isUserBanned, throwError } from '@backend/utils'
+import {
+  collections,
+  getAnonymousGameId,
+  getLocations,
+  getUserId,
+  isUserBanned,
+  throwError,
+} from '@backend/utils'
+import { fetchUserDisplayName, sanitizeDuelDisplayName } from '@backend/utils/resolveDuelPlayerNames'
 import { DUEL_ROUND_LOCATION_POOL_ID } from '@backend/utils/duelConstants'
 import { normalizeCreateDuelBody } from '@backend/utils/normalizeDuelSettings'
 import { randomDuelShortCode } from '@backend/utils/duelShortCode'
@@ -48,10 +56,17 @@ const createDuel = async (req: NextApiRequest, res: NextApiResponse) => {
     return throwError(res, 503, 'Could not allocate a duel code — try again')
   }
 
+  let hostDisplayName: string | undefined
+  if (userId) {
+    hostDisplayName = (await fetchUserDisplayName(userId)) ?? undefined
+  } else if (anonymousId) {
+    hostDisplayName = sanitizeDuelDisplayName(cfg.displayName)
+  }
+
   const hostSlot = {
     userId: userId ? new ObjectId(userId) : undefined,
     anonymousId: userId ? undefined : anonymousId,
-    displayName: undefined as string | undefined,
+    displayName: hostDisplayName,
     hp: cfg.startingHpHost,
     totalPoints: 0,
     joined: true,

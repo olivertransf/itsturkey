@@ -3,7 +3,6 @@ import { FC } from 'react'
 import HomeSectionRowCard from '@components/HomeSectionRowCard'
 import HomePlayGlyph from '@components/HomeSectionRowCard/HomePlayGlyph'
 import { MapType } from '@types'
-import { equitableContinentAccentColor } from '@utils/helpers/equitableContinentAccent'
 import { parseEquitableContinentMapKey } from '@utils/helpers/equitableContinentMapId'
 
 type Props = {
@@ -16,11 +15,10 @@ const EquitableContinentRowCard: FC<Props> = ({ map, isForDisplayOnly }) => {
   if (!slug) return null
 
   const title = map.name?.trim() || slug.toUpperCase()
-  const accent = equitableContinentAccentColor(slug)
   const href = `/map/${encodeURIComponent(String(map._id))}`
 
   return (
-    <HomeSectionRowCard accentColor={accent} title={title}>
+    <HomeSectionRowCard title={title}>
       {!isForDisplayOnly ? (
         <Link href={href}>
           <a className="home-play-btn home-play-btn--icon" aria-label={`Play ${title}`}>

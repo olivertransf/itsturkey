@@ -16,6 +16,11 @@ import {
   STANDARD_LEADERBOARD_GAME_MATCH,
 } from '@backend/utils/standardLeaderboardGameMatch'
 import getWorldStandardLeaderboardSourceIds from '@backend/utils/worldStandardLeaderboardMapIds'
+import {
+  notifyDailyChallengeLeaderboardUpdated,
+  notifyStandardLeaderboardUpdated,
+  notifyStreakLeaderboardUpdated,
+} from '@backend/utils/pusherNotify'
 
 async function aggregateExplorerStats(match: Record<string, unknown>) {
   const gameStats = await collections.games
@@ -68,15 +73,18 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     if (game.mode === 'standard' && !game.isDailyChallenge) {
       await updateMapLeaderboard(game)
       await updateMapStats(game)
+      await notifyStandardLeaderboardUpdated(game)
     }
 
     if (game.mode === 'standard' && game.isDailyChallenge) {
       await updateDailyChallenge(game)
+      await notifyDailyChallengeLeaderboardUpdated()
     }
 
     if (game.mode === 'streak') {
       await updateStreakLeaderboard(game)
       await updateStreakStats()
+      await notifyStreakLeaderboardUpdated(game)
     }
 
     res.status(200).send('Success')

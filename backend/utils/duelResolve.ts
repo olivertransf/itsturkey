@@ -7,6 +7,9 @@ import { clampDamage } from './normalizeDuelSettings'
 
 type Pin = { lat: number; lng: number }
 
+/** When the reactive timer expires with no provisional pin, use world center (auto-submit style). */
+const WORLD_CENTER_GUESS: Pin = { lat: 0, lng: 0 }
+
 const effectiveSubmission = (
   locked: DuelLockedGuess | undefined,
   provisional: Pin | undefined,
@@ -14,7 +17,7 @@ const effectiveSubmission = (
 ): { coords: Pin | null; noGuess: boolean } => {
   if (locked) return { coords: { lat: locked.lat, lng: locked.lng }, noGuess: false }
   if (roundEnding && provisional) return { coords: { lat: provisional.lat, lng: provisional.lng }, noGuess: false }
-  if (roundEnding) return { coords: null, noGuess: true }
+  if (roundEnding) return { coords: WORLD_CENTER_GUESS, noGuess: false }
   return { coords: null, noGuess: true }
 }
 

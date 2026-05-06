@@ -7,7 +7,17 @@
 //
 // Width is scaled below viewport-relative height so the corner map stays less wide.
 
-const MAP_WIDTH_SCALE = 0.75
+/** Applied in useGuessMap: both table axes use vmin so aspect ratio is stable across viewports. */
+export const GUESS_MAP_VMIN_MULTIPLIER = 0.94
+
+/** Hard cap (px) on corner-map width; height follows via CSS aspect-ratio. */
+export const GUESS_MAP_MAX_WIDTH_PX = 580
+
+/** Hover/pin: scale idle width+height by this (same aspect ratio as uncovered). */
+export const GUESS_MAP_HOVER_UNIFORM_SCALE = 2.05
+
+/** Table width vs height: lower = narrower strip (same hover/idle behavior). */
+const MAP_WIDTH_SCALE = 0.68
 
 const IDLE_SIZES = [
   { width: 15, height: 15 },

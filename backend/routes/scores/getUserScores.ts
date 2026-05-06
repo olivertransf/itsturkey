@@ -56,7 +56,7 @@ const getUserScores = async (req: NextApiRequest, res: NextApiResponse) => {
               then: { $arrayElemAt: ['$mapDetails', 0] },
               else: {
                 name: '',
-                previewImg: 'custom-map.svg',
+                previewImg: 'default-map.svg',
               },
             },
           },
@@ -73,7 +73,7 @@ const getUserScores = async (req: NextApiRequest, res: NextApiResponse) => {
     _id: item._id,
     mapId: item.mapId,
     mapName: item.mapDetails?.name?.trim() ? item.mapDetails.name : labelForNonDbMap(item.mapId),
-    mapAvatar: item.mapDetails?.previewImg ?? 'custom-map.svg',
+    mapAvatar: item.mapDetails?.previewImg ?? 'default-map.svg',
     totalPoints: item.totalPoints,
     totalTime: item.totalTime,
     playedAt: item.createdAt ? new Date(item.createdAt).toISOString() : undefined,

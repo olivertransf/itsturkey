@@ -1,8 +1,8 @@
 import styled from 'styled-components'
 
 export const StyledMapPlayInline = styled.div`
-  border-top: 1px solid var(--divider-line);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 52px);
+  border-top: var(--border-default);
+  background-color: var(--bg-primary);
 
   .map-play-actions {
     display: flex;

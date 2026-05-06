@@ -15,7 +15,7 @@ type Props = {
 const MapPlayInline: FC<Props> = ({ mapDetails, gameMode }) => {
   const flow = useGameStartFlow({ mapDetails, gameMode })
 
-  const { primaryAction, cancelAction, footerMeta, isSubmitting, ...panelState } = flow
+  const { primaryAction, footerMeta, isSubmitting, ...panelState } = flow
 
   const equitableCountryIso = useMemo(
     () => parseEquitableCountryMapKey(String(mapDetails._id)),
@@ -23,7 +23,7 @@ const MapPlayInline: FC<Props> = ({ mapDetails, gameMode }) => {
   )
 
   const countryTipsRow =
-    equitableCountryIso && gameMode !== 'streak' && !panelState.showChallengeView ? (
+    equitableCountryIso && gameMode !== 'streak' ? (
       <PlonkitGuideLauncher
         variant="compact"
         countryIso={equitableCountryIso}
@@ -44,20 +44,9 @@ const MapPlayInline: FC<Props> = ({ mapDetails, gameMode }) => {
       <div className="map-play-actions">
         <div className="map-play-actions-lead">{countryTipsRow}</div>
         <div className="map-play-actions-buttons">
-          {panelState.showChallengeView ? (
-            <>
-              <Button variant="solidGray" size="md" onClick={cancelAction}>
-                {footerMeta.cancelLabel}
-              </Button>
-              <Button size="md" onClick={() => void primaryAction()} isLoading={isSubmitting}>
-                {footerMeta.actionLabel}
-              </Button>
-            </>
-          ) : (
-            <Button size="md" onClick={() => void primaryAction()} isLoading={isSubmitting}>
-              {footerMeta.actionLabel}
-            </Button>
-          )}
+          <Button size="md" onClick={() => void primaryAction()} isLoading={isSubmitting}>
+            {footerMeta.actionLabel}
+          </Button>
         </div>
       </div>
     </StyledMapPlayInline>

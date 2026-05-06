@@ -7,6 +7,10 @@ type Props = {
   handleBackToStart: () => void
   handleExitGame: () => void
   handleUndoLastMove?: () => void
+  /** When true, the top-left exit control is omitted (e.g. duels use HUD exit). */
+  hideExit?: boolean
+  /** Pill / glass buttons (38px) to match duel HUD; use in duels. */
+  hudPrimaryStyle?: boolean
   /** Inserted above the flag / start control (e.g. country guide). */
   leadingPrimaryControls?: ReactNode
 }
@@ -15,6 +19,8 @@ const StreetViewControls: FC<Props> = ({
   handleBackToStart,
   handleExitGame,
   handleUndoLastMove,
+  hideExit = false,
+  hudPrimaryStyle = false,
   leadingPrimaryControls,
 }) => {
   const [showStartTip, setShowStartTip] = useState(false)
@@ -22,13 +28,15 @@ const StreetViewControls: FC<Props> = ({
   const [showExitTip, setShowExitTip] = useState(false)
 
   return (
-    <StyledStreetViewControls>
-      <div className="exit-control" onMouseOver={() => setShowExitTip(true)} onMouseOut={() => setShowExitTip(false)}>
-        <button className="control-button" onClick={handleExitGame}>
-          <ChevronLeftIcon />
-        </button>
-        {showExitTip && <Tooltip label="Exit Game" position="right" />}
-      </div>
+    <StyledStreetViewControls $hudPrimaryStyle={hudPrimaryStyle}>
+      {!hideExit && (
+        <div className="exit-control" onMouseOver={() => setShowExitTip(true)} onMouseOut={() => setShowExitTip(false)}>
+          <button className="control-button" onClick={handleExitGame}>
+            <ChevronLeftIcon />
+          </button>
+          {showExitTip && <Tooltip label="Exit Game" position="right" />}
+        </div>
+      )}
 
       <div className="primary-controls">
         {leadingPrimaryControls}

@@ -6,7 +6,7 @@ type StyledProps = {
 
 const StyledItem = styled.div<StyledProps>`
   border-radius: var(--radius-md);
-  background-color: ${({ isActive }) => (isActive ? 'var(--indigo-800)' : 'transparent')};
+  background-color: ${({ isActive }) => (isActive ? 'rgba(5, 150, 105, 0.18)' : 'transparent')};
   /* background-color: ${({ isActive }) => (isActive ? '#2f2f36' : 'transparent')}; */
   /* background-color: ${({ isActive }) => (isActive ? '#312c40' : 'transparent')}; */
   /* box-shadow: ${({ isActive }) => isActive && '0 0 0 1px rgba(255, 255, 255, 0.08)'}; */

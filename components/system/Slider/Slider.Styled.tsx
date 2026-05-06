@@ -7,8 +7,7 @@ const StyledSlider = styled.div`
     height: 16px;
     width: 100%;
     max-width: 320px;
-    background: var(--background4);
-    background-image: linear-gradient(var(--mediumPurple), var(--mediumPurple));
+    background-color: var(--palette-surface-deep);
     background-repeat: no-repeat;
     border-radius: 20px;
     cursor: pointer;

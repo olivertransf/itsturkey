@@ -6,7 +6,8 @@ import { collections, getExistingAnonymousGameId, getUserId, throwError } from '
 import getMapFromGame from '@backend/queries/getMapFromGame'
 import { duelParticipantRole } from '@backend/utils/duelParticipant'
 import { findDuelSessionByInvite } from '@backend/utils/resolveDuelInvite'
-import { buildDuelPayload } from './buildDuelPayload'
+import { notifyDuelUpdated } from '@backend/utils/pusherNotify'
+import { replyWithDuelPayload } from './buildDuelPayload'
 
 const postDuelStart = async (req: NextApiRequest, res: NextApiResponse) => {
   const duelId = req.query.id as string
@@ -27,7 +28,8 @@ const postDuelStart = async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (duel.status !== 'waiting') {
     const mapDetails = await getMapFromGame({ mapId: duel.mapId } as unknown as Game)
-    return res.status(200).send(buildDuelPayload(duel, role, mapDetails))
+    await replyWithDuelPayload(res, duel, role, mapDetails)
+    return
   }
 
   if (!duel.guest.joined) {
@@ -45,9 +47,11 @@ const postDuelStart = async (req: NextApiRequest, res: NextApiResponse) => {
     await collections.duelSessions?.replaceOne({ _id: duel._id }, duel)
   }
 
+  void notifyDuelUpdated(duelId, 'start')
+
   const mapDetails = await getMapFromGame({ mapId: duel.mapId } as unknown as Game)
 
-  res.status(200).send(buildDuelPayload(duel, role, mapDetails))
+  await replyWithDuelPayload(res, duel, role, mapDetails)
 }
 
 export default postDuelStart

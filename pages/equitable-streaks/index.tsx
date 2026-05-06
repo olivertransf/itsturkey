@@ -1,9 +1,9 @@
+import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { PageBackLink } from '@components/PageBackLink'
 import { WidthController } from '@components/layout'
 import { MapLeaderboard } from '@components/MapLeaderboard'
 import { Meta } from '@components/Meta'
-import { GameSettingsModal } from '@components/modals'
 import { SkeletonLeaderboard, SkeletonMapInfo } from '@components/skeletons'
 import { StreakMapStats } from '@components/StreakMapStats'
 import { Avatar, Button } from '@components/system'
@@ -15,8 +15,8 @@ import { mailman, showToast } from '@utils/helpers'
 import { SITE_NAME } from '@utils/constants/site'
 
 const EquitableStreaksPage = () => {
+  const router = useRouter()
   const [streakStats, setStreakStats] = useState<StreakStatsType>()
-  const [settingsModalOpen, setSettingsModalOpen] = useState(false)
 
   useEffect(() => {
     getStreakStats()
@@ -30,10 +30,6 @@ const EquitableStreaksPage = () => {
     }
 
     setStreakStats(res)
-  }
-
-  const handleClickPlay = () => {
-    setSettingsModalOpen(true)
   }
 
   return (
@@ -58,11 +54,10 @@ const EquitableStreaksPage = () => {
                         </div>
                         <VerifiedBadge size={20} />
                       </div>
-                      <span className="description">{EQUITABLE_COUNTRY_STREAK_DETAILS.description}</span>
                     </div>
                   </div>
-                  <Button className="play-button" onClick={() => handleClickPlay()}>
-                    Play Now
+                  <Button className="play-button" onClick={() => void router.push('/streak')}>
+                    Play
                   </Button>
                 </div>
               </div>
@@ -82,13 +77,6 @@ const EquitableStreaksPage = () => {
           <SkeletonLeaderboard />
         )}
       </WidthController>
-
-      <GameSettingsModal
-        isOpen={settingsModalOpen}
-        closeModal={() => setSettingsModalOpen(false)}
-        mapDetails={EQUITABLE_COUNTRY_STREAK_DETAILS}
-        gameMode="streak"
-      />
     </StyledPlayStreaksPage>
   )
 }

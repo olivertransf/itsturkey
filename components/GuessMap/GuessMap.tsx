@@ -25,6 +25,10 @@ type Props = {
   resetMap?: boolean
   gameData: Game
   compactIdle?: boolean
+  /** Duel: full-size idle map, wider wrapper, text-only map controls. */
+  duelLayout?: boolean
+  /** Duel: after guess is locked server-side, block map interaction and submit. */
+  guessLocked?: boolean
 }
 
 const GuessMap: FC<Props> = ({
@@ -38,6 +42,8 @@ const GuessMap: FC<Props> = ({
   resetMap,
   gameData,
   compactIdle,
+  duelLayout = false,
+  guessLocked = false,
 }) => {
   const [marker, setMarker] = useState<{ lat: number; lng: number } | null>(null)
 
@@ -52,7 +58,7 @@ const GuessMap: FC<Props> = ({
     handleMapLeave,
     changeMapSize,
     resetGuessMapDimensions,
-  } = useGuessMap({ idleScale: compactIdle ? 0.45 : 1 })
+  } = useGuessMap({ idleScale: compactIdle ? (duelLayout ? 0.88 : 0.45) : 1 })
   const user = useAppSelector((state) => state.user)
 
   useEffect(() => {
@@ -110,6 +116,7 @@ const GuessMap: FC<Props> = ({
   }
 
   const addMarker = (e: google.maps.MapMouseEvent) => {
+    if (guessLocked) return
     if (!e.latLng) return
 
     const location = { lat: e.latLng.lat(), lng: e.latLng.lng() }
@@ -124,28 +131,47 @@ const GuessMap: FC<Props> = ({
       mapWidth={mapWidth}
       mobileMapOpen={mobileMapOpen}
       mapDimmed={!mobileMapOpen && !hovering && !isPinned}
+      duelLayout={duelLayout}
     >
-      <div className="guessMapWrapper" onMouseOver={handleMapHover} onMouseLeave={handleMapLeave}>
-        {hovering && (
+      <div
+        className="guessMapWrapper"
+        onMouseOver={guessLocked ? undefined : handleMapHover}
+        onMouseLeave={guessLocked ? undefined : handleMapLeave}
+        style={{ pointerEvents: guessLocked ? 'none' : undefined }}
+      >
+        {hovering && !guessLocked && (
           <div className="controls">
             <button
-              className={`controlBtn increase ${user.guessMapSize === 4 ? 'disabled' : ''}`}
+              type="button"
+              className={`controlBtn increase ${user.guessMapSize === 4 ? 'disabled' : ''} ${
+                duelLayout ? 'duel-glyph' : ''
+              }`}
               onClick={() => changeMapSize('increase')}
               disabled={user.guessMapSize === 4}
+              aria-label="Larger map"
             >
-              <ArrowRightIcon />
+              {duelLayout ? '+' : <ArrowRightIcon />}
             </button>
 
             <button
-              className={`controlBtn decrease ${user.guessMapSize === 1 ? 'disabled' : ''}`}
+              type="button"
+              className={`controlBtn decrease ${user.guessMapSize === 1 ? 'disabled' : ''} ${
+                duelLayout ? 'duel-glyph' : ''
+              }`}
               onClick={() => changeMapSize('decrease')}
               disabled={user.guessMapSize === 1}
+              aria-label="Smaller map"
             >
-              <ArrowRightIcon />
+              {duelLayout ? '−' : <ArrowRightIcon />}
             </button>
 
-            <button className="controlBtn" onClick={() => setIsPinned(!isPinned)}>
-              {isPinned ? <LockClosedIcon /> : <LockOpenIcon />}
+            <button
+              type="button"
+              className={`controlBtn ${duelLayout ? 'duel-glyph' : ''}`}
+              onClick={() => setIsPinned(!isPinned)}
+              aria-label={isPinned ? 'Unpin map' : 'Pin map'}
+            >
+              {duelLayout ? (isPinned ? '●' : '○') : isPinned ? <LockClosedIcon /> : <LockOpenIcon />}
             </button>
           </div>
         )}
@@ -176,7 +202,7 @@ const GuessMap: FC<Props> = ({
             backgroundColor="var(--background3)"
             color="#fff"
             width="100%"
-            disabled={!currGuess}
+            disabled={guessLocked || !currGuess}
             onClick={() => handleSubmitGuess()}
           >
             Submit Guess

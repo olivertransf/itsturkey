@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs'
 import { collections, throwError } from '@backend/utils'
 import { registerUserSchema } from '@backend/validations/userValidations'
+import { reserveUniqueFriendCode } from '@backend/utils/friendCode'
 import { getRandomAvatar } from '@utils/helpers'
 import { NextApiRequest, NextApiResponse } from 'next'
 
@@ -22,10 +23,18 @@ const handleRegister = async (req: NextApiRequest, res: NextApiResponse) => {
   // Values are unique, so create user
   const hashPassword = bcrypt.hashSync(password, 10)
 
+  let friendCode: string
+  try {
+    friendCode = await reserveUniqueFriendCode()
+  } catch {
+    return throwError(res, 503, 'Could not create account — try again')
+  }
+
   const newUser = {
     name,
     email,
     password: hashPassword,
+    friendCode,
     avatar: getRandomAvatar(),
     createdAt: new Date(),
     onNewDomain: req.headers.host === 'www.geohub.gg',

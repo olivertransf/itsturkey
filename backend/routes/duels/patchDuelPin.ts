@@ -7,7 +7,8 @@ import getMapFromGame from '@backend/queries/getMapFromGame'
 import { duelParticipantRole } from '@backend/utils/duelParticipant'
 import { DUEL_PIN_MIN_INTERVAL_MS } from '@backend/utils/duelConstants'
 import { findDuelSessionByInvite } from '@backend/utils/resolveDuelInvite'
-import { buildDuelPayload } from './buildDuelPayload'
+import { notifyDuelUpdated } from '@backend/utils/pusherNotify'
+import { replyWithDuelPayload } from './buildDuelPayload'
 
 const patchDuelPin = async (req: NextApiRequest, res: NextApiResponse) => {
   const duelId = req.query.id as string
@@ -36,7 +37,8 @@ const patchDuelPin = async (req: NextApiRequest, res: NextApiResponse) => {
   if (duel.status !== 'in_progress') {
     const mapDetails = await getMapFromGame({ mapId: duel.mapId } as unknown as Game)
     const role = duelParticipantRole(duel, userId, anonymousId)
-    return res.status(200).send(buildDuelPayload(duel, role, mapDetails))
+    await replyWithDuelPayload(res, duel, role, mapDetails)
+    return
   }
 
   const role = duelParticipantRole(duel, userId, anonymousId)
@@ -47,12 +49,14 @@ const patchDuelPin = async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (role === 'host' && duel.hostLockedGuess) {
     const mapDetails = await getMapFromGame({ mapId: duel.mapId } as unknown as Game)
-    return res.status(200).send(buildDuelPayload(duel, role, mapDetails))
+    await replyWithDuelPayload(res, duel, role, mapDetails)
+    return
   }
 
   if (role === 'guest' && duel.guestLockedGuess) {
     const mapDetails = await getMapFromGame({ mapId: duel.mapId } as unknown as Game)
-    return res.status(200).send(buildDuelPayload(duel, role, mapDetails))
+    await replyWithDuelPayload(res, duel, role, mapDetails)
+    return
   }
 
   const prev = role === 'host' ? duel.hostProvisionalPin : duel.guestProvisionalPin
@@ -61,7 +65,8 @@ const patchDuelPin = async (req: NextApiRequest, res: NextApiResponse) => {
     const delta = Date.now() - new Date(prev.at).getTime()
     if (delta < DUEL_PIN_MIN_INTERVAL_MS) {
       const mapDetails = await getMapFromGame({ mapId: duel.mapId } as unknown as Game)
-      return res.status(200).send(buildDuelPayload(duel, role, mapDetails))
+      await replyWithDuelPayload(res, duel, role, mapDetails)
+      return
     }
   }
 
@@ -80,11 +85,12 @@ const patchDuelPin = async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (mutated) {
     await collections.duelSessions?.replaceOne({ _id: duel._id }, duel)
+    void notifyDuelUpdated(duelId, 'pin_state')
   }
 
   const mapDetails = await getMapFromGame({ mapId: duel.mapId } as unknown as Game)
 
-  res.status(200).send(buildDuelPayload(duel, role, mapDetails))
+  await replyWithDuelPayload(res, duel, role, mapDetails)
 }
 
 export default patchDuelPin

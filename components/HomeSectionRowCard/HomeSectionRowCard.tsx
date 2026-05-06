@@ -2,7 +2,6 @@ import { FC, ReactNode } from 'react'
 import StyledHomeSectionRowCard from './HomeSectionRowCard.Styled'
 
 type Props = {
-  accentColor: string
   /** Country / map name (plain text for the heading). */
   title: string
   /** Omit for single-line cards (e.g. per-country maps). */
@@ -12,12 +11,12 @@ type Props = {
   children: ReactNode
 }
 
-const HomeSectionRowCard: FC<Props> = ({ accentColor, title, description, titleLeading, children }) => {
+const HomeSectionRowCard: FC<Props> = ({ title, description, titleLeading, children }) => {
   const descText = description?.trim()
   const hasDescription = Boolean(descText)
 
   return (
-    <StyledHomeSectionRowCard $accentColor={accentColor} $hasDescription={hasDescription}>
+    <StyledHomeSectionRowCard $hasDescription={hasDescription}>
       <div className="home-row-card">
         <div className="home-row-text">
           <div className="home-row-title-line">

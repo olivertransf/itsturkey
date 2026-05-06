@@ -74,6 +74,21 @@ test('resolves on deadline using provisional pin for missing lock', () => {
   expect(duel.roundResults[0]?.guestNoGuess).toBe(false)
 })
 
+test('resolves on deadline with world center when no provisional pin', () => {
+  const duel = mkDuel()
+  const t0 = new Date('2026-01-01T00:00:00Z')
+
+  duel.hostLockedGuess = { lat: 48.86, lng: 2.35, lockedAt: t0 }
+  duel.roundDeadlineAt = new Date(t0.getTime() + 15_000)
+
+  const tEnd = new Date(t0.getTime() + 16_000)
+  const out = tryResolveCurrentRound(duel, tEnd, actual)
+
+  expect(out.type).toBe('resolved')
+  expect(duel.roundResults[0]?.guestNoGuess).toBe(false)
+  expect(duel.roundResults[0]?.guestGuess).toEqual({ lat: 0, lng: 0 })
+})
+
 test('points mode adds both scores without HP swing', () => {
   const duel = mkDuel({ mode: 'points', totalRounds: 1 })
   const t = new Date('2026-01-01T00:00:00Z')

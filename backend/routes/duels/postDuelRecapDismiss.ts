@@ -6,7 +6,8 @@ import { collections, getExistingAnonymousGameId, getUserId, throwError } from '
 import getMapFromGame from '@backend/queries/getMapFromGame'
 import { duelParticipantRole } from '@backend/utils/duelParticipant'
 import { findDuelSessionByInvite } from '@backend/utils/resolveDuelInvite'
-import { buildDuelPayload } from './buildDuelPayload'
+import { notifyDuelUpdated } from '@backend/utils/pusherNotify'
+import { replyWithDuelPayload } from './buildDuelPayload'
 
 const postDuelRecapDismiss = async (req: NextApiRequest, res: NextApiResponse) => {
   const duelId = req.query.id as string
@@ -30,6 +31,7 @@ const postDuelRecapDismiss = async (req: NextApiRequest, res: NextApiResponse) =
   duel = stepped
   if (z0) {
     await collections.duelSessions?.replaceOne({ _id: duel._id }, duel)
+    void notifyDuelUpdated(duelId, 'pin_state')
   }
 
   const role = duelParticipantRole(duel, userId, anonymousId)
@@ -41,7 +43,8 @@ const postDuelRecapDismiss = async (req: NextApiRequest, res: NextApiResponse) =
   const mapDetails = await getMapFromGame({ mapId: duel.mapId } as unknown as Game)
 
   if (duel.status !== 'in_progress') {
-    return res.status(200).send(buildDuelPayload(duel, role, mapDetails))
+    await replyWithDuelPayload(res, duel, role, mapDetails)
+    return
   }
 
   const last =
@@ -56,7 +59,9 @@ const postDuelRecapDismiss = async (req: NextApiRequest, res: NextApiResponse) =
 
   await collections.duelSessions?.replaceOne({ _id: duel._id }, duel)
 
-  res.status(200).send(buildDuelPayload(duel, role, mapDetails))
+  void notifyDuelUpdated(duelId, 'recap_dismiss')
+
+  await replyWithDuelPayload(res, duel, role, mapDetails)
 }
 
 export default postDuelRecapDismiss

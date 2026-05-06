@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 
-const StyledHomeSectionRowCard = styled.div<{ $accentColor: string; $hasDescription: boolean }>`
+const StyledHomeSectionRowCard = styled.div<{ $hasDescription: boolean }>`
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
@@ -10,13 +10,12 @@ const StyledHomeSectionRowCard = styled.div<{ $accentColor: string; $hasDescript
     flex-direction: row;
     align-items: center;
     gap: 14px;
-    padding: 13px 17px;
+    padding: var(--pad-row-card);
     min-height: ${({ $hasDescription }) => ($hasDescription ? '58px' : '50px')};
     box-sizing: border-box;
     border-radius: 12px;
-    background-color: ${({ theme }) => theme.color.gray[900]};
-    border: 1px solid var(--border-subtle);
-    border-left: 4px solid ${({ $accentColor }) => $accentColor};
+    background-color: var(--palette-surface);
+    border: var(--border-default);
     box-shadow: var(--shadow-card);
   }
 
@@ -94,11 +93,11 @@ const StyledHomeSectionRowCard = styled.div<{ $accentColor: string; $hasDescript
     border: none;
     cursor: pointer;
     text-decoration: none;
-    background-color: var(--indigo-700);
+    background-color: var(--accent-primary);
     color: #fff;
 
     &:hover {
-      background-color: var(--indigo-600);
+      background-color: var(--accent-primary-hover);
     }
 
     &:disabled {

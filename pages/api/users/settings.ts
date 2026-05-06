@@ -3,6 +3,7 @@ import Cryptr from 'cryptr'
 import { ObjectId } from 'mongodb'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { collections, dbConnect, getUserId, throwError } from '@backend/utils'
+import { assignFriendCodeIfMissing } from '@backend/utils/friendCode'
 import { GUEST_ACCOUNT_ID } from '@utils/constants/random'
 
 const ALLOWED_DISTANCE_UNITS = ['metric', 'imperial']
@@ -17,7 +18,12 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     if (req.method === 'GET') {
       const userId = await getUserId(req, res)
 
-      const user = await collections.users?.findOne({ _id: new ObjectId(userId) })
+      if (!userId) {
+        return throwError(res, 401, 'Unauthorized')
+      }
+
+      const oid = new ObjectId(userId)
+      const user = await collections.users?.findOne({ _id: oid })
 
       if (!user) {
         return throwError(res, 500, 'Failed to get user details.')
@@ -25,9 +31,17 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
       const decrypedMapsAPIKey = user.mapsAPIKey ? cryptr.decrypt(user.mapsAPIKey) : ''
 
+      let friendCode: string
+      try {
+        friendCode = await assignFriendCodeIfMissing(oid)
+      } catch {
+        return throwError(res, 500, 'Failed to load account codes.')
+      }
+
       return res.status(200).send({
         distanceUnit: user.distanceUnit,
         mapsAPIKey: decrypedMapsAPIKey,
+        friendCode,
       })
     }
 

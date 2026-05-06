@@ -38,8 +38,7 @@ const GameSettingsModal: FC<Props> = ({
     [mapDetails._id]
   )
 
-  const showCountryTips =
-    Boolean(equitableCountryIso && gameMode !== 'streak' && !panelState.showChallengeView)
+  const showCountryTips = Boolean(equitableCountryIso && gameMode !== 'streak')
 
   const countryTipsHeader =
     showCountryTips && equitableCountryIso ? (
@@ -47,7 +46,6 @@ const GameSettingsModal: FC<Props> = ({
         variant="compact"
         countryIso={equitableCountryIso}
         mapLabel={mapDetails.name}
-        presentation="fullscreen"
         compactShowLabel={false}
         compactShrinkWrap
       />

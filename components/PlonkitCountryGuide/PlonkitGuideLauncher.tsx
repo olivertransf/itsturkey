@@ -8,6 +8,7 @@ type Props = {
   countryIso: string | null
   mapLabel?: string
   variant?: 'streetControl' | 'compact'
+  /** `fullscreen` fills the viewport; `drawer` is a right sheet (opt in). */
   presentation?: 'drawer' | 'fullscreen'
   /** Pill alignment for compact variant */
   compactAlign?: 'center' | 'start' | 'end'
@@ -21,7 +22,7 @@ const PlonkitGuideLauncher: FC<Props> = ({
   countryIso,
   mapLabel,
   variant = 'streetControl',
-  presentation = 'drawer',
+  presentation = 'fullscreen',
   compactAlign = 'center',
   compactShowLabel = true,
   compactShrinkWrap = false,

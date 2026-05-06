@@ -10,7 +10,7 @@ type Props = {
   onClose: () => void
   isoCode: string | null
   mapLabel?: string
-  /** Full viewport panel (e.g. game settings modal); drawer is default side sheet. */
+  /** Full viewport panel vs right-edge drawer sheet. */
   presentation?: 'drawer' | 'fullscreen'
 }
 
@@ -19,7 +19,7 @@ const PlonkitCountryGuideOverlay: FC<Props> = ({
   onClose,
   isoCode,
   mapLabel,
-  presentation = 'drawer',
+  presentation = 'fullscreen',
 }) => {
   const { loading, error, payload } = usePlonkitGuide(isoCode, Boolean(open && isoCode))
 

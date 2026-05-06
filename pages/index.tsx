@@ -12,7 +12,6 @@ import { Avatar, Button } from '@components/system'
 import StyledHomePage from '@styles/HomePage.Styled'
 import type { MapType } from '@types'
 import { GEOHUB_UPSTREAM_REPO_URL, SITE_NAME } from '@utils/constants/site'
-import { getHomeMapAccentColor } from '@utils/helpers/homeMapAccent'
 
 const parseHomeMapCards = (): Pick<MapType, '_id' | 'name' | 'description' | 'previewImg'>[] | null => {
   const raw = process.env.NEXT_PUBLIC_HOME_MAP_CARDS
@@ -80,14 +79,16 @@ const Home: NextPage = () => {
               <>
                 <Link href="/login">
                   <a>
-                    <Button variant="solidCustom" size="sm" backgroundColor="#3d3d3d" color="#fff" hoverColor="#444">
+                    <Button variant="solidGray" size="sm">
                       Log In
                     </Button>
                   </a>
                 </Link>
                 <Link href="/register">
                   <a>
-                    <Button size="sm">Sign Up</Button>
+                    <Button variant="primary" size="sm">
+                      Sign Up
+                    </Button>
                   </a>
                 </Link>
               </>
@@ -96,9 +97,6 @@ const Home: NextPage = () => {
 
           <header className="home-hero">
             <h1 className="site-title">{SITE_NAME}</h1>
-            <p className="site-tagline">
-              Street View guessing: maps, country streaks, four boards at once, or head-to-head duels. yipe!
-            </p>
           </header>
 
           <section className="home-section">
@@ -114,40 +112,26 @@ const Home: NextPage = () => {
             <h2 className="section-title">Maps</h2>
             <div className="card-grid">
               {homeMaps.map((map) => (
-                <HomeWorldCard
-                  key={String(map._id)}
-                  mapId={String(map._id)}
-                  name={map.name}
-                  description={map.description}
-                  accentColor={getHomeMapAccentColor(map.name)}
-                />
+                <HomeWorldCard key={String(map._id)} mapId={String(map._id)} name={map.name} />
               ))}
             </div>
           </section>
 
           <section className="home-section" id="equitable-by-country">
             <h2 className="section-title">By country</h2>
-            <p className="home-section-hint">Standard games: every round is from Street View pins in that country.</p>
             <HomeEquitableCountryGrid variant="spotlight" />
-            <div className="home-geo-cta-row">
-              <Link href="/maps#equitable-by-country">
-                <a className="home-geo-cta">All countries</a>
-              </Link>
-            </div>
           </section>
 
           <section className="home-section" id="equitable-by-continent">
             <h2 className="section-title">By continent</h2>
-            <p className="home-section-hint">
-              Standard games pooled across every country in that continent (same equitable source maps as By country).
-            </p>
             <HomeEquitableContinentGrid />
-            <div className="home-geo-cta-row">
-              <Link href="/maps#equitable-by-continent">
-                <a className="home-geo-cta home-geo-cta--secondary">Continents on Browse maps</a>
-              </Link>
-            </div>
           </section>
+
+          <div className="home-geo-cta-row">
+            <Link href="/maps">
+              <a className="home-geo-cta">Browse all maps</a>
+            </Link>
+          </div>
 
           {homeMaps.length === 0 && (
             <div className="home-empty">

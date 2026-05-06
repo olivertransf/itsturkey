@@ -5,26 +5,10 @@ type StyledProps = {
 }
 
 const StyledProfilePage = styled.div<StyledProps>`
-  .banner-image {
-    height: 230px;
+  .profile-settings-embed {
+    margin-top: 8px;
     width: 100%;
-    position: relative;
-
-    img {
-      height: 100%;
-      width: 100%;
-      object-fit: cover;
-    }
-
-    &::after {
-      position: absolute;
-      content: '';
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 200px;
-      background: linear-gradient(transparent, #0e0e0e);
-    }
+    max-width: 100%;
   }
 
   .profile-details {
@@ -33,8 +17,8 @@ const StyledProfilePage = styled.div<StyledProps>`
     width: 100%;
     position: relative;
     z-index: 2;
-    margin-top: -100px;
-    padding: 20px;
+    margin-top: 0;
+    padding: 24px 20px 20px;
 
     .profile-heading {
       padding-bottom: 20px;
@@ -253,19 +237,85 @@ const StyledProfilePage = styled.div<StyledProps>`
     .no-results-message {
       color: var(--color3);
     }
+
+    .friends-panel {
+      margin-top: 24px;
+
+      .friends-hint {
+        font-size: 14px;
+        color: rgb(255, 255, 255, 0.45);
+        margin-bottom: 16px;
+        line-height: 1.45;
+
+        a {
+          color: var(--color2);
+          font-weight: 500;
+
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
+
+      .friends-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .friend-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 16px;
+        border-radius: 12px;
+        background-color: #2a2a2a;
+        border: 1px solid #333;
+      }
+
+      .friend-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+
+        a {
+          color: var(--color2);
+          font-weight: 600;
+          font-size: 15px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+
+        .friend-code {
+          font-size: 12px;
+          color: rgb(255, 255, 255, 0.45);
+          font-family: ui-monospace, monospace;
+        }
+      }
+
+      .friend-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+      }
+    }
   }
 
   @media (max-width: 600px) {
-    .banner-image {
-      height: 125px;
-
-      &::after {
-        height: 60px;
-      }
-    }
-
     .profile-details {
-      margin-top: -45px;
+      padding-top: 16px;
 
       .profile-heading {
         border: 0;

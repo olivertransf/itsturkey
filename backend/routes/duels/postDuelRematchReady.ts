@@ -8,7 +8,8 @@ import { DUEL_HP_LOCATION_BATCH, DUEL_ROUND_LOCATION_POOL_ID } from '@backend/ut
 import { duelParticipantRole } from '@backend/utils/duelParticipant'
 import getLocations from '@backend/utils/getLocations'
 import { findDuelSessionByInvite } from '@backend/utils/resolveDuelInvite'
-import { buildDuelPayload } from './buildDuelPayload'
+import { notifyDuelUpdated } from '@backend/utils/pusherNotify'
+import { replyWithDuelPayload } from './buildDuelPayload'
 
 const rematchLocationCount = (duel: DuelSession): number =>
   duel.mode === 'points' ? Math.max(1, duel.totalRounds ?? duel.locations.length) : DUEL_HP_LOCATION_BATCH
@@ -32,7 +33,8 @@ const postDuelRematchReady = async (req: NextApiRequest, res: NextApiResponse) =
 
   if (duel.status !== 'finished') {
     const mapDetails = await getMapFromGame({ mapId: duel.mapId } as unknown as Game)
-    return res.status(200).send(buildDuelPayload(duel, role, mapDetails))
+    await replyWithDuelPayload(res, duel, role, mapDetails)
+    return
   }
 
   if (!duel.guest.joined) {
@@ -43,6 +45,8 @@ const postDuelRematchReady = async (req: NextApiRequest, res: NextApiResponse) =
 
   await collections.duelSessions?.updateOne({ _id: duel._id, status: 'finished' }, { $set: { [flagField]: true } })
 
+  void notifyDuelUpdated(duelId, 'rematch')
+
   duel = await load()
   if (!duel) {
     return throwError(res, 404, 'Duel not found')
@@ -50,7 +54,8 @@ const postDuelRematchReady = async (req: NextApiRequest, res: NextApiResponse) =
 
   if (duel.status !== 'finished') {
     const mapDetails = await getMapFromGame({ mapId: duel.mapId } as unknown as Game)
-    return res.status(200).send(buildDuelPayload(duel, role, mapDetails))
+    await replyWithDuelPayload(res, duel, role, mapDetails)
+    return
   }
 
   if (duel.rematchReadyHost && duel.rematchReadyGuest) {
@@ -94,6 +99,8 @@ const postDuelRematchReady = async (req: NextApiRequest, res: NextApiResponse) =
       },
     )
 
+    void notifyDuelUpdated(duelId, 'rematch')
+
     duel = await load()
     if (!duel) {
       return throwError(res, 404, 'Duel not found')
@@ -104,13 +111,14 @@ const postDuelRematchReady = async (req: NextApiRequest, res: NextApiResponse) =
       duel = advanced
       if (mutated) {
         await collections.duelSessions?.replaceOne({ _id: duel._id }, duel)
+        void notifyDuelUpdated(duelId, 'rematch')
         duel = (await load()) as DuelSession
       }
     }
   }
 
   const mapDetails = await getMapFromGame({ mapId: duel.mapId } as unknown as Game)
-  res.status(200).send(buildDuelPayload(duel, role, mapDetails))
+  await replyWithDuelPayload(res, duel, role, mapDetails)
 }
 
 export default postDuelRematchReady

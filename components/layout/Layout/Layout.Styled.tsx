@@ -43,19 +43,19 @@ const StyledLayout = styled.div`
     max-height: 100%;
     position: relative;
     overflow: hidden auto;
-    background-image: radial-gradient(ellipse 90% 55% at 50% -35%, rgba(124, 58, 237, 0.06), transparent 48%);
-    background-attachment: local;
+    background-color: var(--bg-primary);
   }
 
   .mainContent {
     max-width: var(--mainMaxWidth);
     width: 100%;
-    padding: 3.5rem;
+    padding: var(--space-page-y) var(--space-page-x);
     margin: 0 auto;
     height: 100%;
+    box-sizing: border-box;
 
     @media (max-width: 600px) {
-      padding: 1rem;
+      padding: var(--space-page-y-mobile) var(--page-gutter);
     }
   }
 

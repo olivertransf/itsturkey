@@ -6,7 +6,7 @@ import { collections, getExistingAnonymousGameId, getUserId, throwError } from '
 import getMapFromGame from '@backend/queries/getMapFromGame'
 import { duelParticipantRole } from '@backend/utils/duelParticipant'
 import { findDuelSessionByInvite } from '@backend/utils/resolveDuelInvite'
-import { buildDuelPayload } from './buildDuelPayload'
+import { replyWithDuelPayload } from './buildDuelPayload'
 
 const getDuel = async (req: NextApiRequest, res: NextApiResponse) => {
   const duelId = req.query.id as string
@@ -36,7 +36,7 @@ const getDuel = async (req: NextApiRequest, res: NextApiResponse) => {
   const fakeGame = { mapId: duel.mapId } as unknown as Game
   const mapDetails = await getMapFromGame(fakeGame)
 
-  res.status(200).send(buildDuelPayload(duel, role, mapDetails))
+  await replyWithDuelPayload(res, duel, role, mapDetails)
 }
 
 export default getDuel

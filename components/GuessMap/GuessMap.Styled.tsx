@@ -1,10 +1,12 @@
 import styled, { css, keyframes } from 'styled-components'
+import { GUESS_MAP_MAX_WIDTH_PX } from '@utils/helpers/getGuessMapSize'
 
 type StyledProps = {
   mapHeight: number
   mapWidth: number
   mobileMapOpen?: boolean
   mapDimmed?: boolean
+  duelLayout?: boolean
 }
 
 const slideUpAnim = keyframes`
@@ -19,6 +21,27 @@ const StyledGuessMap = styled.div<StyledProps>`
     bottom: 20px;
     right: 20px;
     z-index: 3;
+    /* vmin + cap; extra width factor on small tablets so corner map starts smaller */
+    width: min(
+      calc(${({ mapWidth }) => mapWidth}vmin * 0.9),
+      min(${GUESS_MAP_MAX_WIDTH_PX}px, calc(100vw - 32px))
+    );
+    min-width: 0;
+    max-width: calc(100vw - 24px);
+
+    @media (max-width: 900px) and (min-width: 601px) {
+      width: min(
+        calc(${({ mapWidth }) => mapWidth}vmin * 0.74),
+        min(300px, calc(100vw - 28px))
+      );
+    }
+
+    @media (max-width: 720px) and (min-width: 601px) {
+      width: min(
+        calc(${({ mapWidth }) => mapWidth}vmin * 0.62),
+        min(252px, calc(100vw - 24px))
+      );
+    }
 
     @media (max-width: 600px) {
       display: flex;
@@ -39,16 +62,21 @@ const StyledGuessMap = styled.div<StyledProps>`
     }
   }
 
-  .map {
-    height: ${({ mapHeight }) => mapHeight}vh;
-    width: ${({ mapWidth }) => mapWidth}vw;
-    opacity: ${({ mapDimmed, mobileMapOpen }) => (mobileMapOpen || !mapDimmed ? 1 : 0.55)};
+    .map {
+    width: 100%;
+    height: auto;
+    aspect-ratio: ${({ mapWidth, mapHeight }) => `${mapWidth} / ${mapHeight}`};
+    opacity: ${({ mapDimmed, mobileMapOpen, duelLayout }) => {
+      if (mobileMapOpen || !mapDimmed) return 1
+      return duelLayout ? 0.88 : 0.63
+    }};
     border-radius: 4px;
-    transition: opacity 0.15s ease, width 0.1s ease, height 0.1s ease;
+    transition: opacity 0.15s ease, width 0.15s ease;
     position: relative;
     margin-bottom: 10px;
 
     @media (max-width: 600px) {
+      aspect-ratio: unset;
       height: 100%;
       width: 100%;
       border-radius: 0;
@@ -65,7 +93,7 @@ const StyledGuessMap = styled.div<StyledProps>`
     padding: 6px;
     border-radius: 4px 4px 0 0;
 
-    @media (max-width: 600px) {
+    @media (max-width: 1100px) {
       display: none;
     }
   }
@@ -79,11 +107,11 @@ const StyledGuessMap = styled.div<StyledProps>`
     align-items: center;
     justify-content: center;
 
-    &.increase {
+    &.increase:not(.duel-glyph) {
       transform: rotate(-135deg);
     }
 
-    &.decrease {
+    &.decrease:not(.duel-glyph) {
       transform: rotate(45deg);
     }
 
@@ -98,6 +126,17 @@ const StyledGuessMap = styled.div<StyledProps>`
 
       path {
         stroke-width: 3;
+      }
+    }
+
+    &.duel-glyph {
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--background1);
+
+      svg {
+        display: none;
       }
     }
   }

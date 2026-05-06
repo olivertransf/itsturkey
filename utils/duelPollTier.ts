@@ -22,3 +22,12 @@ export const DUEL_POLL_MS: Record<DuelPollTier, number> = {
   active_play: 900,
   finished: 12000,
 }
+
+/** When Pusher is connected, polling is only a slow safety net (visibility/reconnect). */
+export const DUEL_POLL_PUSH_CONNECTED_MS: Record<DuelPollTier, number> = {
+  bootstrap: 45000,
+  lobby: 60000,
+  quiet_play: 45000,
+  active_play: 60000,
+  finished: 120000,
+}

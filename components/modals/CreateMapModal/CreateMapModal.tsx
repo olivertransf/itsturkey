@@ -4,8 +4,12 @@ import React, { FC, useState } from 'react'
 import { MapPreviewCard } from '@components/MapPreviewCard'
 import { Input } from '@components/system'
 import { MapType } from '@types'
-import { MAP_AVATAR_PATH } from '@utils/constants/random'
-import { mailman, randomInt, showToast } from '@utils/helpers'
+import {
+  BUILTIN_MAP_THUMB_FILES,
+  DEFAULT_MAP_PREVIEW_FILE,
+  resolveMapImageSrc,
+} from '@utils/helpers/mapPreviewSrc'
+import { mailman, showToast } from '@utils/helpers'
 import { MainModal } from '../'
 import { StyledCreateMapModal } from './'
 
@@ -16,14 +20,12 @@ type Props = {
   setMapDetails?: (mapDetails: MapType) => void
 }
 
-const mapAvatars = Array.from({ length: 16 }).map((_, idx) => `custom${idx + 1}.jpg`)
-
 const CreateMapModal: FC<Props> = ({ isOpen, closeModal, mapDetails, setMapDetails }) => {
   const router = useRouter()
 
   const [name, setName] = useState(mapDetails?.name || '')
   const [description, setDescription] = useState(mapDetails?.description || '')
-  const [avatar, setAvatar] = useState(mapDetails?.previewImg || `custom${randomInt(1, 17)}.jpg`)
+  const [avatar, setAvatar] = useState(mapDetails?.previewImg?.trim() || DEFAULT_MAP_PREVIEW_FILE)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const isEditMode = !!mapDetails
@@ -109,14 +111,14 @@ const CreateMapModal: FC<Props> = ({ isOpen, closeModal, mapDetails, setMapDetai
             <h2 className="section-title">Avatar</h2>
 
             <div className="avatars">
-              {mapAvatars.map((mapAvatar, idx) => (
+              {BUILTIN_MAP_THUMB_FILES.map((mapAvatar, idx) => (
                 <div
-                  key={idx}
+                  key={mapAvatar}
                   className={`avatar-item ${avatar === mapAvatar ? 'selected' : ''}`}
                   onClick={() => setAvatar(mapAvatar)}
                 >
                   <Image
-                    src={`${MAP_AVATAR_PATH}/${mapAvatar}`}
+                    src={resolveMapImageSrc(mapAvatar)}
                     alt={`Map Avatar Option ${idx + 1}`}
                     layout="fill"
                     objectFit="cover"

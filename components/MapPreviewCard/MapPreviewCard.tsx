@@ -5,7 +5,7 @@ import { TrashIcon } from '@heroicons/react/outline'
 import { MapType } from '@types'
 import { flagEmojiFromIsoAlpha2 } from '@utils/helpers/flagEmoji'
 import { parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
-import { MAP_AVATAR_PATH } from '../../utils/constants/random'
+import { resolveMapImageSrc } from '@utils/helpers/mapPreviewSrc'
 import { StyledMapPreviewCard } from './'
 
 type Props = {
@@ -26,13 +26,14 @@ const MapPreviewCard: FC<Props> = ({
   const countryCode = typeof map._id === 'string' ? parseEquitableCountryMapKey(map._id) : null
   const flag = countryCode ? flagEmojiFromIsoAlpha2(countryCode) : ''
   const playHref = `/map/${encodeURIComponent(String(map._id))}`
+  const previewSrc = resolveMapImageSrc(map.previewImg)
 
   return (
     <StyledMapPreviewCard isForDisplayOnly={isForDisplayOnly}>
       {type === 'large' && (
         <div className="large-card-wrapper">
           <div className="map-avatar">
-            <Image src={`${MAP_AVATAR_PATH}/${map.previewImg}`} alt="" layout="fill" objectFit="cover" sizes="384px" />
+            <Image src={previewSrc} alt="" layout="fill" objectFit="cover" sizes="384px" />
             <div className="image-gradient"></div>
           </div>
           <div className="contentWrapper">
@@ -65,7 +66,7 @@ const MapPreviewCard: FC<Props> = ({
       {type === 'small' && (
         <div className="small-card-wrapper">
           <div className="preview-image">
-            <Image src={`${MAP_AVATAR_PATH}/${map.previewImg}`} alt="" layout="fill" objectFit="cover" sizes="384px" />
+            <Image src={previewSrc} alt="" layout="fill" objectFit="cover" sizes="384px" />
             <div className="mapNameWrapper">
               <div className="mapName">{map.name}</div>
             </div>

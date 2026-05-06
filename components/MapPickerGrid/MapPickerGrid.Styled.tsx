@@ -1,11 +1,19 @@
 import styled from 'styled-components'
 
+export const PickerRoot = styled.div`
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+`
+
 export const ScrollRegion = styled.div<{ $maxHeight: number }>`
   max-height: ${(p) => p.$maxHeight}px;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 2px 0 4px;
+  padding: 10px 10px 12px;
   margin: 0;
+  box-sizing: border-box;
   scrollbar-gutter: stable;
 
   &::-webkit-scrollbar {
@@ -25,37 +33,38 @@ export const ColumnList = styled.div`
   min-width: 0;
 `
 
-export const MapRow = styled.button<{ $accent: string; $selected: boolean }>`
+export const MapRow = styled.button<{ $selected: boolean; $compact?: boolean }>`
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 10px;
+  gap: ${(p) => (p.$compact ? 8 : 10)}px;
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
-  padding: 9px 11px 9px 9px;
-  min-height: 48px;
+  padding: ${(p) => (p.$compact ? '7px 10px 7px 8px' : '9px 11px 9px 9px')};
+  min-height: ${(p) => (p.$compact ? 44 : 48)}px;
   margin: 0;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   text-align: left;
   font: inherit;
   color: inherit;
   border: 1px solid var(--border-subtle);
-  border-left: 4px solid ${(p) => p.$accent};
-  background-color: ${({ theme }) => theme.color.gray[900]};
+  background-color: var(--bg-elevated);
   box-shadow: ${(p) =>
     p.$selected
-      ? 'var(--shadow-card), 0 0 0 2px rgba(129, 140, 248, 0.55)'
-      : 'var(--shadow-card)'};
+      ? `0 0 0 2px rgba(47, 127, 255, 0.48), 0 10px 28px rgba(0, 0, 0, 0.32)`
+      : `inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 4px 16px rgba(0, 0, 0, 0.22)`};
   transition:
     box-shadow 0.12s ease,
     filter 0.12s ease,
-    transform 0.12s ease;
+    transform 0.12s ease,
+    border-color 0.12s ease;
 
   &:hover {
-    filter: brightness(1.04);
+    filter: brightness(1.05);
     transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.1);
   }
 
   &:active {
@@ -63,7 +72,7 @@ export const MapRow = styled.button<{ $accent: string; $selected: boolean }>`
   }
 
   &:focus-visible {
-    outline: 2px solid rgba(167, 139, 250, 0.85);
+    outline: 2px solid rgba(47, 127, 255, 0.75);
     outline-offset: 2px;
   }
 `
@@ -72,7 +81,7 @@ export const LeadMedia = styled.span`
   flex-shrink: 0;
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   position: relative;
   background: ${({ theme }) => theme.color.gray[800]};
@@ -83,7 +92,7 @@ export const LeadFlag = styled.span`
   flex-shrink: 0;
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -132,7 +141,7 @@ export const CheckWrap = styled.span`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #a5b4fc;
+  color: var(--palette-accent);
 
   .map-picker-check {
     width: 20px;
@@ -144,4 +153,31 @@ export const LoadingHint = styled.p`
   margin: 8px 0 0;
   font-size: 14px;
   color: #a1a1aa;
+`
+
+export const SearchWrap = styled.div`
+  margin: 0 0 10px;
+  width: 100%;
+  min-width: 0;
+
+  .map-picker-search {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    font-size: 14px;
+    outline: none;
+
+    &::placeholder {
+      color: var(--text-muted);
+    }
+
+    &:focus {
+      border-color: rgba(47, 127, 255, 0.55);
+      box-shadow: 0 0 0 2px rgba(47, 127, 255, 0.2);
+    }
+  }
 `

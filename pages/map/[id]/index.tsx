@@ -1,20 +1,23 @@
-import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { FC, useCallback, useEffect, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { NotFound } from '@components/errorViews'
 import { PageBackLink } from '@components/PageBackLink'
 import { MapPlayInline } from '@components/GameStartForm'
 import { WidthController } from '@components/layout'
 import { MapLeaderboard } from '@components/MapLeaderboard'
-import { MapStats } from '@components/MapStats'
 import { Meta } from '@components/Meta'
 import { SkeletonMapInfo } from '@components/skeletons'
-import { Avatar } from '@components/system'
-import { TextWithLinks } from '@components/TextWithLinks'
 import StyledMapPage from '@styles/MapPage.Styled'
 import { MapLeaderboardType, MapType } from '@types'
 import { mailman } from '@utils/helpers'
+import { isCustomMapPlaceholderPreview, resolveMapImageSrc } from '@utils/helpers/mapPreviewSrc'
 import { SITE_NAME } from '@utils/constants/site'
+import { mapScoresPublicChannel } from '@utils/pusherChannels'
+import { usePusherRealtimeHealthy } from '@utils/usePusherRealtimeHealthy'
+import { usePusherSubscription } from '@utils/usePusherSubscription'
+
+const LB_POLL_FAST_MS = 12_000
+const LB_POLL_SLOW_MS = 120_000
 
 const MapPage: FC = () => {
   const [mapDetails, setMapDetails] = useState<MapType | null>()
@@ -25,11 +28,21 @@ const MapPage: FC = () => {
   const rawMapId = router.query.id
   const mapId = Array.isArray(rawMapId) ? rawMapId[0] : rawMapId
 
+  const pushHealthy = usePusherRealtimeHealthy()
+  const pushConfigured = !!process.env.NEXT_PUBLIC_PUSHER_KEY
+
+  const leaderboardChannel = mapId ? mapScoresPublicChannel(mapId) : null
+
+  const lbPollMs = useMemo(() => {
+    if (!pushConfigured || !pushHealthy) return LB_POLL_FAST_MS
+    return LB_POLL_SLOW_MS
+  }, [pushHealthy, pushConfigured])
+
   const fetchMapDetails = useCallback(async () => {
     if (!mapId) return
-    const res = await mailman(`maps/${mapId}?stats=true`)
+    const res = await mailman(`maps/${mapId}`)
 
-    if (res.error) {
+    if (res?.error) {
       return setMapDetails(null)
     }
 
@@ -44,6 +57,13 @@ const MapPage: FC = () => {
     setTopScores(Array.isArray(highRes) ? highRes : [])
     setLowScores(Array.isArray(lowRes) ? lowRes : [])
   }, [mapId])
+
+  usePusherSubscription(
+    leaderboardChannel,
+    'leaderboard.updated',
+    () => void fetchLeaderboards(),
+    !!leaderboardChannel
+  )
 
   useEffect(() => {
     if (!mapId) {
@@ -79,7 +99,7 @@ const MapPage: FC = () => {
       if (document.visibilityState === 'visible') {
         void fetchLeaderboards()
       }
-    }, 12000)
+    }, lbPollMs)
 
     window.addEventListener('focus', handlePageVisibleRefresh)
     document.addEventListener('visibilitychange', handlePageVisibleRefresh)
@@ -90,7 +110,12 @@ const MapPage: FC = () => {
       window.removeEventListener('focus', handlePageVisibleRefresh)
       document.removeEventListener('visibilitychange', handlePageVisibleRefresh)
     }
-  }, [mapId, fetchLeaderboards])
+  }, [mapId, fetchLeaderboards, lbPollMs])
+
+  const mapHeroCustomPlaceholderGradient = useMemo(
+    () => (mapDetails ? isCustomMapPlaceholderPreview(mapDetails.previewImg) : false),
+    [mapDetails]
+  )
 
   if (mapDetails === null) {
     return (
@@ -109,39 +134,27 @@ const MapPage: FC = () => {
         {mapDetails ? (
           <>
             <div className="mapDetailsSection">
-              <div className="mapDescriptionWrapper">
-                <div className="descriptionColumnWrapper">
+              <div className="mapPageHero">
+                <div
+                  className={`mapPageHeroMedia${
+                    mapHeroCustomPlaceholderGradient ? ' mapPageHeroMedia--placeholder' : ''
+                  }`}
+                  style={
+                    mapHeroCustomPlaceholderGradient
+                      ? undefined
+                      : { backgroundImage: `url(${resolveMapImageSrc(mapDetails.previewImg)})` }
+                  }
+                />
+                <div className="mapPageHeroScrim" />
+                <div className="mapPageHeroInner">
                   <div className="page-back-toolbar">
                     <PageBackLink href="/" label="Back to home" compact />
                   </div>
-                  <div className="descriptionColumn">
-                    <Avatar type="map" src={mapDetails.previewImg} size={50} />
-                    <div className="map-details">
-                      <div className="name-wrapper">
-                        <span className="name">{mapDetails.name}</span>
-                      </div>
-                      {mapDetails.description && (
-                        <span className="description">
-                          <TextWithLinks>{mapDetails.description}</TextWithLinks>
-                        </span>
-                      )}
-                      {!mapDetails.description && mapDetails.creatorDetails && (
-                        <span className="map-creator">
-                          {'Created by '}
-                          <span className="map-creator-link">
-                            <Link href={`/user/${mapDetails.creatorDetails._id}` || ''}>
-                              <a>{mapDetails.creatorDetails.name}</a>
-                            </Link>
-                          </span>
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                  <h1 className="mapPageHeroTitle">{mapDetails.name}</h1>
                 </div>
               </div>
 
               <div className="statsWrapper">
-                <MapStats map={mapDetails} />
                 <MapPlayInline mapDetails={mapDetails} gameMode="standard" />
               </div>
             </div>

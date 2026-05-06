@@ -50,6 +50,20 @@ const StyledStreetView = styled.div<StyledProps>`
     }
   }
 
+  .country-tip-corner {
+    position: absolute;
+    right: 20px;
+    bottom: 108px;
+    z-index: 4;
+    max-width: min(320px, calc(100vw - 40px));
+
+    @media (max-width: 900px) {
+      right: 14px;
+      bottom: 96px;
+      max-width: min(280px, calc(100vw - 24px));
+    }
+  }
+
   a[href^="https://maps.google.com/maps"]
   {
     pointer-events: none;

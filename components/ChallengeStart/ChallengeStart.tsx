@@ -13,12 +13,9 @@ import {
 } from '@heroicons/react/outline'
 import { useAppSelector } from '@redux/hook'
 import { ChallengeType, GameViewType } from '@types'
-import {
-  EQUITABLE_COUNTRY_STREAK_DETAILS,
-  EQUITABLE_COUNTRY_STREAK_ID,
-  MAP_AVATAR_PATH,
-} from '@utils/constants/random'
+import { EQUITABLE_COUNTRY_STREAK_DETAILS, EQUITABLE_COUNTRY_STREAK_ID } from '@utils/constants/random'
 import { formatTimeLimit, redirectToRegister } from '@utils/helpers'
+import { resolveMapImageSrc } from '@utils/helpers/mapPreviewSrc'
 import { StyledChallengeStart } from './'
 
 type Props = {
@@ -62,7 +59,7 @@ const ChallengeStart: FC<Props> = ({ challengeData, handleStartChallenge }) => {
         </Link>
 
         <Image
-          src={`${MAP_AVATAR_PATH}/${challengeData?.mapDetails?.previewImg}`}
+          src={resolveMapImageSrc(challengeData?.mapDetails?.previewImg)}
           alt=""
           layout="fill"
           objectFit="cover"

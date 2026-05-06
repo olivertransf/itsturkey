@@ -1,4 +1,5 @@
 import type { NextPage } from 'next'
+import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 import { HeartIcon, LightningBoltIcon, SparklesIcon } from '@heroicons/react/outline'
@@ -8,10 +9,17 @@ import { PageBackLink } from '@components/PageBackLink'
 import { Button } from '@components/system'
 import ToggleSwitch from '@components/system/ToggleSwitch/ToggleSwitch'
 import StyledMultiGamePage from '@styles/MultiGamePage.Styled'
-import { GamifiedCenterStage, GamifiedFormCard } from '@styles/GamifiedHubShell.Styled'
+import {
+  GamifiedCenterStage,
+  GamifiedDuelGrid,
+  GamifiedDuelMapColumn,
+  GamifiedDuelSettingsColumn,
+  GamifiedFormCardWide,
+} from '@styles/GamifiedHubShell.Styled'
 import { isMapExcludedFromPicker } from '@utils/constants/mapPicker'
 import { EQUITABLE_COUNTRY_STREAK_DETAILS, EQUITABLE_COUNTRY_STREAK_ID } from '@utils/constants/random'
 import { DEFAULT_TOTAL_ROUNDS, MAX_TOTAL_ROUNDS } from '@utils/constants/gameModes'
+import { DEFAULT_MAP_PREVIEW_FILE } from '@utils/helpers/mapPreviewSrc'
 import { loadMapPickerOptions } from '@utils/loadMapPickerOptions'
 import type { MapPickerRow } from '@utils/loadMapPickerOptions'
 import { mailman, showToast } from '@utils/helpers'
@@ -21,7 +29,7 @@ const CardHero = styled.div`
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 
   .glyph {
     width: 48px;
@@ -31,9 +39,9 @@ const CardHero = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(124, 58, 237, 0.22);
-    border: 1px solid rgba(167, 139, 250, 0.42);
-    color: #e9d5ff;
+    background: rgba(110, 178, 232, 0.14);
+    border: 1px solid rgba(157, 200, 240, 0.4);
+    color: #9dc8f0;
 
     svg {
       width: 26px;
@@ -51,10 +59,10 @@ const CardHero = styled.div`
   }
 
   .tag {
-    margin: 8px 0 0;
+    margin: 6px 0 0;
     font-size: 13px;
-    line-height: 1.45;
-    color: #a1a1aa;
+    line-height: 1.4;
+    color: var(--text-muted);
   }
 `
 
@@ -79,7 +87,7 @@ const FieldInput = styled.input`
   box-sizing: border-box;
 
   &:focus {
-    border-color: rgba(167, 139, 250, 0.55);
+    border-color: rgba(157, 200, 240, 0.55);
     outline: none;
   }
 `
@@ -90,9 +98,9 @@ const ModeStrip = styled.div`
   gap: 12px;
   margin-top: 6px;
   padding: 12px 14px;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-subtle);
 
   span.mode-copy {
     display: flex;
@@ -100,7 +108,7 @@ const ModeStrip = styled.div`
     gap: 8px;
     font-size: 14px;
     font-weight: 600;
-    color: #e4e4e7;
+    color: var(--text-primary);
 
     svg {
       width: 18px;
@@ -132,6 +140,7 @@ const EQUITABLE_STREAK_PICKER_ROW: MapPickerRow = {
 
 const DuelLobbyPage: NextPage = () => {
   const router = useRouter()
+  const { status } = useSession()
   const [mapField, setMapField] = useState(EQUITABLE_COUNTRY_STREAK_ID)
   const [mapOptions, setMapOptions] = useState<MapPickerRow[]>([])
   const [mapsLoading, setMapsLoading] = useState(true)
@@ -169,7 +178,7 @@ const DuelLobbyPage: NextPage = () => {
       base.some((m) => m._id === EQUITABLE_COUNTRY_STREAK_ID) ? base : [EQUITABLE_STREAK_PICKER_ROW, ...base]
     const q = typeof router.query.mapId === 'string' && router.query.mapId.length > 0 ? router.query.mapId : ''
     if (q && !isMapExcludedFromPicker(q) && !withEquitableDefault.some((m) => m._id === q)) {
-      return [...withEquitableDefault, { _id: q, name: q, description: undefined, previewImg: '' }]
+      return [...withEquitableDefault, { _id: q, name: q, description: undefined, previewImg: DEFAULT_MAP_PREVIEW_FILE }]
     }
     return withEquitableDefault
   }, [mapOptions, router.query.mapId])
@@ -187,6 +196,7 @@ const DuelLobbyPage: NextPage = () => {
   const [damageMultGuest, setDamageMultGuest] = useState(1)
   const [useRamp, setUseRamp] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [hostNickname, setHostNickname] = useState('')
 
   const create = async () => {
     setSubmitting(true)
@@ -210,6 +220,7 @@ const DuelLobbyPage: NextPage = () => {
       damageMultiplierHost: damageMultHost,
       damageMultiplierGuest: damageMultGuest,
       useRoundRamp: useRamp,
+      ...(status !== 'authenticated' && hostNickname.trim() ? { displayName: hostNickname.trim() } : {}),
     }
 
     const res = await mailman('duels', 'POST', JSON.stringify(body))
@@ -236,7 +247,7 @@ const DuelLobbyPage: NextPage = () => {
       <Meta title="Create Duel" />
 
       <GamifiedCenterStage>
-        <GamifiedFormCard>
+        <GamifiedFormCardWide>
           <div style={{ marginBottom: 18 }}>
             <PageBackLink href="/" label="Home" />
           </div>
@@ -247,109 +258,134 @@ const DuelLobbyPage: NextPage = () => {
             </div>
             <div>
               <h1>Create duel room</h1>
-              <p className="tag">
-                1v1 invite link · guests should join from another browser or profile so sessions stay separate.
-              </p>
+              <p className="tag">1v1 invite — share the link or code. Sign in for your name on profile and friends.</p>
             </div>
           </CardHero>
 
-          <FieldLabel>Map</FieldLabel>
-          <MapPickerGrid
-            options={selectOptions}
-            value={mapField}
-            onChange={setMapField}
-            loading={mapsLoading}
-            maxHeight={380}
-          />
+          <GamifiedDuelGrid>
+            <GamifiedDuelMapColumn>
+              <FieldLabel>Map</FieldLabel>
+              <MapPickerGrid
+                options={selectOptions}
+                value={mapField}
+                onChange={setMapField}
+                loading={mapsLoading}
+                maxHeight={440}
+                showDescriptions={false}
+              />
+            </GamifiedDuelMapColumn>
 
-          <FieldLabel>Mode</FieldLabel>
-          <ModeStrip>
-            <ToggleSwitch isActive={mode === 'points'} setIsActive={(on) => setMode(on ? 'points' : 'hp')} />
-            <span className="mode-copy">
-              {mode === 'hp' ? (
+            <GamifiedDuelSettingsColumn>
+              {status !== 'authenticated' && status !== 'loading' && (
                 <>
-                  <HeartIcon /> HP duel · fight until KO
-                </>
-              ) : (
-                <>
-                  <LightningBoltIcon /> Points race · {rounds} rounds
+                  <FieldLabel htmlFor="hostNick">Your name (guests)</FieldLabel>
+                  <FieldInput
+                    id="hostNick"
+                    type="text"
+                    maxLength={32}
+                    placeholder="Optional — lobby display"
+                    value={hostNickname}
+                    onChange={(e) => setHostNickname(e.target.value)}
+                    style={{ marginBottom: 12 }}
+                  />
                 </>
               )}
-            </span>
-          </ModeStrip>
 
-          {mode === 'points' && (
-            <>
-              <FieldLabel htmlFor="rounds">Rounds</FieldLabel>
-              <FieldInput
-                id="rounds"
-                type="number"
-                min={1}
-                max={MAX_TOTAL_ROUNDS}
-                value={rounds}
-                onChange={(e) => setRounds(Number(e.target.value))}
-              />
-            </>
-          )}
+              <FieldLabel>Mode</FieldLabel>
+              <ModeStrip>
+                <ToggleSwitch isActive={mode === 'points'} setIsActive={(on) => setMode(on ? 'points' : 'hp')} />
+                <span className="mode-copy">
+                  {mode === 'hp' ? (
+                    <>
+                      <HeartIcon /> HP · until KO
+                    </>
+                  ) : (
+                    <>
+                      <LightningBoltIcon /> Points · {rounds} rounds
+                    </>
+                  )}
+                </span>
+              </ModeStrip>
 
-          <Row>
-            <FieldGrow>
-              <FieldLabel htmlFor="hpHost">Host HP</FieldLabel>
-              <FieldInput
-                id="hpHost"
-                type="number"
-                min={100}
-                value={startingHpHost}
-                onChange={(e) => setStartingHpHost(Number(e.target.value))}
-              />
-            </FieldGrow>
-            <FieldGrow>
-              <FieldLabel htmlFor="hpGuest">Guest HP</FieldLabel>
-              <FieldInput
-                id="hpGuest"
-                type="number"
-                min={100}
-                value={startingHpGuest}
-                onChange={(e) => setStartingHpGuest(Number(e.target.value))}
-              />
-            </FieldGrow>
-          </Row>
+              {mode === 'points' && (
+                <>
+                  <FieldLabel htmlFor="rounds">Rounds</FieldLabel>
+                  <FieldInput
+                    id="rounds"
+                    type="number"
+                    min={1}
+                    max={MAX_TOTAL_ROUNDS}
+                    value={rounds}
+                    onChange={(e) => setRounds(Number(e.target.value))}
+                  />
+                </>
+              )}
 
-          <Row>
-            <FieldGrow>
-              <FieldLabel htmlFor="dmh">Host damage ×</FieldLabel>
-              <FieldInput
-                id="dmh"
-                type="number"
-                min={0.1}
-                step={0.1}
-                value={damageMultHost}
-                onChange={(e) => setDamageMultHost(Number(e.target.value))}
-              />
-            </FieldGrow>
-            <FieldGrow>
-              <FieldLabel htmlFor="dmg">Guest damage ×</FieldLabel>
-              <FieldInput
-                id="dmg"
-                type="number"
-                min={0.1}
-                step={0.1}
-                value={damageMultGuest}
-                onChange={(e) => setDamageMultGuest(Number(e.target.value))}
-              />
-            </FieldGrow>
-          </Row>
+              <Row>
+                <FieldGrow>
+                  <FieldLabel htmlFor="hpHost">Your HP</FieldLabel>
+                  <FieldInput
+                    id="hpHost"
+                    type="number"
+                    min={100}
+                    value={startingHpHost}
+                    onChange={(e) => setStartingHpHost(Number(e.target.value))}
+                  />
+                </FieldGrow>
+                <FieldGrow>
+                  <FieldLabel htmlFor="hpGuest">Opponent HP</FieldLabel>
+                  <FieldInput
+                    id="hpGuest"
+                    type="number"
+                    min={100}
+                    value={startingHpGuest}
+                    onChange={(e) => setStartingHpGuest(Number(e.target.value))}
+                  />
+                </FieldGrow>
+              </Row>
 
-          <FieldLabel style={{ marginTop: 16 }}>Damage ramp (round 5+)</FieldLabel>
-          <ModeStrip style={{ marginTop: 4 }}>
-            <ToggleSwitch isActive={useRamp} setIsActive={setUseRamp} />
-            <span className="mode-copy">{useRamp ? 'GeoGuessr-style scaling on' : 'Flat damage'}</span>
-          </ModeStrip>
+              <Row>
+                <FieldGrow>
+                  <FieldLabel htmlFor="dmh">Your damage ×</FieldLabel>
+                  <FieldInput
+                    id="dmh"
+                    type="number"
+                    min={0.1}
+                    step={0.1}
+                    value={damageMultHost}
+                    onChange={(e) => setDamageMultHost(Number(e.target.value))}
+                  />
+                </FieldGrow>
+                <FieldGrow>
+                  <FieldLabel htmlFor="dmg">Their damage ×</FieldLabel>
+                  <FieldInput
+                    id="dmg"
+                    type="number"
+                    min={0.1}
+                    step={0.1}
+                    value={damageMultGuest}
+                    onChange={(e) => setDamageMultGuest(Number(e.target.value))}
+                  />
+                </FieldGrow>
+              </Row>
 
-          <Button variant="primary" style={{ marginTop: 26, width: '100%' }} disabled={submitting} onClick={() => void create()}>
-            {submitting ? 'Creating…' : 'Create room'}
-          </Button>
-        </GamifiedFormCard>
+              <FieldLabel style={{ marginTop: 12 }}>Damage ramp (5+)</FieldLabel>
+              <ModeStrip style={{ marginTop: 4 }}>
+                <ToggleSwitch isActive={useRamp} setIsActive={setUseRamp} />
+                <span className="mode-copy">{useRamp ? 'Scaling on' : 'Flat damage'}</span>
+              </ModeStrip>
+
+              <Button
+                variant="primary"
+                style={{ marginTop: 20, width: '100%' }}
+                disabled={submitting || status === 'loading'}
+                onClick={() => void create()}
+              >
+                {submitting ? 'Creating…' : 'Create room'}
+              </Button>
+            </GamifiedDuelSettingsColumn>
+          </GamifiedDuelGrid>
+        </GamifiedFormCardWide>
       </GamifiedCenterStage>
     </StyledMultiGamePage>
   )

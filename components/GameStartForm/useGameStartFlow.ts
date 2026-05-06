@@ -3,16 +3,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '@redux/hook'
 import { resetGameSettings, updateGameSettings, updateStartTime } from '@redux/slices'
 import { GameSettingsType, GameType, MapType } from '@types'
-import {
-  DEFAULT_MULTI_PANEL_COUNT,
-  DEFAULT_MULTI_PER_GUESS_SECONDS,
-  DEFAULT_TOTAL_ROUNDS,
-} from '@utils/constants/gameModes'
+import { DEFAULT_TOTAL_ROUNDS } from '@utils/constants/gameModes'
 import { mailman, showToast } from '@utils/helpers'
 import { loadMapPickerOptions } from '@utils/loadMapPickerOptions'
 import type { MapPickerRow } from '@utils/loadMapPickerOptions'
 
-export type PlayMode = 'single' | 'unlimited' | 'multiplayer' | 'multi'
+export type PlayMode = 'single' | 'unlimited'
 
 export type GameStartFooterMeta = {
   title: string
@@ -37,11 +33,7 @@ export type GameStartFlowApi = {
   canZoom: boolean
   playMode: PlayMode
   roundCount: number
-  panelCount: number
-  perGuessSeconds: number
-  showChallengeView: boolean
   sliderVal: number
-  challengeId: string
   isSubmitting: boolean
   allowHomeMapPicker: boolean
   mapPickerOptions: MapPickerRow[]
@@ -49,8 +41,6 @@ export type GameStartFlowApi = {
   pickMapById: (id: string) => void
   setPlayMode: (m: PlayMode) => void
   setRoundCount: (n: number) => void
-  setPanelCount: (n: number) => void
-  setPerGuessSeconds: (n: number) => void
   setSliderVal: (n: number) => void
   setCanMove: (v: boolean) => void
   setCanZoom: (v: boolean) => void
@@ -85,14 +75,10 @@ export function useGameStartFlow({
   const [canZoom, setCanZoom] = useState(user.gameSettings?.canZoom ?? true)
   const [playMode, setPlayMode] = useState<PlayMode>(() => {
     if (gameMode === 'streak') return 'unlimited'
-    return initialPlayMode ?? 'single'
+    return initialPlayMode === 'unlimited' ? 'unlimited' : 'single'
   })
   const [roundCount, setRoundCount] = useState(DEFAULT_TOTAL_ROUNDS)
-  const [panelCount, setPanelCount] = useState(DEFAULT_MULTI_PANEL_COUNT)
-  const [perGuessSeconds, setPerGuessSeconds] = useState(DEFAULT_MULTI_PER_GUESS_SECONDS)
-  const [showChallengeView, setShowChallengeView] = useState(false)
   const [sliderVal, setSliderVal] = useState(user.gameSettings?.timeLimit ?? 0)
-  const [challengeId, setChallengeId] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const router = useRouter()
@@ -139,62 +125,16 @@ export function useGameStartFlow({
 
   const footerMeta = useMemo<GameStartFooterMeta>(
     () => ({
-      title: showChallengeView ? 'Start Multiplayer' : 'Start Game',
-      actionLabel:
-        playMode === 'multiplayer' ? (showChallengeView ? 'Start' : 'Invite') : 'Start',
-      cancelLabel: showChallengeView ? 'Back' : 'Cancel',
+      title: 'Start game',
+      actionLabel: 'Start',
+      cancelLabel: 'Cancel',
     }),
-    [showChallengeView, playMode]
+    []
   )
 
   const cancelAction = useCallback(() => {
-    if (showChallengeView) {
-      setShowChallengeView(false)
-    } else {
-      onRequestClose?.()
-    }
-  }, [showChallengeView, onRequestClose])
-
-  const createChallenge = useCallback(async () => {
-    if (!user.id) {
-      await router.push('/register')
-      return
-    }
-
-    setIsSubmitting(true)
-
-    const gameSettings: GameSettingsType = {
-      timeLimit: sliderVal * 10,
-      canMove,
-      canPan,
-      canZoom,
-    }
-
-    const gameData = {
-      mapId: activeMapDetails._id,
-      mapName: activeMapDetails.name,
-      gameSettings,
-      mode: gameMode,
-      userId: user.id,
-      totalRounds: roundCount,
-    }
-
-    const res = await mailman('challenges', 'POST', JSON.stringify(gameData))
-
-    setIsSubmitting(false)
-    setChallengeId(res)
-  }, [
-    user.id,
-    sliderVal,
-    canMove,
-    canPan,
-    canZoom,
-    activeMapDetails._id,
-    activeMapDetails.name,
-    gameMode,
-    roundCount,
-    router,
-  ])
+    onRequestClose?.()
+  }, [onRequestClose])
 
   const handleStartGame = useCallback(async () => {
     setIsSubmitting(true)
@@ -204,28 +144,6 @@ export function useGameStartFlow({
       canMove,
       canPan,
       canZoom,
-    }
-
-    if (playMode === 'multi' && gameMode !== 'streak') {
-      const gameData = {
-        mapId: activeMapDetails._id,
-        mapName: activeMapDetails.name,
-        gameSettings,
-        panelCount,
-        totalRoundsPerPanel: roundCount,
-        perGuessSeconds,
-      }
-
-      const res = await mailman('multi', 'POST', JSON.stringify(gameData))
-
-      if (res.error) {
-        setIsSubmitting(false)
-        showToast('error', res.error.message)
-        return
-      }
-
-      await router.push(`/multi/${res._id}`)
-      return
     }
 
     const unlimited = gameMode === 'streak' ? true : playMode === 'unlimited'
@@ -258,8 +176,6 @@ export function useGameStartFlow({
     canPan,
     canZoom,
     playMode,
-    panelCount,
-    perGuessSeconds,
     activeMapDetails._id,
     activeMapDetails.name,
     gameMode,
@@ -269,43 +185,8 @@ export function useGameStartFlow({
   ])
 
   const primaryAction = useCallback(async () => {
-    if ((playMode === 'single' || playMode === 'unlimited' || gameMode === 'streak') && !showChallengeView) {
-      await handleStartGame()
-      return
-    }
-
-    if (playMode === 'multi' && !showChallengeView && gameMode !== 'streak') {
-      await handleStartGame()
-      return
-    }
-
-    if (playMode === 'multiplayer' && !showChallengeView && gameMode !== 'streak') {
-      await createChallenge()
-      setShowChallengeView(true)
-      return
-    }
-
-    if (playMode === 'multiplayer' && showChallengeView) {
-      setIsSubmitting(true)
-
-      dispatch(updateGameSettings({ gameSettings: { canMove, canPan, canZoom, timeLimit: sliderVal } }))
-
-      await router.push(`/challenge/${challengeId}`)
-    }
-  }, [
-    playMode,
-    showChallengeView,
-    handleStartGame,
-    createChallenge,
-    dispatch,
-    canMove,
-    canPan,
-    canZoom,
-    sliderVal,
-    router,
-    challengeId,
-    gameMode,
-  ])
+    await handleStartGame()
+  }, [handleStartGame])
 
   const handleCheck = useCallback(() => {
     if (showDetailedChecked) {
@@ -318,8 +199,6 @@ export function useGameStartFlow({
       setCanZoom(true)
       setSliderVal(0)
       setRoundCount(DEFAULT_TOTAL_ROUNDS)
-      setPanelCount(DEFAULT_MULTI_PANEL_COUNT)
-      setPerGuessSeconds(DEFAULT_MULTI_PER_GUESS_SECONDS)
       setActiveMapDetails(mapDetails)
     }
   }, [showDetailedChecked, dispatch, mapDetails])
@@ -333,11 +212,7 @@ export function useGameStartFlow({
     canZoom,
     playMode,
     roundCount,
-    panelCount,
-    perGuessSeconds,
-    showChallengeView,
     sliderVal,
-    challengeId,
     isSubmitting,
     allowHomeMapPicker,
     mapPickerOptions,
@@ -345,8 +220,6 @@ export function useGameStartFlow({
     pickMapById,
     setPlayMode,
     setRoundCount,
-    setPanelCount,
-    setPerGuessSeconds,
     setSliderVal,
     setCanMove,
     setCanZoom,

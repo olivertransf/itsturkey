@@ -11,8 +11,8 @@ const StyledStreakEndedCard = styled.div<StyledProps>`
   padding: 30px;
   width: 100%;
   height: 100%;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  background: linear-gradient(360deg, rgba(25, 26, 27, 0) 0%, rgb(8 8 8 / 57%) 47.4%, #0e0e0e 100%);
+  border-top: var(--border-default);
+  background-color: var(--bg-primary);
 
   .result-wrapper {
     display: flex;

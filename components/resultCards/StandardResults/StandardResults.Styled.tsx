@@ -9,10 +9,8 @@ const StyledStandardResults = styled.div`
   padding: 32px 20px;
   height: 100%;
   width: 100%;
-  background-color: #121212;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  background: linear-gradient(360deg, rgba(25, 26, 27, 0) 0%, rgb(12 13 15 / 57%) 47.4%, #00274e 100%);
-  background: linear-gradient(360deg, rgba(25, 26, 27, 0) 0%, rgb(8 8 8 / 57%) 47.4%, #000000 100%);
+  background-color: var(--bg-primary);
+  border-top: var(--border-default);
 
   .pointsWrapper {
     font-size: 20px;

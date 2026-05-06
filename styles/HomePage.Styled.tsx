@@ -2,25 +2,19 @@ import styled from 'styled-components'
 
 const StyledHomePage = styled.div`
   min-height: 100vh;
-  background: transparent;
-  background-image:
-    radial-gradient(ellipse 95% 58% at 50% -28%, rgba(167, 139, 250, 0.14), transparent 50%),
-    radial-gradient(ellipse 70% 45% at 100% 0%, rgba(59, 130, 246, 0.09), transparent 42%);
+  background-color: var(--bg-primary);
 
   .main-content {
     max-width: var(--mainMaxWidth);
     width: 100%;
-    padding: var(--space-page-y) var(--page-gutter);
     margin: 0 auto;
     box-sizing: border-box;
     display: flex;
     justify-content: center;
-    padding-top: clamp(2rem, 10vh, 5.5rem);
-    padding-bottom: clamp(2.5rem, 8vh, 5rem);
+    padding: var(--pad-page-y-lg) var(--page-gutter) var(--pad-page-y-bottom);
 
     @media (max-width: 500px) {
-      padding: var(--space-page-y-mobile) var(--page-gutter);
-      padding-top: clamp(1.75rem, 8vh, 4rem);
+      padding: clamp(1.75rem, 8vh, 4rem) var(--page-gutter) var(--pad-page-y-bottom);
     }
 
     .home-stack {
@@ -30,7 +24,7 @@ const StyledHomePage = styled.div`
       display: flex;
       flex-direction: column;
       align-items: stretch;
-      gap: clamp(1.35rem, 3vw, 2rem);
+      gap: clamp(1.5rem, 3.2vw, 2.15rem);
     }
 
     .home-auth-row {
@@ -74,7 +68,6 @@ const StyledHomePage = styled.div`
       letter-spacing: -0.04em;
       line-height: 1.12;
       color: var(--text-primary);
-      text-shadow: 0 0 48px rgba(167, 139, 250, 0.2);
     }
 
     .site-tagline {
@@ -136,7 +129,7 @@ const StyledHomePage = styled.div`
       font-weight: 700;
       letter-spacing: var(--label-upper-tracking);
       text-transform: uppercase;
-      color: #c4b5fd;
+      color: var(--palette-accent);
       text-align: left;
       width: 100%;
       display: flex;
@@ -147,7 +140,7 @@ const StyledHomePage = styled.div`
         content: '';
         flex: 1;
         height: 1px;
-        background: linear-gradient(90deg, rgba(167, 139, 250, 0.35), transparent);
+        background: var(--divider-line);
         min-width: 24px;
       }
     }
@@ -179,10 +172,10 @@ const StyledHomePage = styled.div`
       letter-spacing: -0.02em;
       text-decoration: none;
       color: #fff;
-      background: linear-gradient(135deg, #6366f1 0%, #7c3aed 55%, #4f46e5 100%);
+      background: var(--palette-accent);
       box-shadow:
         0 0 0 1px rgba(255, 255, 255, 0.12) inset,
-        0 12px 32px rgba(79, 70, 229, 0.35);
+        0 12px 32px rgba(47, 127, 255, 0.28);
       transition:
         transform 0.12s ease,
         box-shadow 0.12s ease,
@@ -190,29 +183,15 @@ const StyledHomePage = styled.div`
 
       &:hover {
         filter: brightness(1.06);
+        background: var(--accent-primary-hover);
         transform: translateY(-1px);
         box-shadow:
           0 0 0 1px rgba(255, 255, 255, 0.16) inset,
-          0 16px 40px rgba(79, 70, 229, 0.42);
+          0 16px 40px rgba(47, 127, 255, 0.35);
       }
 
       &:active {
         transform: translateY(0);
-      }
-    }
-
-    .home-geo-cta--secondary {
-      background: var(--bg-elevated);
-      color: var(--text-primary);
-      box-shadow: 0 0 0 1px var(--border-subtle) inset;
-      font-weight: 600;
-      font-size: 14px;
-      padding: 10px 22px;
-
-      &:hover {
-        filter: none;
-        background: ${({ theme }) => theme.color.gray[800]};
-        box-shadow: 0 0 0 1px rgba(167, 139, 250, 0.35) inset;
       }
     }
 

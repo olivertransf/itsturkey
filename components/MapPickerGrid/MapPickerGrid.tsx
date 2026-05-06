@@ -1,14 +1,11 @@
+import { SearchIcon } from '@heroicons/react/outline'
 import { CheckIcon } from '@heroicons/react/solid'
 import Image from 'next/image'
-import { FC, useMemo } from 'react'
-import { MAP_AVATAR_PATH } from '@utils/constants/random'
+import { FC, useMemo, useState } from 'react'
+import { resolveMapImageSrc } from '@utils/helpers/mapPreviewSrc'
 import type { MapPickerRow } from '@utils/loadMapPickerOptions'
-import { equitableContinentAccentColor } from '@utils/helpers/equitableContinentAccent'
-import { parseEquitableContinentMapKey } from '@utils/helpers/equitableContinentMapId'
-import { equitableCountryAccentColor } from '@utils/helpers/equitableCountryAccent'
 import { parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
 import { flagEmojiFromIsoAlpha2 } from '@utils/helpers/flagEmoji'
-import { getHomeMapAccentColor } from '@utils/helpers/homeMapAccent'
 import {
   CheckWrap,
   ColumnList,
@@ -16,25 +13,13 @@ import {
   LeadMedia,
   LoadingHint,
   MapRow,
+  PickerRoot,
   RowDesc,
   RowTitle,
   ScrollRegion,
+  SearchWrap,
   TextCol,
 } from './MapPickerGrid.Styled'
-
-const FALLBACK_PREVIEW = 'custom-map.svg'
-
-function rowAccent(mapId: string, name: string): string {
-  const country = parseEquitableCountryMapKey(mapId)
-  if (country) return equitableCountryAccentColor(country)
-
-  const continent = parseEquitableContinentMapKey(mapId)
-  if (continent) return equitableContinentAccentColor(continent)
-
-  if (mapId === 'all') return '#22d3ee'
-
-  return getHomeMapAccentColor(name)
-}
 
 type Props = {
   options: MapPickerRow[]
@@ -43,6 +28,10 @@ type Props = {
   loading?: boolean
   maxHeight?: number
   emptyMessage?: string
+  /** When false, only map titles show (denser rows). Default true. */
+  showDescriptions?: boolean
+  /** Search filter on map name. Default true. */
+  showSearch?: boolean
 }
 
 const MapPickerGrid: FC<Props> = ({
@@ -52,14 +41,16 @@ const MapPickerGrid: FC<Props> = ({
   loading,
   maxHeight = 260,
   emptyMessage = 'No maps available.',
+  showDescriptions = true,
+  showSearch = true,
 }) => {
-  const optionAccents = useMemo(() => {
-    const m = new Map<string, string>()
-    for (const o of options) {
-      m.set(String(o._id), rowAccent(String(o._id), o.name))
-    }
-    return m
-  }, [options])
+  const [query, setQuery] = useState('')
+
+  const filteredOptions = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    if (!q) return options
+    return options.filter((o) => o.name.toLowerCase().includes(q))
+  }, [options, query])
 
   if (loading) {
     return <LoadingHint>Loading maps…</LoadingHint>
@@ -70,51 +61,87 @@ const MapPickerGrid: FC<Props> = ({
   }
 
   return (
-    <ScrollRegion $maxHeight={maxHeight} role="group" aria-label="Choose map">
-      <ColumnList>
-        {options.map((row) => {
-          const id = String(row._id)
-          const selected = id === String(value)
-          const accent = optionAccents.get(id) ?? getHomeMapAccentColor(row.name)
-          const countryCode = parseEquitableCountryMapKey(id)
-          const img = row.previewImg?.trim() ? row.previewImg : FALLBACK_PREVIEW
-          const desc = row.description?.trim()
+    <PickerRoot>
+      {showSearch ? (
+        <SearchWrap>
+          <div style={{ position: 'relative' }}>
+            <SearchIcon
+              aria-hidden
+              style={{
+                position: 'absolute',
+                left: 12,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: 18,
+                height: 18,
+                color: 'var(--text-muted)',
+                pointerEvents: 'none',
+              }}
+            />
+            <input
+              type="search"
+              className="map-picker-search"
+              placeholder="Search maps…"
+              aria-label="Search maps"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              autoComplete="off"
+              spellCheck={false}
+              style={{ paddingLeft: 38 }}
+            />
+          </div>
+        </SearchWrap>
+      ) : null}
+      <ScrollRegion $maxHeight={maxHeight} role="group" aria-label="Choose map">
+        <ColumnList>
+          {filteredOptions.length === 0 ? (
+            <LoadingHint>No maps match your search.</LoadingHint>
+          ) : (
+            filteredOptions.map((row) => {
+              const id = String(row._id)
+              const selected = id === String(value)
+              const countryCode = parseEquitableCountryMapKey(id)
+              const thumbSrc = resolveMapImageSrc(row.previewImg)
+              const descRaw = row.description?.trim()
+              const desc = showDescriptions ? descRaw : undefined
 
-          return (
-            <MapRow
-              key={id}
-              type="button"
-              aria-pressed={selected}
-              aria-label={desc ? `${row.name}. ${desc}` : row.name}
-              $accent={accent}
-              $selected={selected}
-              onClick={() => onChange(id)}
-            >
-              {countryCode ? (
-                <LeadFlag title={row.name}>
-                  <span aria-hidden>{flagEmojiFromIsoAlpha2(countryCode)}</span>
-                </LeadFlag>
-              ) : (
-                <LeadMedia>
-                  <Image
-                    src={`${MAP_AVATAR_PATH}/${img}`}
-                    alt=""
-                    width={40}
-                    height={40}
-                    style={{ objectFit: 'cover' }}
-                  />
-                </LeadMedia>
-              )}
-              <TextCol>
-                <RowTitle>{row.name}</RowTitle>
-                {desc ? <RowDesc>{desc}</RowDesc> : null}
-              </TextCol>
-              <CheckWrap aria-hidden>{selected ? <CheckIcon className="map-picker-check" /> : null}</CheckWrap>
-            </MapRow>
-          )
-        })}
-      </ColumnList>
-    </ScrollRegion>
+              return (
+                <MapRow
+                  key={id}
+                  type="button"
+                  aria-pressed={selected}
+                  aria-label={descRaw && showDescriptions ? `${row.name}. ${descRaw}` : row.name}
+                  $selected={selected}
+                  $compact={!showDescriptions}
+                  onClick={() => onChange(id)}
+                >
+                  {countryCode ? (
+                    <LeadFlag title={row.name}>
+                      <span aria-hidden>{flagEmojiFromIsoAlpha2(countryCode)}</span>
+                    </LeadFlag>
+                  ) : (
+                    <LeadMedia>
+                      <Image
+                        src={thumbSrc}
+                        alt=""
+                        width={40}
+                        height={40}
+                        style={{ objectFit: 'cover' }}
+                      />
+                    </LeadMedia>
+                  )}
+                  <TextCol>
+                    <RowTitle>{row.name}</RowTitle>
+                    {desc ? <RowDesc>{desc}</RowDesc> : null}
+                  </TextCol>
+                  <CheckWrap aria-hidden>{selected ? <CheckIcon className="map-picker-check" /> : null}</CheckWrap>
+                </MapRow>
+              )
+            })
+          )}
+        </ColumnList>
+      </ScrollRegion>
+    </PickerRoot>
   )
 }
 

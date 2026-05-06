@@ -25,9 +25,9 @@ const CardHero = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(59, 130, 246, 0.18);
-    border: 1px solid rgba(96, 165, 250, 0.42);
-    color: #bfdbfe;
+    background: rgba(110, 178, 232, 0.14);
+    border: 1px solid rgba(157, 200, 240, 0.4);
+    color: #9dc8f0;
 
     svg {
       width: 26px;
@@ -44,10 +44,10 @@ const CardHero = styled.div`
   }
 
   .tag {
-    margin: 8px 0 0;
+    margin: 6px 0 0;
     font-size: 13px;
-    line-height: 1.45;
-    color: #a1a1aa;
+    line-height: 1.4;
+    color: var(--text-muted);
   }
 `
 
@@ -73,7 +73,7 @@ const FieldInput = styled.input`
   margin-bottom: 18px;
 
   &:focus {
-    border-color: rgba(96, 165, 250, 0.55);
+    border-color: rgba(157, 200, 240, 0.55);
     outline: none;
   }
 
@@ -114,7 +114,7 @@ const DuelJoinPage: NextPage = () => {
             </div>
             <div>
               <h1>Join a duel</h1>
-              <p className="tag">Paste the host&apos;s invite link or the raw duel ID from the URL.</p>
+              <p className="tag">Paste the invite link or code.</p>
             </div>
           </CardHero>
 

@@ -1,4 +1,5 @@
 import { MAP_PICKER_EXCLUDED_IDS } from '@utils/constants/mapPicker'
+import { DEFAULT_MAP_PREVIEW_FILE } from '@utils/helpers/mapPreviewSrc'
 import { OFFICIAL_WORLD_ID } from '@utils/constants/random'
 import officialMapsFallback from '@utils/constants/officialMaps.json'
 import { mailman } from '@utils/helpers'
@@ -28,11 +29,12 @@ const normalizeRow = (m: Record<string, unknown>): MapPickerRow | null => {
   const name = typeof m.name === 'string' ? m.name : ''
   if (!_id || !name) return null
 
+  const previewRaw = typeof m.previewImg === 'string' ? m.previewImg.trim() : ''
   return {
     _id,
     name,
     description: typeof m.description === 'string' ? m.description : undefined,
-    previewImg: typeof m.previewImg === 'string' ? m.previewImg : '',
+    previewImg: previewRaw || DEFAULT_MAP_PREVIEW_FILE,
   }
 }
 
@@ -131,7 +133,7 @@ export async function loadMapPickerOptions(params: {
 
   if (params.includeAllMapsOption) {
     const world = byId.get(OFFICIAL_WORLD_ID) ?? rows.find((r) => r._id === OFFICIAL_WORLD_ID) ?? rows[0]
-    const previewImg = world?.previewImg ?? ''
+    const previewImg = world?.previewImg?.trim() ? world.previewImg : DEFAULT_MAP_PREVIEW_FILE
 
     rows = [
       {

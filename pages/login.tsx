@@ -20,23 +20,26 @@ const LoginPage: PageType = () => {
   const { data: session } = useSession()
 
   useEffect(() => {
-    if (session) {
-      dispatch(
-        updateUser({
-          id: session.user.id,
-          name: session.user.name || '',
-          email: session.user.email || '',
-          avatar: session.user.avatar,
-          bio: session.user.bio,
-          isAdmin: session.user.isAdmin,
-          distanceUnit: session.user.distanceUnit,
-          mapsAPIKey: session.user.mapsAPIKey,
-        })
-      )
+    if (!router.isReady || !session) return
 
-      router.replace('/')
-    }
-  }, [session])
+    dispatch(
+      updateUser({
+        id: session.user.id,
+        name: session.user.name || '',
+        email: session.user.email || '',
+        avatar: session.user.avatar,
+        bio: session.user.bio,
+        isAdmin: session.user.isAdmin,
+        distanceUnit: session.user.distanceUnit,
+        mapsAPIKey: session.user.mapsAPIKey,
+      })
+    )
+
+    const raw = router.query.callbackUrl
+    const dest =
+      typeof raw === 'string' && raw.startsWith('/') && !raw.startsWith('//') ? raw : '/'
+    void router.replace(dest)
+  }, [session, router.isReady, router.query.callbackUrl])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -100,7 +103,15 @@ const LoginPage: PageType = () => {
 
         <span className="authPrompt">
           Need an account?
-          <Link href="/register">
+          <Link
+            href={
+              typeof router.query.callbackUrl === 'string' &&
+              router.query.callbackUrl.startsWith('/') &&
+              !router.query.callbackUrl.startsWith('//')
+                ? `/register?callbackUrl=${encodeURIComponent(router.query.callbackUrl)}`
+                : '/register'
+            }
+          >
             <a>Sign up</a>
           </Link>
         </span>

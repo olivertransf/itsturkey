@@ -42,11 +42,7 @@ const StyledMapPreviewCard = styled.div<StyledProps>`
         position: absolute;
         height: 100%;
         width: 100%;
-        background: linear-gradient(
-          180deg,
-          ${({ theme }) => theme.color.gray[900]}20 0%,
-          ${({ theme }) => theme.color.gray[900]} 90%
-        );
+        background-color: rgba(8, 10, 15, 0.55);
       }
     }
 
@@ -191,7 +187,7 @@ const StyledMapPreviewCard = styled.div<StyledProps>`
         top: 0;
         width: 100%;
         height: 100%;
-        background: linear-gradient(0deg, #191a1b 0%, transparent 90%);
+        background-color: rgba(8, 10, 15, 0.5);
       }
 
       img {

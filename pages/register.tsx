@@ -21,10 +21,12 @@ const RegisterPage: PageType = () => {
   const { data: session } = useSession()
 
   useEffect(() => {
-    if (session) {
-      router.replace('/')
-    }
-  }, [session])
+    if (!router.isReady || !session) return
+    const raw = router.query.callbackUrl
+    const dest =
+      typeof raw === 'string' && raw.startsWith('/') && !raw.startsWith('//') ? raw : '/'
+    void router.replace(dest)
+  }, [session, router.isReady, router.query.callbackUrl])
 
   const validateInputs = () => {
     if (!name) {
@@ -134,7 +136,15 @@ const RegisterPage: PageType = () => {
 
         <span className="authPrompt">
           Already have an account?
-          <Link href="/login">
+          <Link
+            href={
+              typeof router.query.callbackUrl === 'string' &&
+              router.query.callbackUrl.startsWith('/') &&
+              !router.query.callbackUrl.startsWith('//')
+                ? `/login?callbackUrl=${encodeURIComponent(router.query.callbackUrl)}`
+                : '/login'
+            }
+          >
             <a>Sign in</a>
           </Link>
         </span>

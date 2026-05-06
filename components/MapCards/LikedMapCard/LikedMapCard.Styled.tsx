@@ -24,7 +24,7 @@ const StyledLikedMapCard = styled.div`
       position: absolute;
       height: 100%;
       width: 100%;
-      background: linear-gradient(180deg, rgba(25, 26, 27, 0) 0%, rgba(25, 26, 27, 0.57) 47.4%, #191a1b 100%);
+      background-color: rgba(8, 10, 15, 0.55);
     }
   }
 

@@ -2,11 +2,22 @@ import { ObjectId } from 'mongodb'
 import { NextApiRequest, NextApiResponse } from 'next'
 import type Game from '@backend/models/game'
 import type DuelSession from '@backend/models/duelSession'
-import { collections, getAnonymousGameId, getUserId, isUserBanned, throwError } from '@backend/utils'
+import {
+  collections,
+  getAnonymousGameId,
+  getUserId,
+  isUserBanned,
+  throwError,
+} from '@backend/utils'
+import {
+  notifyDuelUpdated,
+  notifyUserDuelInviteRemoved,
+} from '@backend/utils/pusherNotify'
 import getMapFromGame from '@backend/queries/getMapFromGame'
 import { duelParticipantRole } from '@backend/utils/duelParticipant'
+import { fetchUserDisplayName, sanitizeDuelDisplayName } from '@backend/utils/resolveDuelPlayerNames'
 import { findDuelSessionByInvite } from '@backend/utils/resolveDuelInvite'
-import { buildDuelPayload } from './buildDuelPayload'
+import { replyWithDuelPayload } from './buildDuelPayload'
 
 const joinDuel = async (req: NextApiRequest, res: NextApiResponse) => {
   const duelId = req.query.id as string
@@ -36,28 +47,56 @@ const joinDuel = async (req: NextApiRequest, res: NextApiResponse) => {
   const existingRole = duelParticipantRole(duel, userId, anonymousId)
 
   if (existingRole === 'host') {
-    return throwError(res, 400, 'You cannot join as guest — you created this duel')
+    return throwError(res, 400, 'You cannot join as the second player — you created this duel')
   }
 
   if (!userId && duel.host.anonymousId && duel.host.anonymousId === anonymousId) {
-    return throwError(res, 400, 'Open this link in a different browser or incognito window to play as guest')
+    return throwError(res, 400, 'Open this link in a different browser or incognito window to play as the second player')
+  }
+
+  let guestDisplayName: string | undefined
+  if (userId) {
+    guestDisplayName = (await fetchUserDisplayName(userId)) ?? undefined
+  } else if (anonymousId) {
+    guestDisplayName = sanitizeDuelDisplayName(req.body?.displayName)
   }
 
   duel.guest = {
     ...duel.guest,
     userId: userId ? new ObjectId(userId) : undefined,
     anonymousId: userId ? undefined : anonymousId,
+    displayName: guestDisplayName,
     joined: true,
     hp: duel.startingHpGuest,
     totalPoints: 0,
   }
 
+  const pendingInvites =
+    (await collections.duelFriendInvites
+      ?.find({ duelObjectId: duel._id, consumedAt: null })
+      .toArray()) ?? []
+
   await collections.duelSessions?.replaceOne({ _id: duel._id }, duel)
+
+  await collections.duelFriendInvites?.updateMany(
+    { duelObjectId: duel._id, consumedAt: null },
+    { $set: { consumedAt: new Date() } }
+  )
+
+  for (const row of pendingInvites) {
+    const recipientId = row.recipientUserId?.toHexString?.()
+    const inviteRowId = row._id?.toHexString?.()
+    if (recipientId && inviteRowId) {
+      void notifyUserDuelInviteRemoved(recipientId, inviteRowId)
+    }
+  }
+
+  void notifyDuelUpdated(duelId, 'join')
 
   const mapDetails = await getMapFromGame({ mapId: duel.mapId } as unknown as Game)
   const role = duelParticipantRole(duel, userId, anonymousId)
 
-  res.status(200).send(buildDuelPayload(duel, role, mapDetails))
+  await replyWithDuelPayload(res, duel, role, mapDetails)
 }
 
 export default joinDuel
