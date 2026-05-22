@@ -21,3 +21,6 @@ export const DUEL_DAMAGE_MAX = 3500
 /** Pre-drawn rounds for HP duels until KO */
 export const DUEL_HP_LOCATION_BATCH = 80
 export const DUEL_DISTANCE_TIE_EPSILON_METERS = 3
+
+/** Friend push invites auto-expire; host can re-invite from the lobby. */
+export const DUEL_FRIEND_INVITE_TTL_MS = 60 * 1000

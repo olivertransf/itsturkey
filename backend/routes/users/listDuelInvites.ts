@@ -7,6 +7,7 @@ export type DuelInviteClientRow = {
   hostName: string
   inviteSegment: string
   createdAt: string
+  expiresAt: string
 }
 
 const listDuelInvites = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -40,6 +41,7 @@ const listDuelInvites = async (req: NextApiRequest, res: NextApiResponse) => {
       hostName: typeof doc.hostDisplayName === 'string' ? doc.hostDisplayName : 'Friend',
       inviteSegment: seg,
       createdAt: doc.createdAt instanceof Date ? doc.createdAt.toISOString() : new Date().toISOString(),
+      expiresAt: doc.expiresAt instanceof Date ? doc.expiresAt.toISOString() : new Date().toISOString(),
     })
   }
 

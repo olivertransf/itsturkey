@@ -7,8 +7,7 @@ import { areUsersFriends } from '@backend/utils/areUsersFriends'
 import { duelParticipantRole } from '@backend/utils/duelParticipant'
 import { findDuelSessionByInvite } from '@backend/utils/resolveDuelInvite'
 import { notifyUserDuelInviteCreated } from '@backend/utils/pusherNotify'
-
-const INVITE_TTL_MS = 30 * 60 * 1000
+import { DUEL_FRIEND_INVITE_TTL_MS } from '@backend/utils/duelConstants'
 
 const postDuelInviteFriend = async (req: NextApiRequest, res: NextApiResponse) => {
   const duelSegment = req.query.id as string
@@ -50,7 +49,7 @@ const postDuelInviteFriend = async (req: NextApiRequest, res: NextApiResponse) =
   hostDisplayName = hostDisplayName.trim() || 'Friend'
 
   const now = new Date()
-  const expiresAt = new Date(now.getTime() + INVITE_TTL_MS)
+  const expiresAt = new Date(now.getTime() + DUEL_FRIEND_INVITE_TTL_MS)
 
   await collections.duelFriendInvites?.deleteMany({
     duelObjectId: duel._id,
@@ -77,6 +76,7 @@ const postDuelInviteFriend = async (req: NextApiRequest, res: NextApiResponse) =
       hostName: hostDisplayName,
       inviteSegment: duelSegment,
       createdAt: now.toISOString(),
+      expiresAt: expiresAt.toISOString(),
     })
   }
 

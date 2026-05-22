@@ -28,6 +28,7 @@ import {
 import { duelPrivateChannel } from '@utils/pusherChannels'
 import { usePusherRealtimeHealthy } from '@utils/usePusherRealtimeHealthy'
 import { usePusherSubscription } from '@utils/usePusherSubscription'
+import { useVisibleInterval } from '@utils/useVisibleInterval'
 
 /** Dedupes concurrent auto-join attempts (e.g. React Strict Mode double mount). */
 const duelInviteAutojoinTasks = new Map<string, Promise<void>>()
@@ -80,20 +81,18 @@ const DuelRoomPage: PageType = () => {
 
   const pollTier = duelPollTier(payload ?? undefined)
   const pollMs = useMemo(() => {
+    if (pushConfigured && pushHealthy && pollTier === 'finished') return null
     if (!pushConfigured || !pushHealthy) return DUEL_POLL_MS[pollTier]
     return DUEL_POLL_PUSH_CONNECTED_MS[pollTier]
   }, [pollTier, pushHealthy, pushConfigured])
 
   usePusherSubscription(duelPushChannel, 'duel.updated', () => void refresh(), !!duelPushChannel)
 
-  useEffect(() => {
-    if (!duelId || !isValidDuelUrlSegment(duelId)) return
-
-    void refresh()
-
-    const id = window.setInterval(() => void refresh(), pollMs)
-    return () => window.clearInterval(id)
-  }, [duelId, refresh, pollMs])
+  useVisibleInterval(
+    refresh,
+    pollMs,
+    !!duelId && isValidDuelUrlSegment(duelId)
+  )
 
   useEffect(() => {
     if (!isAuthenticated || !payload) return

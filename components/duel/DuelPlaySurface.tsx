@@ -9,6 +9,7 @@ import { useAppDispatch } from '@redux/hook'
 import { updateStartTime } from '@redux/slices'
 import type { GameViewType, LocationType } from '@types'
 import { mailman, showToast } from '@utils/helpers'
+import { useVisibleInterval } from '@utils/useVisibleInterval'
 import styled, { css, keyframes } from 'styled-components'
 import { USER_AVATAR_PATH } from '@utils/constants/random'
 import { duelRoundDamageMultiplier } from '@backend/utils/duelConstants'
@@ -706,24 +707,23 @@ const DuelStreetSection = memo(
     const pinRef = useRef<{ lat: number; lng: number } | null>(null)
     const lastSentPinRef = useRef<{ lat: number; lng: number } | null>(null)
 
-    useEffect(() => {
-      const t = window.setInterval(() => {
-        if (youLocked) return
-        const p = pinRef.current
-        if (!p) return
-        const prev = lastSentPinRef.current
-        if (
-          prev &&
-          Math.abs(prev.lat - p.lat) < PIN_EPS &&
-          Math.abs(prev.lng - p.lng) < PIN_EPS
-        ) {
-          return
-        }
-        lastSentPinRef.current = { lat: p.lat, lng: p.lng }
-        void mailman(`duels/${duelId}/pin`, 'PATCH', JSON.stringify(p))
-      }, PIN_PATCH_MS)
-      return () => window.clearInterval(t)
+    const syncPin = useCallback(() => {
+      if (youLocked) return
+      const p = pinRef.current
+      if (!p) return
+      const prev = lastSentPinRef.current
+      if (
+        prev &&
+        Math.abs(prev.lat - p.lat) < PIN_EPS &&
+        Math.abs(prev.lng - p.lng) < PIN_EPS
+      ) {
+        return
+      }
+      lastSentPinRef.current = { lat: p.lat, lng: p.lng }
+      void mailman(`duels/${duelId}/pin`, 'PATCH', JSON.stringify(p))
     }, [duelId, youLocked])
+
+    useVisibleInterval(syncPin, PIN_PATCH_MS)
 
     const onGuessCoordinateChange = useCallback((loc: LocationType | null) => {
       if (youLocked) return

@@ -1,12 +1,13 @@
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { UserGroupIcon, XIcon } from '@heroicons/react/outline'
 import { Button } from '@components/system'
 import { mailman } from '@utils/helpers'
 import { userPrivateChannel } from '@utils/pusherChannels'
 import { usePusherRealtimeHealthy } from '@utils/usePusherRealtimeHealthy'
 import { usePusherSubscription } from '@utils/usePusherSubscription'
+import { useVisibleInterval } from '@utils/useVisibleInterval'
 import styled from 'styled-components'
 
 type DuelInviteRow = {
@@ -14,10 +15,10 @@ type DuelInviteRow = {
   hostName: string
   inviteSegment: string
   createdAt: string
+  expiresAt?: string
 }
 
 const POLL_MS_FAST = 12_000
-const POLL_MS_SLOW = 120_000
 
 const Anchor = styled.div`
   position: fixed;
@@ -142,10 +143,6 @@ const DuelInviteNotifier = () => {
     setInvites(list as DuelInviteRow[])
   }, [status])
 
-  useEffect(() => {
-    void fetchInvites()
-  }, [fetchInvites])
-
   usePusherSubscription(
     userChannel,
     'duel_invite.created',
@@ -168,13 +165,29 @@ const DuelInviteNotifier = () => {
     !!userChannel
   )
 
+  const invitePollMs = useMemo(() => {
+    if (status !== 'authenticated') return null
+    if (pushConfigured && pushHealthy) return null
+    return POLL_MS_FAST
+  }, [status, pushConfigured, pushHealthy])
+
+  useVisibleInterval(fetchInvites, invitePollMs, status === 'authenticated')
+
   useEffect(() => {
-    if (status !== 'authenticated') return
-    const pollMs =
-      pushConfigured && pushHealthy ? POLL_MS_SLOW : POLL_MS_FAST
-    const id = window.setInterval(() => void fetchInvites(), pollMs)
-    return () => window.clearInterval(id)
-  }, [status, fetchInvites, pushConfigured, pushHealthy])
+    const timers: ReturnType<typeof setTimeout>[] = []
+    for (const invite of invites) {
+      const expiresMs = invite.expiresAt
+        ? new Date(invite.expiresAt).getTime()
+        : Date.now() + 60_000
+      const delay = Math.max(0, expiresMs - Date.now())
+      timers.push(
+        window.setTimeout(() => {
+          setInvites((prev) => prev.filter((i) => i.id !== invite.id))
+        }, delay)
+      )
+    }
+    return () => timers.forEach((t) => window.clearTimeout(t))
+  }, [invites])
 
   const onDismiss = async (invite: DuelInviteRow) => {
     setInvites((prev) => prev.filter((i) => i.id !== invite.id))
