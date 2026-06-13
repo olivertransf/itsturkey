@@ -30,7 +30,6 @@ export type GameStartFlowApi = {
   showDetailedChecked: boolean
   canMove: boolean
   canPan: boolean
-  canZoom: boolean
   playMode: PlayMode
   roundCount: number
   sliderVal: number
@@ -43,7 +42,7 @@ export type GameStartFlowApi = {
   setRoundCount: (n: number) => void
   setSliderVal: (n: number) => void
   setCanMove: (v: boolean) => void
-  setCanZoom: (v: boolean) => void
+  setCanPan: (v: boolean) => void
   handleCheck: () => void
   primaryAction: () => Promise<void>
   cancelAction: () => void
@@ -71,8 +70,7 @@ export function useGameStartFlow({
         user.gameSettings?.timeLimit === 0)
   )
   const [canMove, setCanMove] = useState(user.gameSettings?.canMove ?? true)
-  const [canPan, setCanPan] = useState(user.gameSettings?.canPan ?? true)
-  const [canZoom, setCanZoom] = useState(user.gameSettings?.canZoom ?? true)
+  const [canPan, setCanPan] = useState(user.gameSettings?.canPan ?? user.gameSettings?.canZoom ?? true)
   const [playMode, setPlayMode] = useState<PlayMode>(() => {
     if (gameMode === 'streak') return 'unlimited'
     return initialPlayMode === 'unlimited' ? 'unlimited' : 'single'
@@ -143,7 +141,7 @@ export function useGameStartFlow({
       timeLimit: sliderVal * 10,
       canMove,
       canPan,
-      canZoom,
+      canZoom: canPan,
     }
 
     const unlimited = gameMode === 'streak' ? true : playMode === 'unlimited'
@@ -159,7 +157,7 @@ export function useGameStartFlow({
 
     dispatch(updateStartTime({ startTime: new Date().getTime() }))
 
-    dispatch(updateGameSettings({ gameSettings: { canMove, canPan, canZoom, timeLimit: sliderVal } }))
+    dispatch(updateGameSettings({ gameSettings: { canMove, canPan, canZoom: canPan, timeLimit: sliderVal } }))
 
     const res = await mailman('games', 'POST', JSON.stringify(gameData))
 
@@ -174,7 +172,6 @@ export function useGameStartFlow({
     sliderVal,
     canMove,
     canPan,
-    canZoom,
     playMode,
     activeMapDetails._id,
     activeMapDetails.name,
@@ -196,7 +193,6 @@ export function useGameStartFlow({
       setShowDetailedChecked(true)
       setCanMove(true)
       setCanPan(true)
-      setCanZoom(true)
       setSliderVal(0)
       setRoundCount(DEFAULT_TOTAL_ROUNDS)
       setActiveMapDetails(mapDetails)
@@ -209,7 +205,6 @@ export function useGameStartFlow({
     showDetailedChecked,
     canMove,
     canPan,
-    canZoom,
     playMode,
     roundCount,
     sliderVal,
@@ -222,7 +217,7 @@ export function useGameStartFlow({
     setRoundCount,
     setSliderVal,
     setCanMove,
-    setCanZoom,
+    setCanPan,
     handleCheck,
     primaryAction,
     cancelAction,

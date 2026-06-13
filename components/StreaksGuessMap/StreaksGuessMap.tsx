@@ -8,7 +8,8 @@ import booleanPointInPolygon from '@turf/boolean-point-in-polygon'
 import { multiPolygon, polygon } from '@turf/helpers'
 import { GoogleMapsConfigType } from '@types'
 import countries from '@utils/constants/countries'
-import { GUESS_MAP_OPTIONS } from '@utils/constants/googleMapOptions'
+import Game from '@backend/models/game'
+import { getGuessMapOptions } from '@utils/constants/googleMapOptions'
 import { POLYGON_STYLES } from '@utils/constants/polygonStyles'
 import { formatPolygon, getMapsKey, googleMapLoaderAsync } from '@utils/helpers'
 import useGuessMap from '@utils/hooks/useGuessMap'
@@ -24,6 +25,7 @@ type Props = {
   googleMapsConfig: GoogleMapsConfigType | undefined
   setGoogleMapsConfig: (googleMapsConfig: GoogleMapsConfigType) => void
   resetMap?: boolean
+  gameData: Game
 }
 
 const StreaksGuessMap: FC<Props> = ({
@@ -35,6 +37,7 @@ const StreaksGuessMap: FC<Props> = ({
   googleMapsConfig,
   setGoogleMapsConfig,
   resetMap,
+  gameData,
 }) => {
   const [selectedCountryName, setSelectedCountryName] = useState('')
 
@@ -161,7 +164,7 @@ const StreaksGuessMap: FC<Props> = ({
             defaultZoom={1}
             yesIWantToUseGoogleMapApiInternals
             onGoogleApiLoaded={({ map, maps }) => setGoogleMapsConfig({ isLoaded: true, map, mapsApi: maps })}
-            options={GUESS_MAP_OPTIONS}
+            options={getGuessMapOptions(gameData.gameSettings)}
           ></GoogleMapReact>
 
           {countryStreakGuess && selectedCountryName && (

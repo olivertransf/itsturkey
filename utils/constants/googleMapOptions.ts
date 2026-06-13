@@ -1,4 +1,5 @@
 import Game from '@backend/models/game'
+import type { GameSettingsType } from '@types'
 
 // This is the best way I found to enable POIs
 const showPOIs = [
@@ -20,6 +21,22 @@ export const GUESS_MAP_OPTIONS = {
   minZoom: 1,
   draggableCursor: 'crosshair',
   styles: showPOIs,
+}
+
+export function isPanZoomEnabled(settings: Pick<GameSettingsType, 'canPan' | 'canZoom'>): boolean {
+  if (settings.canPan === settings.canZoom) return settings.canPan
+  return settings.canPan || settings.canZoom
+}
+
+export const getGuessMapOptions = (gameSettings: Pick<GameSettingsType, 'canPan' | 'canZoom'>) => {
+  const panEnabled = isPanZoomEnabled(gameSettings)
+
+  return {
+    ...GUESS_MAP_OPTIONS,
+    gestureHandling: panEnabled ? 'greedy' : 'none',
+    scrollwheel: panEnabled,
+    disableDoubleClickZoom: !panEnabled,
+  }
 }
 
 export const RESULT_MAP_OPTIONS = {
@@ -69,7 +86,7 @@ export const getStreetviewOptions = (gameData: Game) => {
     fullscreenControl: false, // hide default UI elements
     showRoadLabels: false, // hide road labels
     clickToGo: gameData.gameSettings.canMove, // move on click
-    scrollwheel: gameData.gameSettings.canZoom, // zoom on scroll
+    scrollwheel: isPanZoomEnabled(gameData.gameSettings), // pan toggle controls scroll zoom
     linksControl: gameData.gameSettings.canMove, // arrows to move
   }
 }

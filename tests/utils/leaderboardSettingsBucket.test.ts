@@ -6,7 +6,7 @@ import {
 import { buildStandardLeaderboardMatch } from '@backend/utils/standardLeaderboardGameMatch'
 
 const movingSettings = { timeLimit: 0, canMove: true, canPan: true, canZoom: true }
-const noMoveSettings = { timeLimit: 0, canMove: false, canPan: false, canZoom: true }
+const noMoveSettings = { timeLimit: 0, canMove: false, canPan: true, canZoom: true }
 const nmpzSettings = { timeLimit: 0, canMove: false, canPan: false, canZoom: false }
 
 describe('classifyLeaderboardSettingsBucket', () => {

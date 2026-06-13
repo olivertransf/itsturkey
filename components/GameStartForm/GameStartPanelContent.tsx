@@ -24,7 +24,7 @@ const GameStartPanelContent: FC<Props> = ({
   className,
   showDetailedChecked,
   canMove,
-  canZoom,
+  canPan,
   playMode,
   roundCount,
   allowHomeMapPicker,
@@ -35,7 +35,7 @@ const GameStartPanelContent: FC<Props> = ({
   setRoundCount,
   setSliderVal,
   setCanMove,
-  setCanZoom,
+  setCanPan,
   handleCheck,
   sliderVal,
 }) => {
@@ -144,8 +144,8 @@ const GameStartPanelContent: FC<Props> = ({
                   </div>
 
                   <div className="movementOption">
-                    <ToggleSwitch isActive={canZoom} setIsActive={setCanZoom} disabled={defaultsLocked} />
-                    <div className="movementOptionLabel">Zoom</div>
+                    <ToggleSwitch isActive={canPan} setIsActive={setCanPan} disabled={defaultsLocked} />
+                    <div className="movementOptionLabel">Pan</div>
                   </div>
                 </div>
               </div>

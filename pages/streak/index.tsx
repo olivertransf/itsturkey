@@ -97,7 +97,7 @@ const StreakLobbyPage: NextPage = () => {
   const [defaultsLocked, setDefaultsLocked] = useState(true)
   const [sliderVal, setSliderVal] = useState(0)
   const [canMove, setCanMove] = useState(true)
-  const [canZoom, setCanZoom] = useState(true)
+  const [canPan, setCanPan] = useState(true)
 
   useEffect(() => {
     if (!router.isReady) return
@@ -124,7 +124,7 @@ const StreakLobbyPage: NextPage = () => {
     setDefaultsLocked((prev) => {
       if (prev) return false
       setCanMove(true)
-      setCanZoom(true)
+      setCanPan(true)
       setSliderVal(0)
       return true
     })
@@ -138,8 +138,8 @@ const StreakLobbyPage: NextPage = () => {
       : {
           timeLimit: sliderVal * 10,
           canMove,
-          canPan: canMove,
-          canZoom,
+          canPan,
+          canZoom: canPan,
         }
 
     const gameData = {
@@ -214,9 +214,9 @@ const StreakLobbyPage: NextPage = () => {
                 sliderVal={sliderVal}
                 setSliderVal={setSliderVal}
                 canMove={canMove}
-                canZoom={canZoom}
+                canPan={canPan}
                 setCanMove={setCanMove}
-                setCanZoom={setCanZoom}
+                setCanPan={setCanPan}
               />
               <Button
                 variant="primary"

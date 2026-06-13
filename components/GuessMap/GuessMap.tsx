@@ -6,7 +6,7 @@ import { Button } from '@components/system'
 import { ArrowRightIcon, XIcon } from '@heroicons/react/outline'
 import { useAppSelector } from '@redux/hook'
 import { GoogleMapsConfigType, LocationType } from '@types'
-import { GUESS_MAP_OPTIONS } from '@utils/constants/googleMapOptions'
+import { getGuessMapOptions } from '@utils/constants/googleMapOptions'
 import useGuessMap from '@utils/hooks/useGuessMap'
 import { getMapsKey, googleMapLoaderAsync } from '@utils/helpers'
 import { parseEquitableContinentMapKey } from '@utils/helpers/equitableContinentMapId'
@@ -185,7 +185,7 @@ const GuessMap: FC<Props> = ({
             defaultZoom={1}
             yesIWantToUseGoogleMapApiInternals
             onGoogleApiLoaded={({ map, maps }) => setGoogleMapsConfig({ isLoaded: true, map, mapsApi: maps })}
-            options={GUESS_MAP_OPTIONS}
+            options={getGuessMapOptions(gameData.gameSettings)}
           >
             {marker && (
               <Marker lat={marker.lat} lng={marker.lng} type="guess" userAvatar={user.avatar} isFinalResults={false} />

@@ -7,14 +7,14 @@ export type LobbyGameSettingsState = {
   defaultsLocked: boolean
   sliderVal: number
   canMove: boolean
-  canZoom: boolean
+  canPan: boolean
 }
 
 type Props = LobbyGameSettingsState & {
   onToggleDefaults: () => void
   setSliderVal: (n: number) => void
   setCanMove: (v: boolean) => void
-  setCanZoom: (v: boolean) => void
+  setCanPan: (v: boolean) => void
   className?: string
 }
 
@@ -26,9 +26,9 @@ const LobbyGameSettings: FC<Props> = ({
   sliderVal,
   setSliderVal,
   canMove,
-  canZoom,
+  canPan,
   setCanMove,
-  setCanZoom,
+  setCanPan,
   className,
 }) => {
   return (
@@ -56,8 +56,8 @@ const LobbyGameSettings: FC<Props> = ({
                 </div>
 
                 <div className="movementOption">
-                  <ToggleSwitch isActive={canZoom} setIsActive={setCanZoom} disabled={defaultsLocked} />
-                  <div className="movementOptionLabel">Zoom</div>
+                  <ToggleSwitch isActive={canPan} setIsActive={setCanPan} disabled={defaultsLocked} />
+                  <div className="movementOptionLabel">Pan</div>
                 </div>
               </div>
             </div>

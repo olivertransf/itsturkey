@@ -9,10 +9,10 @@ import {
   ClockIcon,
   LocationMarkerIcon,
   SwitchHorizontalIcon,
-  ZoomInIcon,
 } from '@heroicons/react/outline'
 import { useAppSelector } from '@redux/hook'
 import { ChallengeType, GameViewType } from '@types'
+import { isPanZoomEnabled } from '@utils/constants/googleMapOptions'
 import { EQUITABLE_COUNTRY_STREAK_DETAILS, EQUITABLE_COUNTRY_STREAK_ID } from '@utils/constants/random'
 import { formatTimeLimit, redirectToRegister } from '@utils/helpers'
 import { resolveMapImageSrc } from '@utils/helpers/mapPreviewSrc'
@@ -29,8 +29,7 @@ const ChallengeStart: FC<Props> = ({ challengeData, handleStartChallenge }) => {
   const router = useRouter()
 
   const CAN_MOVE = challengeData.gameSettings.canMove
-  const CAN_PAN = challengeData.gameSettings.canPan
-  const CAN_ZOOM = challengeData.gameSettings.canZoom
+  const PAN_ENABLED = isPanZoomEnabled(challengeData.gameSettings)
   const HAS_TIME_LIMIT = challengeData.gameSettings.timeLimit !== 0
   const TIME_LIMIT = challengeData.gameSettings.timeLimit
 
@@ -116,15 +115,9 @@ const ChallengeStart: FC<Props> = ({ challengeData, handleStartChallenge }) => {
         </div>
 
         <div className="settingsItem">
-          <SwitchHorizontalIcon color={CAN_PAN ? 'var(--green-300)' : '#888'} />
+          <SwitchHorizontalIcon color={PAN_ENABLED ? 'var(--green-300)' : '#888'} />
 
-          {CAN_PAN ? 'Panning Allowed' : 'No Pan'}
-        </div>
-
-        <div className="settingsItem">
-          <ZoomInIcon color={CAN_ZOOM ? 'var(--green-300)' : '#888'} />
-
-          {CAN_ZOOM ? 'Zooming Allowed' : 'No Zoom'}
+          {PAN_ENABLED ? 'Pan allowed' : 'No pan'}
         </div>
       </div>
     </StyledChallengeStart>

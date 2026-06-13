@@ -111,7 +111,7 @@ const MultiLobbyPage: NextPage = () => {
   const [sliderVal, setSliderVal] = useState(0)
   const [panelCount, setPanelCount] = useState<AllowedMultiPanelCount>(DEFAULT_MULTI_PANEL_COUNT)
   const [canMove, setCanMove] = useState(true)
-  const [canZoom, setCanZoom] = useState(true)
+  const [canPan, setCanPan] = useState(true)
 
   useEffect(() => {
     let cancelled = false
@@ -158,7 +158,7 @@ const MultiLobbyPage: NextPage = () => {
     setDefaultsLocked((prev) => {
       if (prev) return false
       setCanMove(true)
-      setCanZoom(true)
+      setCanPan(true)
       setSliderVal(0)
       return true
     })
@@ -183,8 +183,8 @@ const MultiLobbyPage: NextPage = () => {
       gameSettings: {
         timeLimit: perGuessSeconds,
         canMove: defaultsLocked ? true : canMove,
-        canPan: defaultsLocked ? true : canMove,
-        canZoom: defaultsLocked ? true : canZoom,
+        canPan: defaultsLocked ? true : canPan,
+        canZoom: defaultsLocked ? true : canPan,
       },
     }
 
@@ -245,9 +245,9 @@ const MultiLobbyPage: NextPage = () => {
                 sliderVal={sliderVal}
                 setSliderVal={setSliderVal}
                 canMove={canMove}
-                canZoom={canZoom}
+                canPan={canPan}
                 setCanMove={setCanMove}
-                setCanZoom={setCanZoom}
+                setCanPan={setCanPan}
               />
               <FieldLabel>Panels at once</FieldLabel>
               <PanelCountRow>
