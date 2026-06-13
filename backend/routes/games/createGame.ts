@@ -3,6 +3,8 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import Game from '@backend/models/game'
 import { storageMapIdForStandardGame } from '@backend/utils/equitableCountryMap'
 import { collections, getAnonymousGameId, getLocations, getUserId, isUserBanned, throwError } from '@backend/utils'
+import { isEquitableContinentVirtualMapId } from '@utils/helpers/equitableContinentMapId'
+import { isEquitableCountryVirtualMapId } from '@utils/helpers/equitableCountryMapId'
 import { DEFAULT_TOTAL_ROUNDS, MAX_TOTAL_ROUNDS, UNLIMITED_LOCATION_BATCH } from '@utils/constants/gameModes'
 
 const createGame = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -14,6 +16,13 @@ const createGame = async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (isBanned) {
     return throwError(res, 401, 'You are currently banned from playing games')
+  }
+
+  if (
+    mode === 'streak' &&
+    (isEquitableCountryVirtualMapId(mapId) || isEquitableContinentVirtualMapId(mapId))
+  ) {
+    return throwError(res, 400, 'Country streak is not available on per-country or per-continent maps')
   }
 
   const unlimited = mode === 'streak' ? true : req.body.unlimited === true

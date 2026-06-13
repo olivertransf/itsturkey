@@ -17,16 +17,32 @@ import {
   GamifiedDuelSettingsColumn,
   GamifiedFormCardWide,
 } from '@styles/GamifiedHubShell.Styled'
-import { isMapExcludedFromPicker } from '@utils/constants/mapPicker'
 import {
+  COUNTRY_STREAK_DETAILS,
+  COUNTRY_STREAKS_ID,
   EQUITABLE_COUNTRY_STREAK_DETAILS,
   EQUITABLE_COUNTRY_STREAK_ID,
 } from '@utils/constants/random'
-import { DEFAULT_MAP_PREVIEW_FILE } from '@utils/helpers/mapPreviewSrc'
-import { loadMapPickerOptions } from '@utils/loadMapPickerOptions'
-import type { MapPickerRow } from '@utils/loadMapPickerOptions'
 import { mailman, showToast } from '@utils/helpers'
+import type { MapPickerRow } from '@utils/loadMapPickerOptions'
 import styled from 'styled-components'
+
+const ALLOWED_STREAK_MAP_IDS = new Set([EQUITABLE_COUNTRY_STREAK_ID, COUNTRY_STREAKS_ID])
+
+const STREAK_MAP_OPTIONS: MapPickerRow[] = [
+  {
+    _id: EQUITABLE_COUNTRY_STREAK_DETAILS._id,
+    name: EQUITABLE_COUNTRY_STREAK_DETAILS.name,
+    description: EQUITABLE_COUNTRY_STREAK_DETAILS.description,
+    previewImg: EQUITABLE_COUNTRY_STREAK_DETAILS.previewImg,
+  },
+  {
+    _id: COUNTRY_STREAK_DETAILS._id,
+    name: COUNTRY_STREAK_DETAILS.name,
+    description: COUNTRY_STREAK_DETAILS.description,
+    previewImg: COUNTRY_STREAK_DETAILS.previewImg,
+  },
+]
 
 const CardHero = styled.div`
   display: flex;
@@ -72,19 +88,10 @@ const FieldLabel = styled.label`
   color: var(--text-muted);
 `
 
-const EQUITABLE_STREAK_PICKER_ROW: MapPickerRow = {
-  _id: EQUITABLE_COUNTRY_STREAK_DETAILS._id,
-  name: EQUITABLE_COUNTRY_STREAK_DETAILS.name,
-  description: EQUITABLE_COUNTRY_STREAK_DETAILS.description,
-  previewImg: EQUITABLE_COUNTRY_STREAK_DETAILS.previewImg,
-}
-
 const StreakLobbyPage: NextPage = () => {
   const router = useRouter()
   const dispatch = useAppDispatch()
   const [mapField, setMapField] = useState(EQUITABLE_COUNTRY_STREAK_ID)
-  const [mapOptions, setMapOptions] = useState<MapPickerRow[]>([])
-  const [mapsLoading, setMapsLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
 
   const [defaultsLocked, setDefaultsLocked] = useState(true)
@@ -93,42 +100,20 @@ const StreakLobbyPage: NextPage = () => {
   const [canZoom, setCanZoom] = useState(true)
 
   useEffect(() => {
-    let cancelled = false
-    setMapsLoading(true)
-    void loadMapPickerOptions({ includeAllMapsOption: false }).then((opts) => {
-      if (cancelled) return
-      setMapOptions(opts)
-      setMapsLoading(false)
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  useEffect(() => {
     if (!router.isReady) return
     const q = router.query.mapId
-    if (typeof q === 'string' && q.length > 0 && !isMapExcludedFromPicker(q)) {
+    if (typeof q === 'string' && q.length > 0 && ALLOWED_STREAK_MAP_IDS.has(q)) {
       setMapField(q)
     }
   }, [router.isReady, router.query.mapId])
 
   useEffect(() => {
-    if (isMapExcludedFromPicker(mapField)) {
+    if (!ALLOWED_STREAK_MAP_IDS.has(mapField)) {
       setMapField(EQUITABLE_COUNTRY_STREAK_ID)
     }
   }, [mapField])
 
-  const selectOptions = useMemo(() => {
-    const base = mapOptions.filter((m) => !isMapExcludedFromPicker(m._id))
-    const withEquitableDefault =
-      base.some((m) => m._id === EQUITABLE_COUNTRY_STREAK_ID) ? base : [EQUITABLE_STREAK_PICKER_ROW, ...base]
-    const q = typeof router.query.mapId === 'string' && router.query.mapId.length > 0 ? router.query.mapId : ''
-    if (q && !isMapExcludedFromPicker(q) && !withEquitableDefault.some((m) => m._id === q)) {
-      return [...withEquitableDefault, { _id: q, name: q, description: undefined, previewImg: DEFAULT_MAP_PREVIEW_FILE }]
-    }
-    return withEquitableDefault
-  }, [mapOptions, router.query.mapId])
+  const selectOptions = useMemo(() => STREAK_MAP_OPTIONS, [])
 
   const mapNameForField = useMemo(
     () => selectOptions.find((m) => m._id === mapField)?.name,
@@ -216,7 +201,7 @@ const StreakLobbyPage: NextPage = () => {
                 options={selectOptions}
                 value={mapField}
                 onChange={setMapField}
-                loading={mapsLoading}
+                loading={false}
                 maxHeight={440}
                 showDescriptions={false}
               />
@@ -236,7 +221,7 @@ const StreakLobbyPage: NextPage = () => {
               <Button
                 variant="primary"
                 style={{ marginTop: 16, width: '100%' }}
-                disabled={submitting || mapsLoading}
+                disabled={submitting}
                 onClick={() => void start()}
               >
                 {submitting ? 'Starting…' : 'Start'}

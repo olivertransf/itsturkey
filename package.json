@@ -2,11 +2,8 @@
   "name": "geohub",
   "version": "0.1.0",
   "private": true,
-  "engines": {
-    "node": ">=18 <=22"
-  },
   "scripts": {
-    "dev": "next dev",
+    "dev": "NODE_OPTIONS='-r ./scripts/node-slowbuffer-shim.js' next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

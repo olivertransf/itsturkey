@@ -8,11 +8,25 @@ const StyledStreetViewControls = styled.div<{ $hudPrimaryStyle?: boolean }>`
 
   .primary-controls {
     position: absolute;
-    left: 10px;
-    bottom: 100px;
+    left: max(10px, env(safe-area-inset-left));
+    bottom: max(100px, calc(88px + env(safe-area-inset-bottom)));
     display: grid;
-    gap: 15px;
+    gap: 8px;
     pointer-events: auto;
+
+    ${({ $hudPrimaryStyle }) =>
+      $hudPrimaryStyle
+        ? css`
+            padding: 8px;
+            border-radius: 14px;
+            background: rgba(12, 14, 18, 0.76);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px) saturate(135%);
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.38);
+          `
+        : css`
+            gap: 15px;
+          `}
   }
 
   .exit-control {

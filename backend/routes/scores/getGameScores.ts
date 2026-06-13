@@ -4,10 +4,11 @@ import { queryLowestScores, queryLowestScoresMultiMap } from '@backend/queries/l
 import queryTopScores, { queryTopScoresMultiMap } from '@backend/queries/topScores'
 import { collections, getUserId } from '@backend/utils'
 import compareObjectIds from '@backend/utils/compareObjectIds'
-import { resolvePublicMapIdToLeaderboardStorageKey } from '@backend/utils/resolveStandardLeaderboardKey'
+import type { LeaderboardSettingsBucket } from '@backend/utils/leaderboardSettingsBucket'
+import { resolvePublicMapIdToBucketedLeaderboardStorageKey, resolvePublicMapIdToLeaderboardStorageKey } from '@backend/utils/resolveStandardLeaderboardKey'
 import {
+  buildStandardLeaderboardMatch,
   MAP_LEADERBOARD_TOP_N,
-  STANDARD_LEADERBOARD_GAME_MATCH,
 } from '@backend/utils/standardLeaderboardGameMatch'
 import getWorldStandardLeaderboardSourceIds from '@backend/utils/worldStandardLeaderboardMapIds'
 import { TopScore } from '@backend/models'
@@ -21,68 +22,59 @@ type TopScoreType = TopScore & {
 
 type Variant = 'high' | 'low'
 
-async function computeHighScoresFromGames(leaderboardMapKey: ObjectId | string): Promise<TopScore[]> {
-  if (leaderboardMapKey === WORLD_STANDARD_LEADERBOARD_KEY) {
+function parseLeaderboardBucket(raw: unknown): LeaderboardSettingsBucket {
+  if (raw === 'no_move' || raw === 'nmpz') return raw
+  return 'moving'
+}
+
+async function computeHighScoresFromGames(
+  baseMapKey: ObjectId | string,
+  bucket: LeaderboardSettingsBucket
+): Promise<TopScore[]> {
+  const match = buildStandardLeaderboardMatch(bucket)
+
+  if (baseMapKey === WORLD_STANDARD_LEADERBOARD_KEY) {
     const mapIds = getWorldStandardLeaderboardSourceIds()
-    return (
-      (await queryTopScoresMultiMap(mapIds, MAP_LEADERBOARD_TOP_N, STANDARD_LEADERBOARD_GAME_MATCH)) ?? []
-    )
+    return (await queryTopScoresMultiMap(mapIds, MAP_LEADERBOARD_TOP_N, match)) ?? []
   }
 
-  if (typeof leaderboardMapKey === 'string') {
-    return (
-      (await queryTopScores(
-        { ...STANDARD_LEADERBOARD_GAME_MATCH, mapId: leaderboardMapKey },
-        MAP_LEADERBOARD_TOP_N
-      )) ?? []
-    )
+  if (typeof baseMapKey === 'string') {
+    return (await queryTopScores({ ...match, mapId: baseMapKey }, MAP_LEADERBOARD_TOP_N)) ?? []
   }
 
   let rows =
-    (await queryTopScores(
-      { ...STANDARD_LEADERBOARD_GAME_MATCH, mapId: leaderboardMapKey },
-      MAP_LEADERBOARD_TOP_N
-    )) ?? []
+    (await queryTopScores({ ...match, mapId: baseMapKey }, MAP_LEADERBOARD_TOP_N)) ?? []
 
   if (!rows.length) {
     rows =
-      (await queryTopScores(
-        { ...STANDARD_LEADERBOARD_GAME_MATCH, mapId: leaderboardMapKey.toHexString() },
-        MAP_LEADERBOARD_TOP_N
-      )) ?? []
+      (await queryTopScores({ ...match, mapId: baseMapKey.toHexString() }, MAP_LEADERBOARD_TOP_N)) ?? []
   }
 
   return rows
 }
 
-async function computeLowScoresFromGames(leaderboardMapKey: ObjectId | string): Promise<TopScore[]> {
-  if (leaderboardMapKey === WORLD_STANDARD_LEADERBOARD_KEY) {
+async function computeLowScoresFromGames(
+  baseMapKey: ObjectId | string,
+  bucket: LeaderboardSettingsBucket
+): Promise<TopScore[]> {
+  const match = buildStandardLeaderboardMatch(bucket)
+
+  if (baseMapKey === WORLD_STANDARD_LEADERBOARD_KEY) {
     const mapIds = getWorldStandardLeaderboardSourceIds()
-    return (
-      (await queryLowestScoresMultiMap(mapIds, MAP_LEADERBOARD_TOP_N, STANDARD_LEADERBOARD_GAME_MATCH)) ??
-      []
-    )
+    return (await queryLowestScoresMultiMap(mapIds, MAP_LEADERBOARD_TOP_N, match)) ?? []
   }
 
-  if (typeof leaderboardMapKey === 'string') {
-    return (
-      (await queryLowestScores(
-        { ...STANDARD_LEADERBOARD_GAME_MATCH, mapId: leaderboardMapKey },
-        MAP_LEADERBOARD_TOP_N
-      )) ?? []
-    )
+  if (typeof baseMapKey === 'string') {
+    return (await queryLowestScores({ ...match, mapId: baseMapKey }, MAP_LEADERBOARD_TOP_N)) ?? []
   }
 
   let rows =
-    (await queryLowestScores(
-      { ...STANDARD_LEADERBOARD_GAME_MATCH, mapId: leaderboardMapKey },
-      MAP_LEADERBOARD_TOP_N
-    )) ?? []
+    (await queryLowestScores({ ...match, mapId: baseMapKey }, MAP_LEADERBOARD_TOP_N)) ?? []
 
   if (!rows.length) {
     rows =
       (await queryLowestScores(
-        { ...STANDARD_LEADERBOARD_GAME_MATCH, mapId: leaderboardMapKey.toHexString() },
+        { ...match, mapId: baseMapKey.toHexString() },
         MAP_LEADERBOARD_TOP_N
       )) ?? []
   }
@@ -91,7 +83,7 @@ async function computeLowScoresFromGames(leaderboardMapKey: ObjectId | string): 
 }
 
 async function hydrateCachedScores(
-  leaderboardMapKey: ObjectId | string,
+  leaderboardMapKey: string,
   nestedField: 'scores' | 'scoresLow'
 ): Promise<TopScoreType[]> {
   const mapLeaderboard = await collections.mapLeaderboard
@@ -147,7 +139,12 @@ async function enrichTopScoresWithUsers(rows: TopScore[]): Promise<TopScoreType[
   }))
 }
 
-function personalPipelineStages(matchExtras: Record<string, unknown>, uid: string, variant: Variant) {
+function personalPipelineStages(
+  matchExtras: Record<string, unknown>,
+  uid: string,
+  variant: Variant,
+  bucket: LeaderboardSettingsBucket
+) {
   const sort =
     variant === 'high'
       ? ({ $sort: { totalPoints: -1 } } as const)
@@ -156,10 +153,9 @@ function personalPipelineStages(matchExtras: Record<string, unknown>, uid: strin
   return [
     {
       $match: {
-        ...STANDARD_LEADERBOARD_GAME_MATCH,
+        ...buildStandardLeaderboardMatch(bucket),
         ...matchExtras,
         userId: new ObjectId(uid),
-        notForLeaderboard: { $ne: true },
       },
     },
     sort,
@@ -192,8 +188,10 @@ const getGameScores = async (req: NextApiRequest, res: NextApiResponse) => {
   const userId = await getUserId(req, res)
   const mapId = req.query.id as string
   const variant: Variant = req.query.variant === 'low' ? 'low' : 'high'
+  const bucket = parseLeaderboardBucket(req.query.bucket)
 
-  const leaderboardMapKey = resolvePublicMapIdToLeaderboardStorageKey(mapId)
+  const baseMapKey = resolvePublicMapIdToLeaderboardStorageKey(mapId)
+  const leaderboardMapKey = resolvePublicMapIdToBucketedLeaderboardStorageKey(mapId, bucket)
 
   const lbDoc = await collections.mapLeaderboard?.findOne({ mapId: leaderboardMapKey })
 
@@ -207,8 +205,8 @@ const getGameScores = async (req: NextApiRequest, res: NextApiResponse) => {
   } else {
     const raw =
       variant === 'high'
-        ? await computeHighScoresFromGames(leaderboardMapKey)
-        : await computeLowScoresFromGames(leaderboardMapKey)
+        ? await computeHighScoresFromGames(baseMapKey, bucket)
+        : await computeLowScoresFromGames(baseMapKey, bucket)
     topScores = await enrichTopScoresWithUsers(raw)
   }
 
@@ -223,19 +221,19 @@ const getGameScores = async (req: NextApiRequest, res: NextApiResponse) => {
     topScores[thisUserIndex] = { ...topScores[thisUserIndex], highlight: true }
   } else if (userId) {
     const gameMapMatch =
-      leaderboardMapKey === WORLD_STANDARD_LEADERBOARD_KEY
+      baseMapKey === WORLD_STANDARD_LEADERBOARD_KEY
         ? { mapId: { $in: getWorldStandardLeaderboardSourceIds() } }
-        : typeof leaderboardMapKey === 'string'
-          ? { mapId: leaderboardMapKey }
-          : { mapId: leaderboardMapKey }
+        : typeof baseMapKey === 'string'
+          ? { mapId: baseMapKey }
+          : { mapId: baseMapKey }
 
     let personalRows = (await collections.games
-      ?.aggregate(personalPipelineStages(gameMapMatch, userId, variant))
+      ?.aggregate(personalPipelineStages(gameMapMatch, userId, variant, bucket))
       .toArray()) as TopScoreType[]
 
-    if (!personalRows?.length && leaderboardMapKey instanceof ObjectId) {
+    if (!personalRows?.length && baseMapKey instanceof ObjectId) {
       personalRows = (await collections.games
-        ?.aggregate(personalPipelineStages({ mapId: leaderboardMapKey.toHexString() }, userId, variant))
+        ?.aggregate(personalPipelineStages({ mapId: baseMapKey.toHexString() }, userId, variant, bucket))
         .toArray()) as TopScoreType[]
     }
 

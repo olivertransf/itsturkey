@@ -27,6 +27,8 @@ export type DuelPlayerSlot = {
   joined: boolean
 }
 
+export type DuelMultiplierMode = 'round_ramp' | 'win_streak'
+
 export type DuelRoundLedgerEntry = {
   roundIndex: number
   hostGuess: DuelGuessCoords | null
@@ -38,6 +40,7 @@ export type DuelRoundLedgerEntry = {
   hostPoints: number
   guestPoints: number
   winner: DuelSide | 'tie'
+  damageMultiplierUsed: number
   damageToHost: number
   damageToGuest: number
   hostHpAfter: number
@@ -57,9 +60,15 @@ export type DuelSession = {
   reactiveSeconds: number
   startingHpHost: number
   startingHpGuest: number
-  damageMultiplierHost: number
-  damageMultiplierGuest: number
-  useRoundRamp: boolean
+  /** @deprecated Legacy lobby knobs — ignored for HP damage when multiplierMode is set */
+  damageMultiplierHost?: number
+  /** @deprecated Legacy lobby knobs — ignored for HP damage when multiplierMode is set */
+  damageMultiplierGuest?: number
+  /** @deprecated Use multiplierMode === 'round_ramp' */
+  useRoundRamp?: boolean
+  multiplierMode?: DuelMultiplierMode
+  hostWinMultiplier?: number
+  guestWinMultiplier?: number
   status: 'waiting' | 'in_progress' | 'finished'
   outcome?: 'host_win' | 'guest_win' | 'tie'
   host: DuelPlayerSlot
@@ -81,6 +90,7 @@ export type DuelSession = {
   /** After `finished`, both players must opt in before a rematch resets the session. */
   rematchReadyHost?: boolean
   rematchReadyGuest?: boolean
+  chatMessages?: { senderRole: DuelSide; text: string; createdAt: Date }[]
 }
 
 export default DuelSession

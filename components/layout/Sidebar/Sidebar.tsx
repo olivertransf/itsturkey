@@ -10,6 +10,7 @@ import {
   LocationMarkerIcon,
   MapIcon,
   PlayIcon,
+  UserGroupIcon,
   ViewGridIcon,
 } from '@heroicons/react/outline'
 import { useAppDispatch, useAppSelector } from '@redux/hook'
@@ -66,6 +67,10 @@ const Sidebar: FC = () => {
             <Item text="Find Maps" icon={<ViewGridIcon />} route="/maps" />
 
             <Item text="Ongoing Games" icon={<PlayIcon />} route="/ongoing" />
+
+            {session?.user?.id ? (
+              <Item text="Friends" icon={<UserGroupIcon />} route="/friends" />
+            ) : null}
 
             <Item text="Country Streaks" icon={<LightningBoltIcon />} route="/streaks" />
 

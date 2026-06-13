@@ -8,6 +8,7 @@ import countries from '@utils/constants/countries'
 import { KEY_CODES } from '@utils/constants/keyCodes'
 import { StyledStreakContinueCard } from './'
 import { getRealCountryCode } from '@utils/helpers/getRealCountryCode'
+import { streakFlagImgProps } from '@utils/helpers/streakFlagImgProps'
 import { PlonkitGuideLauncher } from '@components/PlonkitCountryGuide'
 import { lastCompletedRoundLocation, resolvePlonkitGuideCountryIso } from '@utils/helpers/resolvePlonkitGuideCountryIso'
 
@@ -65,6 +66,13 @@ const StreakContinueCard: FC<Props> = ({ gameData, view, setView }) => {
     return correctCountry
   }
 
+  const correctLocation = useMemo(() => {
+    if (gameData.round < 2) return null
+    const loc = gameData.rounds[gameData.round - 2]
+    if (loc?.lat == null || loc?.lng == null) return null
+    return { lat: loc.lat, lng: loc.lng }
+  }, [gameData.round, gameData.rounds])
+
   return (
     <StyledStreakContinueCard>
       <div className="result-wrapper">
@@ -73,6 +81,7 @@ const StreakContinueCard: FC<Props> = ({ gameData, view, setView }) => {
           <img
             src={`https://purecatamphetamine.github.io/country-flag-icons/3x2/${getCorrectCountryCode()}.svg`}
             alt={getCorrectCountryCode()}
+            {...streakFlagImgProps(correctLocation)}
           />
         </div>
         <p className="streak-count">

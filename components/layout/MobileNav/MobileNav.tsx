@@ -9,6 +9,7 @@ import {
   LocationMarkerIcon,
   MapIcon,
   UserCircleIcon,
+  UserGroupIcon,
   ViewGridIcon,
 } from '@heroicons/react/outline'
 import { StyledMobileNav } from './'
@@ -31,6 +32,10 @@ const MobileNav: FC = () => {
       <Item text="Equitable World" icon={<GlobeAltIcon />} route="/equitable-streaks" />
 
       <Item text="Daily Challenge" icon={<LocationMarkerIcon />} route="/daily-challenge" />
+
+      {session?.user?.id ? (
+        <Item text="Friends" icon={<UserGroupIcon />} route="/friends" />
+      ) : null}
 
       {session?.user?.id ? (
         <Item text="Profile" icon={<UserCircleIcon />} route={`/user/${session.user.id}`} />

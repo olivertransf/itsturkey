@@ -14,9 +14,7 @@ export function defaultQuickDuelBody(opts?: { displayName?: string }) {
     mode: 'hp' as const,
     startingHpHost: 6000,
     startingHpGuest: 6000,
-    damageMultiplierHost: 1,
-    damageMultiplierGuest: 1,
-    useRoundRamp: true,
+    multiplierMode: 'round_ramp' as const,
     ...(opts?.displayName ? { displayName: opts.displayName } : {}),
   }
 }

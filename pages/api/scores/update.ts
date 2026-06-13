@@ -8,12 +8,17 @@ import { COUNTRY_STREAKS_ID, DAILY_CHALLENGE_ID, EQUITABLE_COUNTRY_STREAK_ID } f
 import queryTopStreaks from '@backend/queries/topStreaks'
 import { Game, TopScore } from '@backend/models'
 import {
+  bucketedLeaderboardStorageKey,
   leaderboardStorageKey,
   resolveStandardLeaderboardKey,
 } from '@backend/utils/resolveStandardLeaderboardKey'
 import {
+  classifyLeaderboardSettingsBucket,
+  isLeaderboardEligibleGame,
+} from '@backend/utils/leaderboardSettingsBucket'
+import {
+  buildStandardLeaderboardMatch,
   MAP_LEADERBOARD_TOP_N as LEADERBOARD_LENGTH,
-  STANDARD_LEADERBOARD_GAME_MATCH,
 } from '@backend/utils/standardLeaderboardGameMatch'
 import getWorldStandardLeaderboardSourceIds from '@backend/utils/worldStandardLeaderboardMapIds'
 import {
@@ -222,8 +227,18 @@ const updateMapStats = async (game: Game) => {
 }
 
 const updateMapLeaderboard = async (game: Game) => {
+  if (!isLeaderboardEligibleGame(game)) {
+    return
+  }
+
+  const bucket = classifyLeaderboardSettingsBucket(game.gameSettings)
+  if (!bucket) {
+    return
+  }
+
   const resolution = resolveStandardLeaderboardKey(game.mapId)
-  const dbKey = leaderboardStorageKey(resolution)
+  const dbKey = bucketedLeaderboardStorageKey(resolution, bucket)
+  const match = buildStandardLeaderboardMatch(bucket)
 
   const mapLeaderboard = await collections.mapLeaderboard?.findOne({ mapId: dbKey })
 
@@ -239,33 +254,27 @@ const updateMapLeaderboard = async (game: Game) => {
   if (shouldRefreshHigh) {
     if (resolution.kind === 'world') {
       const mapIds = getWorldStandardLeaderboardSourceIds()
-      newTopScores = await queryTopScoresMultiMap(mapIds, LEADERBOARD_LENGTH, STANDARD_LEADERBOARD_GAME_MATCH)
+      newTopScores = await queryTopScoresMultiMap(mapIds, LEADERBOARD_LENGTH, match)
     } else if (resolution.kind === 'map' && typeof resolution.mapId === 'string') {
-      newTopScores = await queryTopScores(
-        { ...STANDARD_LEADERBOARD_GAME_MATCH, mapId: resolution.mapId },
-        LEADERBOARD_LENGTH
-      )
+      newTopScores = await queryTopScores({ ...match, mapId: resolution.mapId }, LEADERBOARD_LENGTH)
     } else {
       const mapId = resolution.mapId as ObjectId
-      newTopScores = await queryTopScores({ ...STANDARD_LEADERBOARD_GAME_MATCH, mapId }, LEADERBOARD_LENGTH)
+      newTopScores = await queryTopScores({ ...match, mapId }, LEADERBOARD_LENGTH)
     }
   }
 
   let newLowScores: TopScore[] | undefined
   if (resolution.kind === 'world') {
     const mapIds = getWorldStandardLeaderboardSourceIds()
-    newLowScores = await queryLowestScoresMultiMap(mapIds, LEADERBOARD_LENGTH, STANDARD_LEADERBOARD_GAME_MATCH)
+    newLowScores = await queryLowestScoresMultiMap(mapIds, LEADERBOARD_LENGTH, match)
   } else if (resolution.kind === 'map' && typeof resolution.mapId === 'string') {
-    newLowScores = await queryLowestScores(
-      { ...STANDARD_LEADERBOARD_GAME_MATCH, mapId: resolution.mapId },
-      LEADERBOARD_LENGTH
-    )
+    newLowScores = await queryLowestScores({ ...match, mapId: resolution.mapId }, LEADERBOARD_LENGTH)
   } else {
     const mapId = resolution.mapId as ObjectId
-    newLowScores = await queryLowestScores({ ...STANDARD_LEADERBOARD_GAME_MATCH, mapId }, LEADERBOARD_LENGTH)
+    newLowScores = await queryLowestScores({ ...match, mapId }, LEADERBOARD_LENGTH)
     if (!newLowScores?.length) {
       newLowScores = await queryLowestScores(
-        { ...STANDARD_LEADERBOARD_GAME_MATCH, mapId: mapId.toHexString() },
+        { ...match, mapId: mapId.toHexString() },
         LEADERBOARD_LENGTH
       )
     }

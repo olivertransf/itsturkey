@@ -22,7 +22,7 @@ const MultiGameView: FC<Props> = ({ session, panels }) => {
   )
   const panelsFinished = panelGames.filter((panel) => panel.state === 'finished').length
   const allPanelsFinished = panelsFinished === panelGames.length
-  const gridColumns = panelGames.length === 1 ? 1 : 2
+  const gridColumns = panelGames.length === 1 ? 1 : panelGames.length >= 5 ? 4 : 2
   const exitHref = session.mapId === 'all' ? '/' : `/map/${session.mapId}`
 
   useEffect(() => {

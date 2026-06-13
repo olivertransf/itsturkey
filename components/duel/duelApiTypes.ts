@@ -6,7 +6,9 @@ export type DuelGuessAvatar = { emoji: string; color: string }
 /** Default marker when user is anonymous or API has no avatar (8-ball asset). */
 export const DUEL_GUESS_MARKER_FALLBACK: DuelGuessAvatar = { emoji: '1f3b1', color: '#94a3b8' }
 
-export type DuelViewerRole = 'host' | 'guest' | null
+export type DuelViewerRole = 'host' | 'guest' | 'spectator' | null
+
+export type DuelMultiplierMode = 'round_ramp' | 'win_streak'
 
 export type DuelRoundResultClient = {
   roundIndex: number
@@ -19,10 +21,17 @@ export type DuelRoundResultClient = {
   hostPoints: number
   guestPoints: number
   winner: 'host' | 'guest' | 'tie'
+  damageMultiplierUsed: number
   damageToHost: number
   damageToGuest: number
   hostHpAfter: number
   guestHpAfter: number
+}
+
+export type DuelChatMessageClient = {
+  senderRole: 'host' | 'guest'
+  text: string
+  createdAt: string
 }
 
 export type DuelClientPayload = {
@@ -31,7 +40,6 @@ export type DuelClientPayload = {
   status: 'waiting' | 'in_progress' | 'finished'
   mode: 'hp' | 'points'
   outcome?: 'host_win' | 'guest_win' | 'tie'
-  /** Present on API responses after mapId was added to duel payload. */
   mapId?: string
   mapDetails: MapType | null
   gameSettings: GameSettingsType
@@ -48,12 +56,15 @@ export type DuelClientPayload = {
   flags: { youLocked: boolean; opponentLocked: boolean }
   currentLocation: LocationType | null
   lastRoundResult: DuelRoundResultClient | null
+  roundResults: DuelRoundResultClient[]
+  roundLocations: LocationType[]
   lastRoundActualLocation: LocationType | null
   recapAckRoundIndex: number
-  damageMultiplierHost: number
-  damageMultiplierGuest: number
-  useRoundRamp: boolean
+  multiplierMode: DuelMultiplierMode
+  hostWinMultiplier: number
+  guestWinMultiplier: number
   rematchReady: { host: boolean; guest: boolean }
   playerNames: { host: string; guest: string }
   playerAvatars: { host: DuelGuessAvatar; guest: DuelGuessAvatar }
+  chatMessages?: DuelChatMessageClient[]
 }

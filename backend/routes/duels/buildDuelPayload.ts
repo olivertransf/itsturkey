@@ -10,11 +10,10 @@ export type DuelClientPayload = {
   status: DuelSession['status']
   mode: DuelSession['mode']
   outcome?: DuelSession['outcome']
-  /** Lobby map id (e.g. equitable-country-streak); differs from mapDetails._id for virtual maps. */
   mapId: DuelSession['mapId']
   mapDetails: MapType | null
   gameSettings: DuelSession['gameSettings']
-  viewerRole: DuelSide | null
+  viewerRole: DuelSide | 'spectator' | null
   guestJoined: boolean
   host: { hp: number; totalPoints: number }
   guest: { hp: number; totalPoints: number }
@@ -27,22 +26,22 @@ export type DuelClientPayload = {
   flags: { youLocked: boolean; opponentLocked: boolean }
   currentLocation: DuelSession['locations'][number] | null
   lastRoundResult: DuelSession['roundResults'][number] | null
-  /** Actual location for `lastRoundResult.roundIndex` (for recap map). */
+  roundResults: DuelSession['roundResults']
+  roundLocations: LocationType[]
   lastRoundActualLocation: LocationType | null
   recapAckRoundIndex: number
-  damageMultiplierHost: number
-  damageMultiplierGuest: number
-  useRoundRamp: boolean
+  multiplierMode: DuelSession['multiplierMode']
+  hostWinMultiplier: number
+  guestWinMultiplier: number
   rematchReady: { host: boolean; guest: boolean }
-  /** Display labels for the two sides (room creator vs joiner). */
   playerNames: { host: string; guest: string }
-  /** Emoji SVG keys + pin colors for guess markers (from user profile or default). */
   playerAvatars: { host: DuelGuessAvatar; guest: DuelGuessAvatar }
+  chatMessages?: { senderRole: DuelSide; text: string; createdAt: string }[]
 }
 
 export const buildDuelPayload = (
   duel: DuelSession,
-  role: DuelSide | null,
+  role: DuelSide | 'spectator' | null,
   mapDetailsRaw: unknown,
   playerNames: { host: string; guest: string },
   playerAvatars: { host: DuelGuessAvatar; guest: DuelGuessAvatar }
@@ -51,20 +50,21 @@ export const buildDuelPayload = (
 
   const playing = duel.status === 'in_progress'
   const idx = duel.completedRounds
-  const loc =
-    playing && role && idx < duel.locations.length ? duel.locations[idx] ?? null : null
+  const loc = playing && role && idx < duel.locations.length ? duel.locations[idx] ?? null : null
 
   const hostLocked = !!duel.hostLockedGuess
   const guestLocked = !!duel.guestLockedGuess
 
-  const youLocked = role === 'host' ? hostLocked : role === 'guest' ? guestLocked : false
-  const oppLocked = role === 'host' ? guestLocked : role === 'guest' ? hostLocked : false
+  const youLocked = role === 'host' ? hostLocked : role === 'guest' ? guestLocked : role === 'spectator' ? hostLocked : false
+  const oppLocked = role === 'host' ? guestLocked : role === 'guest' ? hostLocked : role === 'spectator' ? guestLocked : false
 
   const last =
     duel.roundResults.length > 0 ? duel.roundResults[duel.roundResults.length - 1] ?? null : null
 
   const lastRoundActualLocation =
     last && last.roundIndex < duel.locations.length ? duel.locations[last.roundIndex] ?? null : null
+
+  const multiplierMode = duel.multiplierMode ?? 'round_ramp'
 
   return {
     id: duel._id?.toString() ?? '',
@@ -88,24 +88,35 @@ export const buildDuelPayload = (
     flags: { youLocked, opponentLocked: oppLocked },
     currentLocation: loc,
     lastRoundResult: last,
+    roundResults: duel.roundResults,
+    roundLocations: duel.locations,
     lastRoundActualLocation,
     recapAckRoundIndex: duel.recapAckRoundIndex ?? -1,
-    damageMultiplierHost: duel.damageMultiplierHost,
-    damageMultiplierGuest: duel.damageMultiplierGuest,
-    useRoundRamp: duel.useRoundRamp,
+    multiplierMode,
+    hostWinMultiplier: duel.hostWinMultiplier ?? 1,
+    guestWinMultiplier: duel.guestWinMultiplier ?? 1,
     rematchReady: {
       host: !!duel.rematchReadyHost,
       guest: !!duel.rematchReadyGuest,
     },
     playerNames,
     playerAvatars,
+    ...(duel.chatMessages?.length
+      ? {
+          chatMessages: duel.chatMessages.map((m) => ({
+            senderRole: m.senderRole,
+            text: m.text,
+            createdAt: new Date(m.createdAt).toISOString(),
+          })),
+        }
+      : {}),
   }
 }
 
 export async function replyWithDuelPayload(
   res: NextApiResponse,
   duel: DuelSession,
-  role: DuelSide | null,
+  role: DuelSide | 'spectator' | null,
   mapDetailsRaw: unknown,
   statusCode = 200
 ) {

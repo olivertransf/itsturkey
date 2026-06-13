@@ -1,0 +1,52 @@
+import { NextApiRequest, NextApiResponse } from 'next'
+import type Game from '@backend/models/game'
+import type DuelSession from '@backend/models/duelSession'
+import { advanceDuelState } from '@backend/utils/advanceDuelState'
+import { collections, getExistingAnonymousGameId, getUserId, throwError } from '@backend/utils'
+import getMapFromGame from '@backend/queries/getMapFromGame'
+import { duelParticipantRole, resolveDuelViewerRole } from '@backend/utils/duelParticipant'
+import { findDuelSessionByInvite } from '@backend/utils/resolveDuelInvite'
+import { replyWithDuelPayload } from './buildDuelPayload'
+
+const postDuelSpectate = async (req: NextApiRequest, res: NextApiResponse) => {
+  const duelId = req.query.id as string
+  const userId = await getUserId(req, res)
+  const anonymousId = getExistingAnonymousGameId(req)
+
+  let duel = (await findDuelSessionByInvite(duelId)) as DuelSession | null
+  if (!duel) {
+    return throwError(res, 404, 'Duel not found')
+  }
+
+  const participant = duelParticipantRole(duel, userId, anonymousId)
+  if (participant) {
+    const { duel: processed, mutated } = await advanceDuelState(duel)
+    duel = processed
+    if (mutated) {
+      await collections.duelSessions?.replaceOne({ _id: duel._id }, duel)
+    }
+    const mapDetails = await getMapFromGame({ mapId: duel.mapId } as unknown as Game)
+    await replyWithDuelPayload(res, duel, participant, mapDetails)
+    return
+  }
+
+  if (duel.status !== 'in_progress' && duel.status !== 'finished') {
+    return throwError(res, 400, 'This duel is not ready to spectate yet')
+  }
+
+  const role = resolveDuelViewerRole(duel, userId, anonymousId, { allowSpectator: true })
+  if (role !== 'spectator') {
+    return throwError(res, 401, 'You cannot spectate this duel')
+  }
+
+  const { duel: processed, mutated } = await advanceDuelState(duel)
+  duel = processed
+  if (mutated) {
+    await collections.duelSessions?.replaceOne({ _id: duel._id }, duel)
+  }
+
+  const mapDetails = await getMapFromGame({ mapId: duel.mapId } as unknown as Game)
+  await replyWithDuelPayload(res, duel, 'spectator', mapDetails)
+}
+
+export default postDuelSpectate

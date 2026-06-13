@@ -14,7 +14,7 @@ import { Button, Tab, Tabs } from '@components/system'
 import { TextWithLinks } from '@components/TextWithLinks'
 import { UserSettingsPanel } from '@components/UserSettingsPanel'
 import { VerifiedBadge } from '@components/VerifiedBadge'
-import { CameraIcon, LightningBoltIcon } from '@heroicons/react/outline'
+import { CameraIcon, LightningBoltIcon, UserAddIcon } from '@heroicons/react/outline'
 import { PencilAltIcon } from '@heroicons/react/solid'
 import { useAppDispatch, useAppSelector } from '@redux/hook'
 import { updateAvatar, updateBio, updateUsername } from '@redux/slices'
@@ -67,6 +67,8 @@ const ProfilePage: NextPage = () => {
   const [friendsList, setFriendsList] = useState<FriendRow[] | null>(null)
   const [friendsLoading, setFriendsLoading] = useState(false)
   const [inviteBusyFriendId, setInviteBusyFriendId] = useState<string | null>(null)
+  const [isFriendWithProfile, setIsFriendWithProfile] = useState<boolean | null>(null)
+  const [addFriendBusy, setAddFriendBusy] = useState(false)
 
   const user = useAppSelector((state) => state.user)
   const router = useRouter()
@@ -111,7 +113,18 @@ const ProfilePage: NextPage = () => {
 
   useEffect(() => {
     setFriendsList(null)
+    setIsFriendWithProfile(null)
   }, [userId])
+
+  useEffect(() => {
+    if (!session?.user?.id || !userId || session.user.id === userId) return
+
+    void mailman('users/friends').then((res) => {
+      if (!Array.isArray(res)) return
+      const rows = res as FriendRow[]
+      setIsFriendWithProfile(rows.some((f) => f.id === String(userId)))
+    })
+  }, [session?.user?.id, userId])
 
   useEffect(() => {
     if (selectedTab !== 'friends' || !session?.user?.id || session.user.id !== userId) return
@@ -179,6 +192,33 @@ const ProfilePage: NextPage = () => {
 
   const isThisUsersProfile = () => {
     return !!session?.user?.id && session.user.id === userId
+  }
+
+  const addProfileAsFriend = async () => {
+    if (!session?.user?.id || !userId) {
+      showToast('error', 'Sign in to add friends')
+      void router.push(`/login?callbackUrl=${encodeURIComponent(`/user/${String(userId)}`)}`)
+      return
+    }
+
+    const code = typeof userDetails?.friendCode === 'string' ? userDetails.friendCode.trim() : ''
+    const identifier = code || (typeof userDetails?.name === 'string' ? userDetails.name.trim() : '')
+    if (!identifier) {
+      showToast('error', 'Could not add this player')
+      return
+    }
+
+    setAddFriendBusy(true)
+    const res = await mailman('users/friends', 'POST', JSON.stringify({ identifier }))
+    setAddFriendBusy(false)
+
+    if (res?.error) {
+      showToast('error', res.error.message)
+      return
+    }
+
+    setIsFriendWithProfile(true)
+    showToast('success', `Added ${typeof res.name === 'string' ? res.name : userDetails?.name ?? 'friend'}`)
   }
 
   const inviteFriendToDuel = async (friend: FriendRow) => {
@@ -288,6 +328,23 @@ const ProfilePage: NextPage = () => {
                   <div className="profile-actions">
                     <Button variant="solidGray" onClick={() => setIsEditing(true)}>
                       <PencilAltIcon /> Edit Profile
+                    </Button>
+                  </div>
+                )}
+
+                {!isThisUsersProfile() && session?.user?.id && !isEditing && isFriendWithProfile === false && (
+                  <div className="profile-actions">
+                    <Button
+                      variant="primary"
+                      disabled={addFriendBusy}
+                      isLoading={addFriendBusy}
+                      spinnerSize={18}
+                      onClick={() => void addProfileAsFriend()}
+                    >
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                        <UserAddIcon style={{ width: 16, height: 16 }} />
+                        Add friend
+                      </span>
                     </Button>
                   </div>
                 )}

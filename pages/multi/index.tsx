@@ -15,12 +15,16 @@ import {
   GamifiedDuelSettingsColumn,
   GamifiedFormCardWide,
 } from '@styles/GamifiedHubShell.Styled'
+import { DuelLobbyPlonkStrip } from '@components/duel/DuelRoomPanels'
 import { isMapExcludedFromPicker } from '@utils/constants/mapPicker'
 import {
+  ALLOWED_MULTI_PANEL_COUNTS,
+  DEFAULT_MULTI_PANEL_COUNT,
   DEFAULT_MULTI_PER_GUESS_SECONDS,
   MAX_MULTI_PER_GUESS_SECONDS,
   MIN_MULTI_PER_GUESS_SECONDS,
 } from '@utils/constants/gameModes'
+import type { AllowedMultiPanelCount } from '@utils/constants/gameModes'
 import { OFFICIAL_WORLD_ID } from '@utils/constants/random'
 import { DEFAULT_MAP_PREVIEW_FILE } from '@utils/helpers/mapPreviewSrc'
 import { loadMapPickerOptions } from '@utils/loadMapPickerOptions'
@@ -72,6 +76,30 @@ const FieldLabel = styled.label`
   color: var(--text-muted);
 `
 
+const PanelCountRow = styled.div`
+  display: flex;
+  gap: 8px;
+`
+
+const PanelCountBtn = styled.button<{ $active?: boolean }>`
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid
+    ${({ $active }) => ($active ? 'rgba(47, 127, 255, 0.55)' : 'rgba(255, 255, 255, 0.12)')};
+  background: ${({ $active }) => ($active ? 'rgba(47, 127, 255, 0.16)' : 'rgba(255, 255, 255, 0.04)')};
+  color: ${({ $active }) => ($active ? 'var(--text-primary)' : 'var(--text-muted)')};
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    border-color: rgba(47, 127, 255, 0.4);
+  }
+`
+
 const MultiLobbyPage: NextPage = () => {
   const router = useRouter()
   const [mapField, setMapField] = useState<string>(OFFICIAL_WORLD_ID)
@@ -81,6 +109,7 @@ const MultiLobbyPage: NextPage = () => {
 
   const [defaultsLocked, setDefaultsLocked] = useState(true)
   const [sliderVal, setSliderVal] = useState(0)
+  const [panelCount, setPanelCount] = useState<AllowedMultiPanelCount>(DEFAULT_MULTI_PANEL_COUNT)
   const [canMove, setCanMove] = useState(true)
   const [canZoom, setCanZoom] = useState(true)
 
@@ -149,6 +178,7 @@ const MultiLobbyPage: NextPage = () => {
     const body = {
       mapId: useAll ? 'all' : mapField,
       ...(!useAll && mapNameForField ? { mapName: mapNameForField } : {}),
+      panelCount,
       perGuessSeconds,
       gameSettings: {
         timeLimit: perGuessSeconds,
@@ -219,6 +249,19 @@ const MultiLobbyPage: NextPage = () => {
                 setCanMove={setCanMove}
                 setCanZoom={setCanZoom}
               />
+              <FieldLabel>Panels at once</FieldLabel>
+              <PanelCountRow>
+                {ALLOWED_MULTI_PANEL_COUNTS.map((n) => (
+                  <PanelCountBtn
+                    key={n}
+                    type="button"
+                    $active={panelCount === n}
+                    onClick={() => setPanelCount(n)}
+                  >
+                    {n}
+                  </PanelCountBtn>
+                ))}
+              </PanelCountRow>
               <Button
                 variant="primary"
                 style={{ marginTop: 16, width: '100%' }}
@@ -227,6 +270,9 @@ const MultiLobbyPage: NextPage = () => {
               >
                 {submitting ? 'Starting…' : 'Start'}
               </Button>
+              <div style={{ marginTop: 18 }}>
+                <DuelLobbyPlonkStrip />
+              </div>
             </GamifiedDuelSettingsColumn>
           </GamifiedDuelGrid>
         </GamifiedFormCardWide>

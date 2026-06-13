@@ -3,6 +3,7 @@ import Game from '@backend/models/game'
 import countries from '../../utils/constants/countries'
 import { StyledStreakCountryList } from './'
 import { getRealCountryCode } from '@utils/helpers/getRealCountryCode'
+import { streakFlagImgProps } from '@utils/helpers/streakFlagImgProps'
 
 type Props = {
   gameData: Game
@@ -12,6 +13,8 @@ type Round = {
   name: string
   flag: string
   guessedCountry: string
+  lat?: number
+  lng?: number
 }
 
 const StreakCountryList: FC<Props> = ({ gameData }) => {
@@ -31,7 +34,12 @@ const StreakCountryList: FC<Props> = ({ gameData }) => {
       const guessedCountryCode = guessedWrong ? gameData.guesses[idx]?.streakLocationCode : ''
       const guessedCountry = countries.find((x) => x.code === guessedCountryCode)?.name || ''
 
-      formatted.push({ name, flag, guessedCountry })
+      formatted.push({
+        name,
+        flag,
+        guessedCountry,
+        ...(round.lat != null && round.lng != null ? { lat: round.lat, lng: round.lng } : {}),
+      })
     })
 
     setFormattedRounds(formatted)
@@ -47,7 +55,13 @@ const StreakCountryList: FC<Props> = ({ gameData }) => {
         <li key={idx} className="streak-result-item">
           <div className="result-number">{idx + 1}.</div>
           <div className="result-flag">
-            <img src={round.flag} alt="" />
+            <img
+              src={round.flag}
+              alt=""
+              {...streakFlagImgProps(
+                round.lat != null && round.lng != null ? { lat: round.lat, lng: round.lng } : null
+              )}
+            />
           </div>
           <div className="result-name">
             {round.name}

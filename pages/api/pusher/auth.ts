@@ -1,7 +1,7 @@
 /* eslint-disable import/no-anonymous-default-export */
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { getServerSession } from 'next-auth/next'
-import { duelParticipantRole } from '@backend/utils/duelParticipant'
+import { resolveDuelViewerRole } from '@backend/utils/duelParticipant'
 import { dbConnect, getExistingAnonymousGameId } from '@backend/utils'
 import { getPusherServer } from '@backend/utils/pusherServer'
 import { findDuelSessionByInvite } from '@backend/utils/resolveDuelInvite'
@@ -72,7 +72,9 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         return res.status(403).end('Forbidden')
       }
 
-      const role = duelParticipantRole(duel, userId, anonymousId)
+      const role = resolveDuelViewerRole(duel, userId, anonymousId, {
+        allowSpectator: duel.status === 'in_progress' || duel.status === 'finished',
+      })
       if (!role) {
         return res.status(403).end('Forbidden')
       }

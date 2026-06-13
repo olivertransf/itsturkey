@@ -20,7 +20,7 @@ cd geohub && yarn install && yarn dev
 
 ## Requirements
 
-- Node **18–22**
+- Node **18+** (tested on Node 22 and 26)
 - **Yarn**
 - **MongoDB**
 - `NEXT_PUBLIC_GOOGLE_API_KEY` (Street View); optional Mapbox for geocoder
@@ -34,6 +34,12 @@ yarn dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+### Node version note
+
+`package.json` no longer caps Node at 22 (matching upstream GeoHub). On Node 24+, `yarn dev` preloads `scripts/node-slowbuffer-shim.js` because Next 12 bundles an old `jsonwebtoken` that expects `SlowBuffer`.
+
+`.node-version` is set to `22` if you use fnm/nvm. Node 26 works without switching versions.
 
 Minimal `.env`:
 

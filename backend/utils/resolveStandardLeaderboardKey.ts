@@ -2,6 +2,8 @@ import { ObjectId } from 'mongodb'
 import { WORLD_STANDARD_LEADERBOARD_KEY } from '@utils/constants/standardLeaderboard'
 import { isMongoObjectIdHex24 } from '@utils/helpers/equitableCountryMapId'
 import { isEquitableVirtualStandardMapId } from './equitableCountryMap'
+import type { LeaderboardSettingsBucket } from './leaderboardSettingsBucket'
+import { leaderboardBucketStorageKey } from './leaderboardSettingsBucket'
 import getWorldStandardLeaderboardSourceIds from './worldStandardLeaderboardMapIds'
 
 export type StandardLeaderboardResolution =
@@ -37,6 +39,25 @@ export function resolveStandardLeaderboardKey(gameMapId: unknown): StandardLeade
 export function leaderboardStorageKey(resolution: StandardLeaderboardResolution): ObjectId | string {
   if (resolution.kind === 'world') return WORLD_STANDARD_LEADERBOARD_KEY
   return resolution.mapId
+}
+
+function serializeLeaderboardMapKey(mapKey: ObjectId | string): string {
+  return typeof mapKey === 'string' ? mapKey : mapKey.toHexString()
+}
+
+export function bucketedLeaderboardStorageKey(
+  resolution: StandardLeaderboardResolution,
+  bucket: LeaderboardSettingsBucket
+): string {
+  return leaderboardBucketStorageKey(serializeLeaderboardMapKey(leaderboardStorageKey(resolution)), bucket)
+}
+
+export function resolvePublicMapIdToBucketedLeaderboardStorageKey(
+  mapIdParam: string,
+  bucket: LeaderboardSettingsBucket
+): string {
+  const mapKey = resolvePublicMapIdToLeaderboardStorageKey(mapIdParam)
+  return leaderboardBucketStorageKey(serializeLeaderboardMapKey(mapKey), bucket)
 }
 
 /** Resolve API/map-page id param to `mapLeaderboard.mapId` value. */

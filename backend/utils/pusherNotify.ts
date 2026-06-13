@@ -25,14 +25,25 @@ export type DuelPusherReason =
   | 'forfeit'
   | 'recap_dismiss'
   | 'rematch'
+  | 'chat'
+
+export type DuelChatPusherMessage = {
+  senderRole: 'host' | 'guest'
+  text: string
+  createdAt: string
+}
 
 export async function notifyDuelUpdated(segment: string, reason: DuelPusherReason): Promise<void> {
   await triggerSafe(duelPrivateChannel(segment), 'duel.updated', { inviteSegment: segment, reason })
 }
 
+export async function notifyDuelChat(segment: string, message: DuelChatPusherMessage): Promise<void> {
+  await triggerSafe(duelPrivateChannel(segment), 'duel.chat', { inviteSegment: segment, message })
+}
+
 export async function notifyUserDuelInviteCreated(
   recipientUserIdHex: string,
-  row: { id: string; hostName: string; inviteSegment: string; createdAt: string }
+  row: { id: string; hostName: string; inviteSegment: string; createdAt: string; expiresAt?: string }
 ): Promise<void> {
   await triggerSafe(userPrivateChannel(recipientUserIdHex), 'duel_invite.created', row as unknown as Record<
     string,

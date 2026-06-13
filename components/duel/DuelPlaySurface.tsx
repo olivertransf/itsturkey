@@ -5,16 +5,18 @@ import type { DuelGuessSubmitPayload } from '@components/StreetView/StreetView'
 import { ChevronLeftIcon, FlagIcon, LockClosedIcon } from '@heroicons/react/outline'
 import { useRouter } from 'next/router'
 import { DuelHpMeter, DuelPointsMeter } from '@components/duel/DuelHpMeter'
+import { MainModal } from '@components/modals'
 import { useAppDispatch } from '@redux/hook'
 import { updateStartTime } from '@redux/slices'
 import type { GameViewType, LocationType } from '@types'
 import { mailman, showToast } from '@utils/helpers'
 import { useVisibleInterval } from '@utils/useVisibleInterval'
 import styled, { css, keyframes } from 'styled-components'
-import { USER_AVATAR_PATH } from '@utils/constants/random'
 import { duelRoundDamageMultiplier } from '@backend/utils/duelConstants'
 import DuelRoundOverview from './DuelRoundOverview'
+import DuelStreetChatDock from './DuelStreetChatDock'
 import type { DuelClientPayload, DuelGuessAvatar, DuelRoundResultClient, DuelViewerRole } from './duelApiTypes'
+import { duelAvatarAccent, duelHudAvatarIcon } from './duelHudAvatar'
 
 const HudRoot = styled.div`
   z-index: 34;
@@ -62,7 +64,7 @@ const HudTop = styled.div`
     justify-self: start;
   }
 
-  .hud-forfeit-only {
+  .hud-actions {
     justify-self: end;
   }
 
@@ -96,7 +98,7 @@ const HudTop = styled.div`
       justify-self: start;
     }
 
-    .hud-forfeit-only {
+    .hud-actions {
       grid-column: 3;
       grid-row: 2;
       justify-self: end;
@@ -108,52 +110,35 @@ const HudRoundStack = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  gap: 3px;
   text-align: center;
-  padding: 0 4px;
-  flex-shrink: 0;
+  padding: 7px 14px;
+  min-width: 76px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-sizing: border-box;
 `
 
 const HudRoundLabel = styled.div`
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: rgba(244, 244, 245, 0.88);
+  color: rgba(157, 200, 240, 0.88);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  line-height: 1.15;
-
-  @media (max-width: 640px) {
-    font-size: 10px;
-    letter-spacing: 0.1em;
-  }
-`
-
-const HudRoundRampLabel = styled.div`
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(163, 163, 173, 0.75);
-  line-height: 1;
-
-  @media (max-width: 640px) {
-    font-size: 8px;
-    letter-spacing: 0.08em;
-  }
-`
-
-const HudRoundRampMult = styled.div`
-  font-size: 13px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  color: rgba(244, 244, 245, 0.92);
   line-height: 1.1;
+`
 
-  @media (max-width: 640px) {
-    font-size: 12px;
-  }
+const HudRoundNumber = styled.div`
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: rgba(244, 244, 245, 0.96);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
 `
 
 /** Compact multiplier for HUD (e.g. 1, 1.25) — pair with × in UI. */
@@ -171,42 +156,6 @@ function hpMeterLabelWithMult(baseName: string, mult: number): string {
   if (isUnityDamageMult(mult)) return baseName
   return `${baseName} (×${formatDuelDmgMultShort(mult)})`
 }
-
-function hexToRgba(hex: string, alpha: number): string {
-  const h = hex.trim().replace('#', '')
-  if (h.length === 3) {
-    const r = parseInt(h[0] + h[0], 16)
-    const g = parseInt(h[1] + h[1], 16)
-    const b = parseInt(h[2] + h[2], 16)
-    return `rgba(${r},${g},${b},${alpha})`
-  }
-  if (h.length === 6) {
-    const r = parseInt(h.slice(0, 2), 16)
-    const g = parseInt(h.slice(2, 4), 16)
-    const b = parseInt(h.slice(4, 6), 16)
-    return `rgba(${r},${g},${b},${alpha})`
-  }
-  return `rgba(148, 163, 184, ${alpha})`
-}
-
-const HudMiniAvatar = styled.span<{ $color: string }>`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-  border-radius: 999px;
-  overflow: hidden;
-  background: ${({ $color }) => hexToRgba($color, 0.4)};
-  box-shadow: 0 0 0 2px ${({ $color }) => $color};
-
-  img {
-    width: 26px;
-    height: 26px;
-    object-fit: contain;
-  }
-`
 
 const IconGhostBtn = styled.button`
   margin-left: 0;
@@ -247,6 +196,14 @@ const PlayColumn = styled.div`
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
+`
+
+const HudActionStack = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
 `
 
 const StreetOverlayWrap = styled.div`
@@ -467,15 +424,6 @@ function reactionTimeRemainingFraction(deadlineMs: number, reactiveSeconds: numb
   return Math.min(1, Math.max(0, deadlineMs / total))
 }
 
-function duelHudAvatarIcon(avatar: DuelGuessAvatar) {
-  const c = avatar.color?.trim() || '#94a3b8'
-  return (
-    <HudMiniAvatar $color={c}>
-      <img src={`${USER_AVATAR_PATH}/${avatar.emoji}.svg`} alt="" />
-    </HudMiniAvatar>
-  )
-}
-
 const buildSyntheticGame = (payload: DuelClientPayload, role: DuelViewerRole): Game => {
   const loc = payload.currentLocation
   const mapDetails = payload.mapDetails ?? undefined
@@ -516,18 +464,16 @@ type HudBarProps = {
   completedRounds: number
   totalRounds?: number
   /** Seat order: you on the left, opponent on the right. */
-  viewerRole: Exclude<DuelViewerRole, null>
+  viewerRole: Exclude<DuelViewerRole, null | 'spectator'>
   playerNames: { host: string; guest: string }
   playerAvatars: { host: DuelGuessAvatar; guest: DuelGuessAvatar }
-  damageMultiplierHost: number
-  damageMultiplierGuest: number
-  useRoundRamp: boolean
+  multiplierMode: 'round_ramp' | 'win_streak'
+  hostWinMultiplier: number
+  guestWinMultiplier: number
   onExit: () => void
   onForfeit: () => void
+  readOnly?: boolean
 }
-
-/** When avatar has no color (shouldn’t happen); avoids bare blue/red for anonymous fallbacks. */
-const ACCENT_FALLBACK = '#94a3b8'
 
 const DuelHudBar = memo(function DuelHudBar({
   mode,
@@ -542,18 +488,20 @@ const DuelHudBar = memo(function DuelHudBar({
   viewerRole,
   playerNames,
   playerAvatars,
-  damageMultiplierHost,
-  damageMultiplierGuest,
-  useRoundRamp,
+  multiplierMode,
+  hostWinMultiplier,
+  guestWinMultiplier,
   onExit,
   onForfeit,
+  readOnly = false,
 }: HudBarProps) {
-  const roundRampDisplay = duelRoundDamageMultiplier(completedRounds + 1, useRoundRamp)
+  const nextRound = completedRounds + 1
+  const roundRampDisplay = duelRoundDamageMultiplier(nextRound, true)
 
   const roundLabel =
     mode === 'points' && totalRounds != null
-      ? `Round ${completedRounds + 1} / ${totalRounds}`
-      : `Round ${completedRounds + 1}`
+      ? `${completedRounds + 1} / ${totalRounds}`
+      : `${completedRounds + 1}`
 
   const youAreHost = viewerRole === 'host'
   const youHp = youAreHost ? hostHp : guestHp
@@ -575,14 +523,24 @@ const DuelHudBar = memo(function DuelHudBar({
   const youAvatar = youAreHost ? playerAvatars.host : playerAvatars.guest
   const oppAvatar = youAreHost ? playerAvatars.guest : playerAvatars.host
 
-  const youAccent = youAvatar.color?.trim() || ACCENT_FALLBACK
-  const oppAccent = oppAvatar.color?.trim() || ACCENT_FALLBACK
+  const youAccent = duelAvatarAccent(youAvatar)
+  const oppAccent = duelAvatarAccent(oppAvatar)
 
-  const youDmgMult = youAreHost ? damageMultiplierHost : damageMultiplierGuest
-  const oppDmgMult = youAreHost ? damageMultiplierGuest : damageMultiplierHost
+  const youWinMult = youAreHost ? hostWinMultiplier : guestWinMultiplier
+  const oppWinMult = youAreHost ? guestWinMultiplier : hostWinMultiplier
 
-  const youMeterLabel = mode === 'hp' ? hpMeterLabelWithMult(youName, youDmgMult) : youName
-  const oppMeterLabel = mode === 'hp' ? hpMeterLabelWithMult(oppName, oppDmgMult) : oppName
+  const youMeterLabel =
+    mode === 'hp'
+      ? multiplierMode === 'round_ramp'
+        ? hpMeterLabelWithMult(youName, roundRampDisplay)
+        : hpMeterLabelWithMult(youName, youWinMult)
+      : youName
+  const oppMeterLabel =
+    mode === 'hp'
+      ? multiplierMode === 'round_ramp'
+        ? hpMeterLabelWithMult(oppName, roundRampDisplay)
+        : hpMeterLabelWithMult(oppName, oppWinMult)
+      : oppName
 
   return (
     <HudRoot>
@@ -590,8 +548,8 @@ const DuelHudBar = memo(function DuelHudBar({
         <IconGhostBtn
           className="hud-exit"
           type="button"
-          title="Exit duel"
-          aria-label="Exit duel"
+          title={readOnly ? 'Leave spectator view' : 'Exit duel'}
+          aria-label={readOnly ? 'Leave spectator view' : 'Exit duel'}
           onClick={() => void onExit()}
         >
           <ChevronLeftIcon />
@@ -630,15 +588,8 @@ const DuelHudBar = memo(function DuelHudBar({
         </div>
 
         <HudRoundStack className="hud-round" title="Current round">
-          <HudRoundLabel>{roundLabel}</HudRoundLabel>
-          {mode === 'hp' ? (
-            <>
-              <HudRoundRampLabel>Damage mult</HudRoundRampLabel>
-              <HudRoundRampMult title="Round damage ramp (matches scoring)">
-                ×{roundRampDisplay.toFixed(1)}
-              </HudRoundRampMult>
-            </>
-          ) : null}
+          <HudRoundLabel>Round</HudRoundLabel>
+          <HudRoundNumber>{roundLabel}</HudRoundNumber>
         </HudRoundStack>
 
         <div className="hud-meter hud-meter--opp">
@@ -673,15 +624,20 @@ const DuelHudBar = memo(function DuelHudBar({
           )}
         </div>
 
-        <IconGhostBtn
-          className="hud-forfeit-only"
-          type="button"
-          title="Forfeit duel"
-          aria-label="Forfeit duel"
-          onClick={() => void onForfeit()}
-        >
-          <FlagIcon />
-        </IconGhostBtn>
+        <HudActionStack className="hud-actions">
+          {!readOnly ? (
+            <IconGhostBtn
+              type="button"
+              title="Forfeit duel"
+              aria-label="Forfeit duel"
+              onClick={() => void onForfeit()}
+            >
+              <FlagIcon />
+            </IconGhostBtn>
+          ) : (
+            <div aria-hidden style={{ width: 38, height: 38 }} />
+          )}
+        </HudActionStack>
       </HudTop>
     </HudRoot>
   )
@@ -691,8 +647,16 @@ type StreetSectionProps = {
   duelId: string
   completedRounds: number
   gameData: Game
-  duelGuessSubmit: (body: DuelGuessSubmitPayload) => Promise<void>
+  duelGuessSubmit?: (body: DuelGuessSubmitPayload) => Promise<void>
   youLocked: boolean
+  readOnly?: boolean
+  chatOpen: boolean
+  onChatToggle: () => void
+  chatMessages: DuelClientPayload['chatMessages']
+  playerNames: DuelClientPayload['playerNames']
+  playerAvatars: DuelClientPayload['playerAvatars']
+  viewerRole: DuelViewerRole
+  onRefresh: () => Promise<void>
 }
 
 const DuelStreetSection = memo(
@@ -702,13 +666,21 @@ const DuelStreetSection = memo(
     gameData,
     duelGuessSubmit,
     youLocked,
+    readOnly = false,
+    chatOpen,
+    onChatToggle,
+    chatMessages,
+    playerNames,
+    playerAvatars,
+    viewerRole,
+    onRefresh,
   }: StreetSectionProps) {
     const [view, setView] = useState<GameViewType>('Game')
     const pinRef = useRef<{ lat: number; lng: number } | null>(null)
     const lastSentPinRef = useRef<{ lat: number; lng: number } | null>(null)
 
     const syncPin = useCallback(() => {
-      if (youLocked) return
+      if (readOnly || youLocked) return
       const p = pinRef.current
       if (!p) return
       const prev = lastSentPinRef.current
@@ -721,14 +693,31 @@ const DuelStreetSection = memo(
       }
       lastSentPinRef.current = { lat: p.lat, lng: p.lng }
       void mailman(`duels/${duelId}/pin`, 'PATCH', JSON.stringify(p))
-    }, [duelId, youLocked])
+    }, [duelId, readOnly, youLocked])
 
-    useVisibleInterval(syncPin, PIN_PATCH_MS)
+    useVisibleInterval(syncPin, readOnly ? null : PIN_PATCH_MS)
 
-    const onGuessCoordinateChange = useCallback((loc: LocationType | null) => {
-      if (youLocked) return
-      pinRef.current = loc ? { lat: loc.lat, lng: loc.lng } : null
-    }, [youLocked])
+    const onGuessCoordinateChange = useCallback(
+      (loc: LocationType | null) => {
+        if (readOnly || youLocked) return
+        pinRef.current = loc ? { lat: loc.lat, lng: loc.lng } : null
+      },
+      [readOnly, youLocked]
+    )
+
+    const streetChatDock =
+      viewerRole === 'host' || viewerRole === 'guest' || viewerRole === 'spectator' ? (
+        <DuelStreetChatDock
+          duelId={duelId}
+          messages={chatMessages ?? []}
+          playerNames={playerNames}
+          playerAvatars={playerAvatars}
+          viewerRole={viewerRole}
+          onRefresh={onRefresh}
+          open={chatOpen}
+          onToggle={onChatToggle}
+        />
+      ) : null
 
     return (
       <StreetOverlayWrap>
@@ -742,9 +731,10 @@ const DuelStreetSection = memo(
             view={view}
             setView={setView}
             isDuel
-            duelGuessSubmit={duelGuessSubmit}
-            duelGuessLocked={youLocked}
+            duelGuessSubmit={readOnly ? undefined : duelGuessSubmit}
+            duelGuessLocked={readOnly || youLocked}
             onGuessCoordinateChange={onGuessCoordinateChange}
+            primaryControlsLeading={streetChatDock}
           />
         </PanoStretch>
       </StreetOverlayWrap>
@@ -755,7 +745,12 @@ const DuelStreetSection = memo(
     prev.completedRounds === next.completedRounds &&
     prev.gameData === next.gameData &&
     prev.duelGuessSubmit === next.duelGuessSubmit &&
-    prev.youLocked === next.youLocked
+    prev.youLocked === next.youLocked &&
+    prev.readOnly === next.readOnly &&
+    prev.chatOpen === next.chatOpen &&
+    prev.chatMessages === next.chatMessages &&
+    prev.playerAvatars === next.playerAvatars &&
+    prev.viewerRole === next.viewerRole
 )
 
 type Props = {
@@ -807,10 +802,14 @@ function frozenHudTotals(payload: DuelClientPayload, lr: DuelRoundResultClient |
 }
 
 const DuelPlaySurface: FC<Props> = ({ duelId, payload, role, onRefresh }) => {
+  const spectating = role === 'spectator'
+  const hudRole: Exclude<DuelViewerRole, null | 'spectator'> = spectating ? 'host' : role
   const router = useRouter()
   const dispatch = useAppDispatch()
   const [now, setNow] = useState(() => Date.now())
   const [lockFlash, setLockFlash] = useState<'none' | 'locked' | 'timed'>('none')
+  const [forfeitOpen, setForfeitOpen] = useState(false)
+  const [chatOpen, setChatOpen] = useState(false)
 
   const lr = payload.lastRoundResult
   const revealActual = payload.lastRoundActualLocation
@@ -854,9 +853,10 @@ const DuelPlaySurface: FC<Props> = ({ duelId, payload, role, onRefresh }) => {
   }, [lockFlash])
 
   const gameData = useMemo(
-    () => buildSyntheticGame(payload, role),
+    () => buildSyntheticGame(payload, hudRole),
     [
       role,
+      hudRole,
       payload.id,
       payload.mapId,
       payload.completedRounds,
@@ -953,10 +953,21 @@ const DuelPlaySurface: FC<Props> = ({ duelId, payload, role, onRefresh }) => {
   }, [duelId, lr, onRefresh])
 
   const showReactionTimer =
-    deadlineMs !== null && !showRoundReveal && payload.status === 'in_progress'
+    !spectating &&
+    deadlineMs !== null &&
+    !showRoundReveal &&
+    payload.status === 'in_progress'
 
   /** Red stress UI only for the player still guessing; hide once you’ve locked in. */
   const showReactionTimerStress = showReactionTimer && !payload.flags.youLocked
+
+  const waitingForOpponent =
+    !spectating &&
+    lockFlash === 'none' &&
+    payload.flags.youLocked &&
+    !payload.flags.opponentLocked &&
+    !showRoundReveal &&
+    payload.status === 'in_progress'
 
   return (
     <PlayColumn>
@@ -1016,13 +1027,39 @@ const DuelPlaySurface: FC<Props> = ({ duelId, payload, role, onRefresh }) => {
         </>
       )}
 
-      {lockFlash !== 'none' && !showRoundReveal && (
+      {lockFlash !== 'none' && !spectating && !showRoundReveal && (
         <LockInBackdrop aria-live="polite">
           <LockInCard $timed={lockFlash === 'timed'}>
             <LockClosedIcon className="lock-ico" />
             <LockInMain>{lockFlash === 'timed' ? 'Time up — submitted' : 'Locked in'}</LockInMain>
           </LockInCard>
         </LockInBackdrop>
+      )}
+
+      {waitingForOpponent && (
+        <LockInBackdrop aria-live="polite">
+          <LockInCard $timed={false}>
+            <LockClosedIcon className="lock-ico" />
+            <LockInMain>Locked in — waiting for opponent</LockInMain>
+          </LockInCard>
+        </LockInBackdrop>
+      )}
+
+      {!spectating && (
+        <MainModal
+          isOpen={forfeitOpen}
+          onClose={() => setForfeitOpen(false)}
+          onCancel={() => setForfeitOpen(false)}
+          onAction={() => {
+            setForfeitOpen(false)
+            void handleForfeit()
+          }}
+          title="Forfeit duel?"
+          actionButtonText="Forfeit"
+          cancelButtonText="Keep playing"
+        >
+          You will lose this match and your opponent wins.
+        </MainModal>
       )}
 
       <PlayStage>
@@ -1036,41 +1073,50 @@ const DuelPlaySurface: FC<Props> = ({ duelId, payload, role, onRefresh }) => {
           startingHpGuest={payload.startingHpGuest}
           completedRounds={payload.completedRounds}
           totalRounds={payload.totalRounds}
-          viewerRole={role}
+          viewerRole={hudRole}
           playerNames={payload.playerNames}
           playerAvatars={payload.playerAvatars}
-          damageMultiplierHost={payload.damageMultiplierHost}
-          damageMultiplierGuest={payload.damageMultiplierGuest}
-          useRoundRamp={payload.useRoundRamp}
+          multiplierMode={payload.multiplierMode}
+          hostWinMultiplier={payload.hostWinMultiplier}
+          guestWinMultiplier={payload.guestWinMultiplier}
           onExit={handleDuelExit}
-          onForfeit={handleForfeit}
+          onForfeit={() => setForfeitOpen(true)}
+          readOnly={spectating}
         />
         {showRoundReveal && lr && revealActual ? (
           <DuelRoundOverview
             variant="fullscreen"
             roundOneBased={lr.roundIndex + 1}
             totalRounds={payload.totalRounds}
-            useRoundRamp={payload.useRoundRamp}
+            multiplierMode={payload.multiplierMode}
             mode={payload.mode}
             actual={revealActual}
             result={lr}
             hostMaxHp={payload.startingHpHost}
             guestMaxHp={payload.startingHpGuest}
-            viewerRole={role}
+            viewerRole={spectating ? null : role}
             sessionMapId={payload.mapId}
             plonkMapLabel={payload.mapDetails?.name}
             hostPlayerName={payload.playerNames.host}
             guestPlayerName={payload.playerNames.guest}
             playerAvatars={payload.playerAvatars}
-            onContinue={() => void dismissRecap()}
+            onContinue={spectating ? undefined : () => void dismissRecap()}
           />
         ) : (
           <DuelStreetSection
             duelId={duelId}
             completedRounds={payload.completedRounds}
             gameData={gameData}
-            duelGuessSubmit={duelGuessSubmit}
+            duelGuessSubmit={spectating ? undefined : duelGuessSubmit}
             youLocked={payload.flags.youLocked}
+            readOnly={spectating}
+            chatOpen={chatOpen}
+            onChatToggle={() => setChatOpen((open) => !open)}
+            chatMessages={payload.chatMessages}
+            playerNames={payload.playerNames}
+            playerAvatars={payload.playerAvatars}
+            viewerRole={role}
+            onRefresh={onRefresh}
           />
         )}
       </PlayStage>

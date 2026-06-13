@@ -7,11 +7,18 @@ import { WidthController } from '@components/layout'
 import { MapLeaderboard } from '@components/MapLeaderboard'
 import { Meta } from '@components/Meta'
 import { SkeletonMapInfo } from '@components/skeletons'
+import { Tab, Tabs } from '@components/system'
 import StyledMapPage from '@styles/MapPage.Styled'
 import { MapLeaderboardType, MapType } from '@types'
 import { mailman } from '@utils/helpers'
+import { recordRecentMapId } from '@utils/helpers/recentMapsStorage'
 import { isCustomMapPlaceholderPreview, resolveMapImageSrc } from '@utils/helpers/mapPreviewSrc'
 import { SITE_NAME } from '@utils/constants/site'
+import {
+  LEADERBOARD_BUCKET_LABELS,
+  LEADERBOARD_SETTINGS_BUCKETS,
+} from '@utils/constants/standardLeaderboard'
+import type { LeaderboardSettingsBucket } from '@utils/constants/standardLeaderboard'
 import { mapScoresPublicChannel } from '@utils/pusherChannels'
 import { usePusherRealtimeHealthy } from '@utils/usePusherRealtimeHealthy'
 import { usePusherSubscription } from '@utils/usePusherSubscription'
@@ -23,6 +30,7 @@ const MapPage: FC = () => {
   const [mapDetails, setMapDetails] = useState<MapType | null>()
   const [topScores, setTopScores] = useState<MapLeaderboardType[]>([])
   const [lowScores, setLowScores] = useState<MapLeaderboardType[]>([])
+  const [leaderboardBucket, setLeaderboardBucket] = useState<LeaderboardSettingsBucket>('moving')
 
   const router = useRouter()
   const rawMapId = router.query.id
@@ -51,12 +59,13 @@ const MapPage: FC = () => {
 
   const fetchLeaderboards = useCallback(async () => {
     if (!mapId) return
-    const highPath = `scores/${encodeURIComponent(mapId)}`
-    const lowPath = `scores/${encodeURIComponent(mapId)}?variant=low`
+    const bucketQuery = `bucket=${encodeURIComponent(leaderboardBucket)}`
+    const highPath = `scores/${encodeURIComponent(mapId)}?${bucketQuery}`
+    const lowPath = `scores/${encodeURIComponent(mapId)}?variant=low&${bucketQuery}`
     const [highRes, lowRes] = await Promise.all([mailman(highPath), mailman(lowPath)])
     setTopScores(Array.isArray(highRes) ? highRes : [])
     setLowScores(Array.isArray(lowRes) ? lowRes : [])
-  }, [mapId])
+  }, [mapId, leaderboardBucket])
 
   usePusherSubscription(
     leaderboardChannel,
@@ -70,6 +79,7 @@ const MapPage: FC = () => {
       return
     }
 
+    recordRecentMapId(mapId)
     fetchMapDetails()
   }, [mapId, fetchMapDetails])
 
@@ -81,8 +91,9 @@ const MapPage: FC = () => {
     let cancelled = false
 
     ;(async () => {
-      const highPath = `scores/${encodeURIComponent(mapId)}`
-      const lowPath = `scores/${encodeURIComponent(mapId)}?variant=low`
+      const bucketQuery = `bucket=${encodeURIComponent(leaderboardBucket)}`
+      const highPath = `scores/${encodeURIComponent(mapId)}?${bucketQuery}`
+      const lowPath = `scores/${encodeURIComponent(mapId)}?variant=low&${bucketQuery}`
       const [highRes, lowRes] = await Promise.all([mailman(highPath), mailman(lowPath)])
       if (cancelled) return
       setTopScores(Array.isArray(highRes) ? highRes : [])
@@ -110,7 +121,7 @@ const MapPage: FC = () => {
       window.removeEventListener('focus', handlePageVisibleRefresh)
       document.removeEventListener('visibilitychange', handlePageVisibleRefresh)
     }
-  }, [mapId, fetchLeaderboards, lbPollMs])
+  }, [mapId, fetchLeaderboards, lbPollMs, leaderboardBucket])
 
   const mapHeroCustomPlaceholderGradient = useMemo(
     () => (mapDetails ? isCustomMapPlaceholderPreview(mapDetails.previewImg) : false),
@@ -160,6 +171,19 @@ const MapPage: FC = () => {
             </div>
 
             <div className="mapLeaderboardSection">
+              <div className="mapLeaderboardBucketTabs">
+                <Tabs>
+                  {LEADERBOARD_SETTINGS_BUCKETS.map((bucket) => (
+                    <Tab
+                      key={bucket}
+                      isActive={leaderboardBucket === bucket}
+                      onClick={() => setLeaderboardBucket(bucket)}
+                    >
+                      {LEADERBOARD_BUCKET_LABELS[bucket]}
+                    </Tab>
+                  ))}
+                </Tabs>
+              </div>
               <div className="mapLeaderboardGrid">
                 <div className="mapLeaderboardPanel">
                   <MapLeaderboard leaderboard={topScores} title="High scores" />
@@ -168,7 +192,7 @@ const MapPage: FC = () => {
                   <MapLeaderboard
                     leaderboard={lowScores}
                     title="Low scores"
-                    noResultsMessage="No low-score entries yet. Finish a standard game on this map to qualify!"
+                    noResultsMessage="No low-score entries yet. Finish a 5-round standard game with these settings to qualify!"
                   />
                 </div>
               </div>

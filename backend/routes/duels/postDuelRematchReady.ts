@@ -86,6 +86,8 @@ const postDuelRematchReady = async (req: NextApiRequest, res: NextApiResponse) =
           roundDeadlineAt: null,
           rematchReadyHost: false,
           rematchReadyGuest: false,
+          hostWinMultiplier: 1,
+          guestWinMultiplier: 1,
         },
         $unset: {
           outcome: '',

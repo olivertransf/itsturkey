@@ -192,9 +192,7 @@ const DuelLobbyPage: NextPage = () => {
   const [rounds, setRounds] = useState(DEFAULT_TOTAL_ROUNDS)
   const [startingHpHost, setStartingHpHost] = useState(6000)
   const [startingHpGuest, setStartingHpGuest] = useState(6000)
-  const [damageMultHost, setDamageMultHost] = useState(1)
-  const [damageMultGuest, setDamageMultGuest] = useState(1)
-  const [useRamp, setUseRamp] = useState(true)
+  const [multiplierMode, setMultiplierMode] = useState<'round_ramp' | 'win_streak'>('round_ramp')
   const [submitting, setSubmitting] = useState(false)
   const [hostNickname, setHostNickname] = useState('')
 
@@ -217,9 +215,7 @@ const DuelLobbyPage: NextPage = () => {
       ...(mode === 'points' ? { totalRounds } : {}),
       startingHpHost,
       startingHpGuest,
-      damageMultiplierHost: damageMultHost,
-      damageMultiplierGuest: damageMultGuest,
-      useRoundRamp: useRamp,
+      multiplierMode,
       ...(status !== 'authenticated' && hostNickname.trim() ? { displayName: hostNickname.trim() } : {}),
     }
 
@@ -344,36 +340,22 @@ const DuelLobbyPage: NextPage = () => {
                 </FieldGrow>
               </Row>
 
-              <Row>
-                <FieldGrow>
-                  <FieldLabel htmlFor="dmh">Your damage ×</FieldLabel>
-                  <FieldInput
-                    id="dmh"
-                    type="number"
-                    min={0.1}
-                    step={0.1}
-                    value={damageMultHost}
-                    onChange={(e) => setDamageMultHost(Number(e.target.value))}
-                  />
-                </FieldGrow>
-                <FieldGrow>
-                  <FieldLabel htmlFor="dmg">Their damage ×</FieldLabel>
-                  <FieldInput
-                    id="dmg"
-                    type="number"
-                    min={0.1}
-                    step={0.1}
-                    value={damageMultGuest}
-                    onChange={(e) => setDamageMultGuest(Number(e.target.value))}
-                  />
-                </FieldGrow>
-              </Row>
-
-              <FieldLabel style={{ marginTop: 12 }}>Damage ramp (5+)</FieldLabel>
-              <ModeStrip style={{ marginTop: 4 }}>
-                <ToggleSwitch isActive={useRamp} setIsActive={setUseRamp} />
-                <span className="mode-copy">{useRamp ? 'Scaling on' : 'Flat damage'}</span>
-              </ModeStrip>
+              {mode === 'hp' && (
+                <>
+                  <FieldLabel>Damage multiplier</FieldLabel>
+                  <ModeStrip style={{ marginTop: 4, marginBottom: 8 }}>
+                    <ToggleSwitch
+                      isActive={multiplierMode === 'win_streak'}
+                      setIsActive={(on) => setMultiplierMode(on ? 'win_streak' : 'round_ramp')}
+                    />
+                    <span className="mode-copy">
+                      {multiplierMode === 'round_ramp'
+                        ? 'Round ramp — shared mult by round (1× r1–4, 1.5× r5, +0.5× after)'
+                        : 'Win streak — winner’s mult +0.5× each round won'}
+                    </span>
+                  </ModeStrip>
+                </>
+              )}
 
               <Button
                 variant="primary"

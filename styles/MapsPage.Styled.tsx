@@ -3,6 +3,12 @@ import styled from 'styled-components'
 const StyledMapsPage = styled.div`
   width: 100%;
 
+  .browse-tabs-row {
+    margin-bottom: var(--stack-gap-md);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
   .page-wrapper {
     display: grid;
     gap: var(--stack-gap-lg);

@@ -15,6 +15,7 @@ import { StyledStreakEndedCard } from './'
 import { getRealCountryCode } from '@utils/helpers/getRealCountryCode'
 import { PlonkitGuideLauncher } from '@components/PlonkitCountryGuide'
 import { lastCompletedRoundLocation, resolvePlonkitGuideCountryIso } from '@utils/helpers/resolvePlonkitGuideCountryIso'
+import { streakFlagImgProps } from '@utils/helpers/streakFlagImgProps'
 
 type Props = {
   gameData: Game
@@ -93,6 +94,11 @@ const StreakEndedCard: FC<Props> = ({ gameData, setGameData, view, setView }) =>
     router.push(url)
   }
 
+  const correctRoundLocation =
+    gameData.round >= 2 && gameData.rounds[gameData.round - 2]?.lat != null
+      ? { lat: gameData.rounds[gameData.round - 2].lat, lng: gameData.rounds[gameData.round - 2].lng }
+      : null
+
   const navigateToStreaksPage = () => {
     router.push(getStreakLobbyPath())
   }
@@ -143,6 +149,7 @@ const StreakEndedCard: FC<Props> = ({ gameData, setGameData, view, setView }) =>
               <img
                 src={`https://purecatamphetamine.github.io/country-flag-icons/3x2/${correctCountryCode?.toUpperCase()}.svg`}
                 alt={correctCountry}
+                {...streakFlagImgProps(correctRoundLocation)}
               />
             </div>
           ) : (
@@ -151,6 +158,7 @@ const StreakEndedCard: FC<Props> = ({ gameData, setGameData, view, setView }) =>
               <img
                 src={`https://purecatamphetamine.github.io/country-flag-icons/3x2/${correctCountryCode?.toUpperCase()}.svg`}
                 alt={correctCountry}
+                {...streakFlagImgProps(correctRoundLocation)}
               />
             </div>
           )}

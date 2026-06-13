@@ -1,12 +1,7 @@
 import { z } from 'zod'
 import { DEFAULT_TOTAL_ROUNDS, MAX_TOTAL_ROUNDS } from '@utils/constants/gameModes'
-import {
-  DUEL_DAMAGE_MAX,
-  DUEL_DAMAGE_MIN,
-  DUEL_DEFAULT_HP,
-  DUEL_DEFAULT_REACTIVE_SECONDS,
-  DUEL_HP_LOCATION_BATCH,
-} from './duelConstants'
+import { DUEL_DEFAULT_HP, DUEL_DEFAULT_REACTIVE_SECONDS, DUEL_HP_LOCATION_BATCH } from './duelConstants'
+import type { DuelMultiplierMode } from '@backend/models/duelSession'
 
 export const gameSettingsSchema = z.object({
   timeLimit: z.number(),
@@ -24,8 +19,8 @@ export const createDuelBodySchema = z.object({
   reactiveSeconds: z.number().min(5).max(120).optional(),
   startingHpHost: z.number().min(100).max(500000).optional(),
   startingHpGuest: z.number().min(100).max(500000).optional(),
-  damageMultiplierHost: z.number().min(0.1).max(10).optional(),
-  damageMultiplierGuest: z.number().min(0.1).max(10).optional(),
+  multiplierMode: z.enum(['round_ramp', 'win_streak']).optional(),
+  /** @deprecated Use multiplierMode */
   useRoundRamp: z.boolean().optional(),
   /** Shown as room creator when hosting without an account */
   displayName: z.string().max(32).optional(),
@@ -41,10 +36,13 @@ export type NormalizedCreateDuelBody = {
   reactiveSeconds: number
   startingHpHost: number
   startingHpGuest: number
-  damageMultiplierHost: number
-  damageMultiplierGuest: number
-  useRoundRamp: boolean
+  multiplierMode: DuelMultiplierMode
   displayName?: string
+}
+
+const resolveMultiplierMode = (data: z.infer<typeof createDuelBodySchema>): DuelMultiplierMode => {
+  if (data.multiplierMode) return data.multiplierMode
+  return 'round_ramp'
 }
 
 export const normalizeCreateDuelBody = (raw: unknown): { ok: true; value: NormalizedCreateDuelBody } | { ok: false; message: string } => {
@@ -56,6 +54,7 @@ export const normalizeCreateDuelBody = (raw: unknown): { ok: true; value: Normal
   }
 
   const data = parsed.data
+  const multiplierMode = resolveMultiplierMode(data)
 
   if (data.mode === 'points') {
     let tr = data.totalRounds
@@ -76,9 +75,7 @@ export const normalizeCreateDuelBody = (raw: unknown): { ok: true; value: Normal
         reactiveSeconds: data.reactiveSeconds ?? DUEL_DEFAULT_REACTIVE_SECONDS,
         startingHpHost: data.startingHpHost ?? DUEL_DEFAULT_HP,
         startingHpGuest: data.startingHpGuest ?? DUEL_DEFAULT_HP,
-        damageMultiplierHost: data.damageMultiplierHost ?? 1,
-        damageMultiplierGuest: data.damageMultiplierGuest ?? 1,
-        useRoundRamp: data.useRoundRamp ?? true,
+        multiplierMode,
         ...(data.displayName != null && data.displayName !== ''
           ? { displayName: data.displayName }
           : {}),
@@ -97,15 +94,10 @@ export const normalizeCreateDuelBody = (raw: unknown): { ok: true; value: Normal
       reactiveSeconds: data.reactiveSeconds ?? DUEL_DEFAULT_REACTIVE_SECONDS,
       startingHpHost: data.startingHpHost ?? DUEL_DEFAULT_HP,
       startingHpGuest: data.startingHpGuest ?? DUEL_DEFAULT_HP,
-      damageMultiplierHost: data.damageMultiplierHost ?? 1,
-      damageMultiplierGuest: data.damageMultiplierGuest ?? 1,
-      useRoundRamp: data.useRoundRamp ?? true,
+      multiplierMode,
       ...(data.displayName != null && data.displayName !== ''
         ? { displayName: data.displayName }
         : {}),
     },
   }
 }
-
-export const clampDamage = (raw: number): number =>
-  Math.min(DUEL_DAMAGE_MAX, Math.max(DUEL_DAMAGE_MIN, Math.round(raw)))

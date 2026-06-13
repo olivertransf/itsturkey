@@ -2,13 +2,14 @@ import { FC, useState } from 'react'
 import { InformationCircleIcon } from '@heroicons/react/outline'
 import { Tooltip } from '@components/system'
 import PlonkitCountryGuideOverlay from './PlonkitCountryGuideOverlay'
+import TipsDrawer from './TipsDrawer'
 import { StyledCompactPlonkLauncher } from './PlonkitGuideLauncher.Styled'
 
 type Props = {
   countryIso: string | null
   mapLabel?: string
   variant?: 'streetControl' | 'compact'
-  /** `fullscreen` fills the viewport; `drawer` is a right sheet (opt in). */
+  /** `fullscreen` fills the viewport; `drawer` opens the bottom tips sheet (default). */
   presentation?: 'drawer' | 'fullscreen'
   /** Pill alignment for compact variant */
   compactAlign?: 'center' | 'start' | 'end'
@@ -22,7 +23,7 @@ const PlonkitGuideLauncher: FC<Props> = ({
   countryIso,
   mapLabel,
   variant = 'streetControl',
-  presentation = 'fullscreen',
+  presentation = 'drawer',
   compactAlign = 'center',
   compactShowLabel = true,
   compactShrinkWrap = false,
@@ -32,15 +33,23 @@ const PlonkitGuideLauncher: FC<Props> = ({
 
   if (!countryIso) return null
 
-  const overlay = (
-    <PlonkitCountryGuideOverlay
-      open={open}
-      onClose={() => setOpen(false)}
-      isoCode={countryIso}
-      mapLabel={mapLabel}
-      presentation={presentation}
-    />
-  )
+  const guidePanel =
+    presentation === 'fullscreen' ? (
+      <PlonkitCountryGuideOverlay
+        open={open}
+        onClose={() => setOpen(false)}
+        isoCode={countryIso}
+        mapLabel={mapLabel}
+        presentation="fullscreen"
+      />
+    ) : (
+      <TipsDrawer
+        open={open}
+        onClose={() => setOpen(false)}
+        isoCode={countryIso}
+        mapLabel={mapLabel}
+      />
+    )
 
   if (variant === 'compact') {
     return (
@@ -56,7 +65,7 @@ const PlonkitGuideLauncher: FC<Props> = ({
             {compactShowLabel ? <span>Country tips</span> : null}
           </button>
         </StyledCompactPlonkLauncher>
-        {overlay}
+        {guidePanel}
       </>
     )
   }
@@ -78,7 +87,7 @@ const PlonkitGuideLauncher: FC<Props> = ({
         </button>
         {tip ? <Tooltip label="Country tips (Plonk It)" position="left" /> : null}
       </div>
-      {overlay}
+      {guidePanel}
     </>
   )
 }

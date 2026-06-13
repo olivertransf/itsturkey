@@ -2,13 +2,9 @@ import type { LocationType } from '@types'
 import type { DuelLockedGuess, DuelRoundLedgerEntry, DuelSession, DuelSide } from '@backend/models/duelSession'
 import calculateDistance from './calculateDistance'
 import calculateRoundScore from './calculateRoundScore'
-import { DUEL_DISTANCE_TIE_EPSILON_METERS, duelRoundDamageMultiplier } from './duelConstants'
-import { clampDamage } from './normalizeDuelSettings'
+import { duelRoundDamageMultiplier } from './duelConstants'
 
 type Pin = { lat: number; lng: number }
-
-/** When the reactive timer expires with no provisional pin, use world center (auto-submit style). */
-const WORLD_CENTER_GUESS: Pin = { lat: 0, lng: 0 }
 
 const effectiveSubmission = (
   locked: DuelLockedGuess | undefined,
@@ -17,7 +13,7 @@ const effectiveSubmission = (
 ): { coords: Pin | null; noGuess: boolean } => {
   if (locked) return { coords: { lat: locked.lat, lng: locked.lng }, noGuess: false }
   if (roundEnding && provisional) return { coords: { lat: provisional.lat, lng: provisional.lng }, noGuess: false }
-  if (roundEnding) return { coords: WORLD_CENTER_GUESS, noGuess: false }
+  if (roundEnding) return { coords: null, noGuess: true }
   return { coords: null, noGuess: true }
 }
 
@@ -31,6 +27,20 @@ export const applyReactiveDeadlineIfNeeded = (duel: DuelSession, now: Date): voi
   if (!hl && !gl) return
   if (duel.roundDeadlineAt) return
   duel.roundDeadlineAt = new Date(now.getTime() + duel.reactiveSeconds * 1000)
+}
+
+const resolveMultiplierMode = (duel: DuelSession): 'round_ramp' | 'win_streak' => {
+  if (duel.multiplierMode === 'win_streak') return 'win_streak'
+  return 'round_ramp'
+}
+
+const damageMultiplierForRound = (duel: DuelSession, roundOneBased: number, winner: DuelSide): number => {
+  const mode = resolveMultiplierMode(duel)
+  if (mode === 'win_streak') {
+    return winner === 'host' ? (duel.hostWinMultiplier ?? 1) : (duel.guestWinMultiplier ?? 1)
+  }
+  const rampEnabled = duel.multiplierMode != null ? true : duel.useRoundRamp !== false
+  return duelRoundDamageMultiplier(roundOneBased, rampEnabled)
 }
 
 export const tryResolveCurrentRound = (duel: DuelSession, now: Date, actual: LocationType): DuelResolveOutcome => {
@@ -77,30 +87,32 @@ export const tryResolveCurrentRound = (duel: DuelSession, now: Date, actual: Loc
     guestPoints = calculateRoundScore(guestDist, scoreFactor)
   }
 
-  const hostDm = hostDist * 1000
-  const guestDm = guestDist * 1000
-
   let winner: DuelSide | 'tie' = 'tie'
-  if (hostNoGuess && guestNoGuess) winner = 'tie'
-  else if (hostNoGuess) winner = 'guest'
-  else if (guestNoGuess) winner = 'host'
-  else if (Math.abs(hostDm - guestDm) <= DUEL_DISTANCE_TIE_EPSILON_METERS) winner = 'tie'
-  else if (hostDm < guestDm) winner = 'host'
+  if (hostPoints === guestPoints) winner = 'tie'
+  else if (hostPoints > guestPoints) winner = 'host'
   else winner = 'guest'
 
   const roundOneBased = roundIdx + 1
-  const ramp = duelRoundDamageMultiplier(roundOneBased, duel.useRoundRamp)
+  const scoreDiff = Math.abs(hostPoints - guestPoints)
 
   let damageToHost = 0
   let damageToGuest = 0
+  let damageMultiplierUsed = 0
 
-  if (duel.mode === 'hp' && winner !== 'tie') {
+  if (duel.mode === 'hp' && winner !== 'tie' && scoreDiff > 0) {
+    damageMultiplierUsed = damageMultiplierForRound(duel, roundOneBased, winner)
+    const damage = Math.round(scoreDiff * damageMultiplierUsed)
+
     if (winner === 'host') {
-      const base = Math.max(0, hostPoints - guestPoints)
-      damageToGuest = clampDamage(base * duel.damageMultiplierHost * ramp)
+      damageToGuest = damage
+      if (resolveMultiplierMode(duel) === 'win_streak') {
+        duel.hostWinMultiplier = (duel.hostWinMultiplier ?? 1) + 0.5
+      }
     } else {
-      const base = Math.max(0, guestPoints - hostPoints)
-      damageToHost = clampDamage(base * duel.damageMultiplierGuest * ramp)
+      damageToHost = damage
+      if (resolveMultiplierMode(duel) === 'win_streak') {
+        duel.guestWinMultiplier = (duel.guestWinMultiplier ?? 1) + 0.5
+      }
     }
   }
 
@@ -123,6 +135,7 @@ export const tryResolveCurrentRound = (duel: DuelSession, now: Date, actual: Loc
     hostPoints,
     guestPoints,
     winner,
+    damageMultiplierUsed,
     damageToHost,
     damageToGuest,
     hostHpAfter: duel.host.hp,

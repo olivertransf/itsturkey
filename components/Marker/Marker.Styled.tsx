@@ -39,22 +39,22 @@ const StyledMarker = styled.div<StyledProps>`
       height: 14px;
     }
 
-    /*
-    .round-number {
+    .round-badge {
       height: 14px;
-      width: 14px;
+      min-width: 14px;
+      padding: 0 3px;
       display: flex;
       align-items: center;
       justify-content: center;
       background-color: #ffffff;
       color: #000;
       font-weight: bold;
+      font-size: 10px;
       border-radius: 50%;
       position: absolute;
       bottom: -3px;
       right: -3px;
     }
-    */
   }
 `
 

@@ -4,7 +4,7 @@ import type DuelSession from '@backend/models/duelSession'
 import { advanceDuelState } from '@backend/utils/advanceDuelState'
 import { collections, getExistingAnonymousGameId, getUserId, throwError } from '@backend/utils'
 import getMapFromGame from '@backend/queries/getMapFromGame'
-import { duelParticipantRole } from '@backend/utils/duelParticipant'
+import { resolveDuelViewerRole } from '@backend/utils/duelParticipant'
 import { findDuelSessionByInvite } from '@backend/utils/resolveDuelInvite'
 import { replyWithDuelPayload } from './buildDuelPayload'
 
@@ -19,7 +19,8 @@ const getDuel = async (req: NextApiRequest, res: NextApiResponse) => {
     return throwError(res, 404, 'Duel not found')
   }
 
-  const role = duelParticipantRole(duel, userId, anonymousId)
+  const allowSpectator = req.query.spectate === '1'
+  const role = resolveDuelViewerRole(duel, userId, anonymousId, { allowSpectator })
 
   if (role === null && !(duel.status === 'waiting' && !duel.guest.joined)) {
     return throwError(res, 401, 'You are not part of this duel')

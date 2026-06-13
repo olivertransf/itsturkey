@@ -1,4 +1,3 @@
-import { EQUITABLE_COUNTRY_STREAK_ID } from '@utils/constants/random'
 import { parseEquitableCountryMapKey } from './equitableCountryMapId'
 import { getRealCountryCode } from './getRealCountryCode'
 
@@ -13,15 +12,13 @@ export function normalizePlonkitIsoFromCountryCode(countryCode?: string | null):
   return u.toLowerCase()
 }
 
-/** ISO alpha-2 when the round qualifies for Plonk (eqcountry-* virtual map or Equitable World pool). */
+/** ISO alpha-2 when the round qualifies for Plonk (eqcountry-* virtual map or location countryCode). */
 export function resolvePlonkitGuideCountryIso(
   mapId: unknown,
   roundLocation?: { countryCode?: string } | null
 ): string | null {
   const fromVirtualCountryMap = parseEquitableCountryMapKey(String(mapId ?? ''))
   if (fromVirtualCountryMap) return fromVirtualCountryMap
-
-  if (String(mapId ?? '') !== EQUITABLE_COUNTRY_STREAK_ID) return null
 
   return normalizePlonkitIsoFromCountryCode(roundLocation?.countryCode ?? undefined)
 }

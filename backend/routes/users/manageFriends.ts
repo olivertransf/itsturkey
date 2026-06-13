@@ -31,14 +31,32 @@ export const listFriends = async (req: NextApiRequest, res: NextApiResponse) => 
   const users =
     (await collections.users
       ?.find({ _id: { $in: peerIds } })
-      .project({ name: 1, friendCode: 1 })
+      .project({ name: 1, friendCode: 1, lastSeenAt: 1, presenceActivity: 1 })
       .toArray()) ?? []
 
-  const rows = users.map((u) => ({
-    id: u._id.toHexString(),
-    name: u.name,
-    friendCode: typeof u.friendCode === 'string' ? u.friendCode : undefined,
-  }))
+  const now = Date.now()
+  const onlineWindowMs = 2 * 60 * 1000
+
+  const rows = users.map((u) => {
+    const lastSeenAt =
+      u.lastSeenAt instanceof Date
+        ? u.lastSeenAt.toISOString()
+        : u.lastSeenAt
+          ? new Date(u.lastSeenAt as Date).toISOString()
+          : null
+    const lastSeenMs = lastSeenAt ? new Date(lastSeenAt).getTime() : 0
+    const online = lastSeenMs > 0 && now - lastSeenMs < onlineWindowMs
+
+    return {
+      id: u._id.toHexString(),
+      name: u.name,
+      friendCode: typeof u.friendCode === 'string' ? u.friendCode : undefined,
+      lastSeenAt,
+      presenceActivity:
+        typeof u.presenceActivity === 'string' ? u.presenceActivity : undefined,
+      online,
+    }
+  })
   rows.sort((a, b) => a.name.localeCompare(b.name))
 
   res.status(200).send(rows)

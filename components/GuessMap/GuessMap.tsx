@@ -28,6 +28,8 @@ type Props = {
   duelLayout?: boolean
   /** Duel: after guess is locked server-side, block map interaction and submit. */
   guessLocked?: boolean
+  /** Primary guess button label (duel uses "Lock in"). */
+  submitLabel?: string
 }
 
 const GuessMap: FC<Props> = ({
@@ -42,6 +44,7 @@ const GuessMap: FC<Props> = ({
   gameData,
   duelLayout = false,
   guessLocked = false,
+  submitLabel = 'Submit Guess',
 }) => {
   const [marker, setMarker] = useState<{ lat: number; lng: number } | null>(null)
 
@@ -203,7 +206,7 @@ const GuessMap: FC<Props> = ({
             disabled={guessLocked || !currGuess}
             onClick={() => handleSubmitGuess()}
           >
-            Submit Guess
+            {submitLabel}
           </Button>
         </div>
       </div>

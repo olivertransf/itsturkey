@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { FC, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/router'
 import { Game } from '@backend/models'
 import { GameStatus } from '@components/GameStatus'
@@ -46,6 +46,8 @@ type Props = {
   /** Duel: server has locked this viewer’s guess; block further submits and map edits. */
   duelGuessLocked?: boolean
   onGuessCoordinateChange?: (loc: LocationType | null) => void
+  /** Duel: chat control rendered above back-to-start in the bottom-left stack. */
+  primaryControlsLeading?: ReactNode
 }
 
 const Streetview: FC<Props> = ({
@@ -60,6 +62,7 @@ const Streetview: FC<Props> = ({
   duelGuessSubmit,
   duelGuessLocked = false,
   onGuessCoordinateChange,
+  primaryControlsLeading,
 }) => {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
@@ -84,13 +87,20 @@ const Streetview: FC<Props> = ({
   )
 
   const countryGuideLeadingControl =
-    view === 'Game' && plonkCountryIsoGame ? (
+    view === 'Game' && plonkCountryIsoGame && !isDuel ? (
       <PlonkitGuideLauncher
         variant="streetControl"
         countryIso={plonkCountryIsoGame}
         mapLabel={gameData.mapDetails?.name}
       />
     ) : null
+
+  const primaryLeadingControls = (
+    <>
+      {primaryControlsLeading}
+      {countryGuideLeadingControl}
+    </>
+  )
   const game = useAppSelector((state) => state.game)
   const user = useAppSelector((state) => state.user)
 
@@ -418,6 +428,7 @@ const Streetview: FC<Props> = ({
             handleUndoLastMove={
               !isDuel && gameData.gameSettings.canMove ? handleUndoLastMove : undefined
             }
+            leadingPrimaryControls={primaryLeadingControls}
           />
           {view === 'Game' && !isDuel && (
             <GameStatus gameData={gameData} handleSubmitGuess={handleSubmitGuess} />
@@ -436,6 +447,7 @@ const Streetview: FC<Props> = ({
               gameData={gameData}
               duelLayout={isDuel}
               guessLocked={isDuel && duelGuessLocked}
+              submitLabel={isDuel ? 'Lock in' : undefined}
             />
           )}
 
@@ -451,8 +463,6 @@ const Streetview: FC<Props> = ({
               resetMap={view === 'Game'}
             />
           )}
-
-          {countryGuideLeadingControl ? <div className="country-tip-corner">{countryGuideLeadingControl}</div> : null}
 
           <button className="toggle-map-button" onClick={() => setMobileMapOpen(true)}>
             <MapIcon />

@@ -174,7 +174,7 @@ const DuelInviteNotifier = () => {
   useVisibleInterval(fetchInvites, invitePollMs, status === 'authenticated')
 
   useEffect(() => {
-    const timers: ReturnType<typeof setTimeout>[] = []
+    const timers: number[] = []
     for (const invite of invites) {
       const expiresMs = invite.expiresAt
         ? new Date(invite.expiresAt).getTime()

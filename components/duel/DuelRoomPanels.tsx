@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { FC, ReactNode } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import {
-  ChevronDownIcon,
+  ClipboardCopyIcon,
   ClockIcon,
   EmojiSadIcon,
   HeartIcon,
   HomeIcon,
   LightningBoltIcon,
+  LinkIcon,
   PaperAirplaneIcon,
   PlayIcon,
   RefreshIcon,
@@ -20,13 +22,17 @@ import PlonkitGuideLauncher from '@components/PlonkitCountryGuide/PlonkitGuideLa
 import type { PlonkitGuidePayload } from '@components/PlonkitCountryGuide/plonkitGuideTypes'
 import { Button } from '@components/system'
 import { DuelHpMeter, DuelPointsMeter } from '@components/duel/DuelHpMeter'
-import { mailman } from '@utils/helpers'
-import type { DuelClientPayload } from './duelApiTypes'
+import { duelAvatarAccent, duelHudAvatarIcon } from '@components/duel/duelHudAvatar'
+import { mailman, showToast } from '@utils/helpers'
+import { resolveMapImageSrc } from '@utils/helpers/mapPreviewSrc'
+import DuelChatPanel from './DuelChatPanel'
+import type { DuelClientPayload, DuelChatMessageClient, DuelGuessAvatar, DuelViewerRole } from './duelApiTypes'
 import styled from 'styled-components'
 
 const Shell = styled.div<{ $variant?: 'lobby' | 'finish' }>`
   width: 100%;
-  max-width: ${({ $variant }) => ($variant === 'finish' ? 'min(720px, 100%)' : 'min(480px, 100%)')};
+  max-width: ${({ $variant }) =>
+    $variant === 'finish' ? 'min(720px, 100%)' : $variant === 'lobby' ? '100%' : 'min(480px, 100%)'};
   margin-inline: ${({ $variant }) => ($variant === 'finish' ? 'auto' : '0')};
   padding: ${({ $variant }) => ($variant === 'finish' ? 'var(--pad-card) var(--pad-card) 22px' : 'var(--pad-card)')};
   border-radius: var(--radius-xl);
@@ -93,16 +99,24 @@ const Subtle = styled.p`
   line-height: 1.45;
 `
 
-const MeterRow = styled.div`
-  display: flex;
-  gap: 14px;
-  align-items: stretch;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
+const FinishMeterPanel = styled.div<{ $withRecap?: boolean }>`
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(12, 14, 18, 0.52);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  margin-bottom: ${({ $withRecap }) => ($withRecap ? 20 : 14)}px;
 
   .meter-slot {
-    flex: 1;
-    min-width: 160px;
+    min-width: 0;
+  }
+
+  @media (max-width: 560px) {
+    gap: 8px 10px;
+    padding: 10px 12px;
   }
 `
 
@@ -233,23 +247,169 @@ const FriendName = styled.span`
   white-space: nowrap;
 `
 
-const LobbyCodeProminent = styled.div`
-  text-align: left;
-  margin: 10px 0 6px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
-  font-size: clamp(1.85rem, 8.5vw, 2.75rem);
-  font-weight: 800;
-  letter-spacing: 0.2em;
-  color: #fde047;
-  text-shadow: 0 0 32px rgba(253, 224, 71, 0.22);
+const LobbyWideGrid = styled.div`
+  display: grid;
+  gap: 16px;
+  width: 100%;
+  max-width: min(1040px, 100%);
+  align-items: stretch;
+
+  @media (min-width: 820px) {
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 400px);
+  }
 `
 
-const LobbyCodeCaption = styled.p`
-  margin: 0 0 12px;
-  text-align: left;
+const LobbyMainColumn = styled.div`
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+`
+
+const LobbyAsideColumn = styled.aside`
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  @media (min-width: 820px) {
+    position: sticky;
+    top: 12px;
+    align-self: start;
+    min-height: min(540px, 64vh);
+  }
+`
+
+const LobbyPlonkAside = styled.div`
+  min-width: 0;
+
+  @media (min-width: 820px) {
+    display: none;
+  }
+`
+
+const RoomCodeCard = styled.div`
+  margin: 0 0 14px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(234, 179, 8, 0.08), rgba(0, 0, 0, 0.22));
+  border: 1px solid rgba(253, 224, 71, 0.28);
+  box-sizing: border-box;
+`
+
+const RoomCodeLabel = styled.div`
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(253, 224, 71, 0.72);
+  margin-bottom: 8px;
+`
+
+const RoomCodeValue = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+`
+
+const RoomCodeText = styled.span`
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-size: clamp(1.65rem, 6vw, 2.35rem);
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  color: #fde047;
+  line-height: 1;
+`
+
+const RoomCodeHint = styled.p`
+  margin: 10px 0 0;
   font-size: 12px;
   line-height: 1.45;
-  color: rgba(228, 228, 231, 0.55);
+  color: rgba(228, 228, 231, 0.62);
+`
+
+const FriendsSection = styled.div`
+  margin: 0 0 14px;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--bg-surface);
+  border: var(--border-default);
+  box-sizing: border-box;
+`
+
+const FriendsSectionHead = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+`
+
+const FriendsSectionTitle = styled.div`
+  font-size: 13px;
+  font-weight: 800;
+  color: #e4e4e7;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+`
+
+const FriendsEmpty = styled.p`
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(161, 161, 170, 0.95);
+
+  a {
+    color: #9dc8f0;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+`
+
+const FriendsChipRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`
+
+const FriendChip = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+`
+
+const StartCtaRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+`
+
+const OpponentJoinedBadge = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(110, 178, 232, 0.12);
+  border: 1px solid rgba(157, 200, 240, 0.35);
+  font-size: 13px;
+  font-weight: 700;
+  color: #d4e8fb;
+  margin-bottom: 12px;
+  width: fit-content;
+  max-width: 100%;
 `
 
 const LobbyTipsBlock = styled.div`
@@ -296,27 +456,6 @@ const LobbyPlonkFoot = styled.p`
   }
 `
 
-const LobbyWideGrid = styled.div`
-  display: grid;
-  gap: 18px;
-  width: 100%;
-  max-width: min(960px, 100%);
-  align-items: start;
-
-  @media (min-width: 780px) {
-    grid-template-columns: minmax(0, 1fr) minmax(252px, 304px);
-  }
-`
-
-const LobbyPlonkAside = styled.aside`
-  min-width: 0;
-
-  @media (min-width: 780px) {
-    position: sticky;
-    top: 8px;
-  }
-`
-
 const InviteCard = styled.div`
   margin: 4px 0 0;
   border-radius: 14px;
@@ -332,6 +471,263 @@ const InviteSub = styled.p`
   line-height: 1.45;
   color: rgba(161, 161, 170, 0.95);
 `
+
+const MatchSummaryCard = styled.div`
+  display: flex;
+  gap: 14px;
+  align-items: stretch;
+  margin: 0 0 14px;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--bg-surface);
+  border: var(--border-default);
+  box-sizing: border-box;
+`
+
+const MatchSummaryPreview = styled.div`
+  position: relative;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+`
+
+const MatchSummaryBody = styled.div`
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`
+
+const MatchSummaryTitle = styled.div`
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`
+
+const MatchSummaryMeta = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: rgba(228, 228, 231, 0.82);
+
+  span.meta-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  span.meta-chip--round {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+    padding: 6px 10px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(157, 200, 240, 0.22);
+    min-width: 72px;
+  }
+
+  span.meta-round-label {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(157, 200, 240, 0.82);
+  }
+
+  span.meta-round-value {
+    font-size: 13px;
+    font-weight: 800;
+    color: rgba(244, 244, 245, 0.95);
+    font-variant-numeric: tabular-nums;
+  }
+
+  svg {
+    width: 13px;
+    height: 13px;
+    opacity: 0.88;
+  }
+`
+
+const CopyBtnRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 12px;
+`
+
+export type DuelLobbyMatchInfo = {
+  mapDetails: DuelClientPayload['mapDetails']
+  mode: DuelClientPayload['mode']
+  totalRounds?: number
+  startingHpHost: number
+  startingHpGuest: number
+  multiplierMode: DuelClientPayload['multiplierMode']
+}
+
+async function copyDuelInviteLink(shortCode: string) {
+  const url = `${window.location.origin}/duel/${encodeURIComponent(shortCode)}`
+  try {
+    await navigator.clipboard.writeText(url)
+    showToast('success', 'Invite link copied')
+  } catch {
+    showToast('error', 'Could not copy link')
+  }
+}
+
+async function copyDuelRoomCode(shortCode: string) {
+  try {
+    await navigator.clipboard.writeText(shortCode)
+    showToast('success', 'Room code copied')
+  } catch {
+    showToast('error', 'Could not copy code')
+  }
+}
+
+const DuelLobbyMatchSummary: FC<{ match: DuelLobbyMatchInfo }> = ({ match }) => {
+  const mapName = match.mapDetails?.name ?? 'Map'
+  const preview = match.mapDetails?.previewImg
+
+  return (
+    <MatchSummaryCard>
+      <MatchSummaryPreview>
+        {preview ? (
+          <Image src={resolveMapImageSrc(preview)} alt="" layout="fill" objectFit="cover" sizes="72px" />
+        ) : null}
+      </MatchSummaryPreview>
+      <MatchSummaryBody>
+        <MatchSummaryTitle title={mapName}>{mapName}</MatchSummaryTitle>
+        <MatchSummaryMeta>
+          {match.mode === 'hp' ? (
+            <>
+              <span className="meta-chip">
+                <HeartIcon /> HP duel
+              </span>
+              <span className="meta-chip">
+                You {match.startingHpHost.toLocaleString()} · Opp {match.startingHpGuest.toLocaleString()} HP
+              </span>
+              <span className="meta-chip">
+                {match.multiplierMode === 'round_ramp' ? 'Round ramp mult' : 'Win streak mult'}
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="meta-chip meta-chip--round">
+                <span className="meta-round-label">Rounds</span>
+                <span className="meta-round-value">{match.totalRounds ?? '—'}</span>
+              </span>
+              <span className="meta-chip">
+                Start {match.startingHpHost.toLocaleString()} / {match.startingHpGuest.toLocaleString()} HP
+              </span>
+            </>
+          )}
+        </MatchSummaryMeta>
+      </MatchSummaryBody>
+    </MatchSummaryCard>
+  )
+}
+
+const DuelLobbyCopyButtons: FC<{ shortCode: string; compact?: boolean }> = ({ shortCode, compact }) => (
+  <CopyBtnRow style={compact ? { margin: 0, gap: 6 } : undefined}>
+    <Button variant="solidGray" size="sm" onClick={() => void copyDuelInviteLink(shortCode)}>
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+        <LinkIcon style={{ width: 14, height: 14 }} />
+        {compact ? 'Link' : 'Copy link'}
+      </span>
+    </Button>
+    <Button variant="solidGray" size="sm" onClick={() => void copyDuelRoomCode(shortCode)}>
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+        <ClipboardCopyIcon style={{ width: 14, height: 14 }} />
+        {compact ? 'Code' : 'Copy code'}
+      </span>
+    </Button>
+  </CopyBtnRow>
+)
+
+const DuelRoomCodeCard: FC<{ shortCode: string; hint: string }> = ({ shortCode, hint }) => (
+  <RoomCodeCard>
+    <RoomCodeLabel>Room code</RoomCodeLabel>
+    <RoomCodeValue>
+      <RoomCodeText aria-label="Room code">{shortCode}</RoomCodeText>
+      <DuelLobbyCopyButtons shortCode={shortCode} compact />
+    </RoomCodeValue>
+    <RoomCodeHint>{hint}</RoomCodeHint>
+  </RoomCodeCard>
+)
+
+const DuelLobbyFriendsInvite: FC<{
+  friends?: { id: string; name: string }[]
+  invitingFriendId?: string | null
+  onInviteFriend?: (friend: { id: string; name: string }) => void | Promise<void>
+}> = ({ friends, invitingFriendId, onInviteFriend }) => {
+  if (!onInviteFriend) return null
+  const list = friends ?? []
+
+  return (
+    <FriendsSection>
+      <FriendsSectionHead>
+        <FriendsSectionTitle>
+          <UserGroupIcon style={{ width: 15, height: 15, opacity: 0.9 }} />
+          Invite a friend
+        </FriendsSectionTitle>
+      </FriendsSectionHead>
+      {list.length === 0 ? (
+        <FriendsEmpty>
+          No friends yet.{' '}
+          <Link href="/friends">
+            <a>Add friends</a>
+          </Link>{' '}
+          to send one-tap duel invites.
+        </FriendsEmpty>
+      ) : (
+        <FriendsChipRow>
+          {list.map((f) => (
+            <FriendChip key={f.id}>
+              <FriendName title={f.name}>{f.name}</FriendName>
+              <Button
+                variant="solidGray"
+                size="sm"
+                disabled={invitingFriendId === f.id}
+                isLoading={invitingFriendId === f.id}
+                spinnerSize={18}
+                onClick={() => void onInviteFriend(f)}
+              >
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  <PaperAirplaneIcon style={{ width: 14, height: 14 }} />
+                  Invite
+                </span>
+              </Button>
+            </FriendChip>
+          ))}
+        </FriendsChipRow>
+      )}
+    </FriendsSection>
+  )
+}
+
+const DuelLobbyAside: FC<{ chat?: DuelLobbyChatProps }> = ({ chat }) => (
+  <LobbyAsideColumn>
+    {chat ? <DuelLobbyChat {...chat} /> : null}
+    <LobbyPlonkAside>
+      <DuelLobbyPlonkStrip />
+    </LobbyPlonkAside>
+  </LobbyAsideColumn>
+)
 
 const FinishPageShell = styled.div`
   width: min(880px, 100%);
@@ -451,7 +847,7 @@ const RematchModalClose = styled.button`
   }
 `
 
-const DuelLobbyPlonkStrip: FC = () => {
+export const DuelLobbyPlonkStrip: FC = () => {
   const [iso, setIso] = useState<string | null>(null)
   const [title, setTitle] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -542,21 +938,76 @@ const DuelLobbyPlonkStrip: FC = () => {
 
 type FinishTone = 'win' | 'loss' | 'tie' | 'neutral'
 
+type DuelLobbyChatProps = {
+  duelId: string
+  chatMessages?: DuelChatMessageClient[]
+  playerNames: { host: string; guest: string }
+  playerAvatars?: { host: DuelGuessAvatar; guest: DuelGuessAvatar }
+  viewerRole: Exclude<DuelViewerRole, null | 'spectator'>
+  onRefresh?: () => Promise<void>
+}
+
+const DuelLobbyChat: FC<DuelLobbyChatProps> = ({
+  duelId,
+  chatMessages,
+  playerNames,
+  playerAvatars,
+  viewerRole,
+  onRefresh,
+}) => (
+  <DuelChatPanel
+    duelId={duelId}
+    messages={chatMessages ?? []}
+    playerNames={playerNames}
+    playerAvatars={playerAvatars}
+    viewerRole={viewerRole}
+    onRefresh={onRefresh}
+    variant="sidebar"
+    embedded
+  />
+)
+
 export const DuelFinishBanner: FC<{
   headline: string
   tone: FinishTone
   payload: DuelClientPayload
+  recapRoundIdx?: number
   children?: ReactNode
   onHome: () => void
   onPlayAgain?: () => void
   playAgainLoading?: boolean
-}> = ({ headline, tone, payload, children, onHome, onPlayAgain, playAgainLoading }) => {
-  const sumPts = payload.host.totalPoints + payload.guest.totalPoints
-  const hostShare = sumPts <= 0 ? 50 : (payload.host.totalPoints / sumPts) * 100
-  const guestShare = sumPts <= 0 ? 50 : (payload.guest.totalPoints / sumPts) * 100
+}> = ({ headline, tone, payload, recapRoundIdx, children, onHome, onPlayAgain, playAgainLoading }) => {
+  const rounds = payload.roundResults
+  const hasRecap = Boolean(children) && rounds.length > 0
+  const clampedRecapIdx = hasRecap
+    ? Math.min(Math.max(0, recapRoundIdx ?? rounds.length - 1), rounds.length - 1)
+    : Math.max(0, rounds.length - 1)
+  const selectedRound = rounds[clampedRecapIdx] ?? null
+  const isFinalRoundSelected = !hasRecap || clampedRecapIdx === rounds.length - 1
+  const selectedRoundOneBased = selectedRound ? selectedRound.roundIndex + 1 : rounds.length
+
+  let hostHpMeter = payload.host.hp
+  let guestHpMeter = payload.guest.hp
+  let hostPtsMeter = payload.host.totalPoints
+  let guestPtsMeter = payload.guest.totalPoints
+
+  if (hasRecap && selectedRound) {
+    hostHpMeter = selectedRound.hostHpAfter
+    guestHpMeter = selectedRound.guestHpAfter
+    hostPtsMeter = 0
+    guestPtsMeter = 0
+    for (let i = 0; i <= clampedRecapIdx; i++) {
+      hostPtsMeter += rounds[i].hostPoints
+      guestPtsMeter += rounds[i].guestPoints
+    }
+  }
+
+  const sumPts = hostPtsMeter + guestPtsMeter
+  const hostShare = sumPts <= 0 ? 50 : (hostPtsMeter / sumPts) * 100
+  const guestShare = sumPts <= 0 ? 50 : (guestPtsMeter / sumPts) * 100
   const leftIsHost = payload.viewerRole !== 'guest'
-  const hostLeading = payload.host.totalPoints > payload.guest.totalPoints
-  const guestLeading = payload.guest.totalPoints > payload.host.totalPoints
+  const hostLeading = hostPtsMeter > guestPtsMeter
+  const guestLeading = guestPtsMeter > hostPtsMeter
   const hostTint =
     leftIsHost ? (hostLeading ? 'you' : 'neutral') : hostLeading ? 'opponent' : 'neutral'
   const guestTint =
@@ -582,12 +1033,12 @@ export const DuelFinishBanner: FC<{
   const hn = payload.playerNames.host
   const gn = payload.playerNames.guest
 
-  const youHp = vr === 'guest' ? payload.guest.hp : payload.host.hp
-  const oppHp = vr === 'guest' ? payload.host.hp : payload.guest.hp
+  const youHp = vr === 'guest' ? guestHpMeter : hostHpMeter
+  const oppHp = vr === 'guest' ? hostHpMeter : guestHpMeter
   const youHpMax = vr === 'guest' ? payload.startingHpGuest : payload.startingHpHost
   const oppHpMax = vr === 'guest' ? payload.startingHpHost : payload.startingHpGuest
-  const youPts = vr === 'guest' ? payload.guest.totalPoints : payload.host.totalPoints
-  const oppPts = vr === 'guest' ? payload.host.totalPoints : payload.guest.totalPoints
+  const youPts = vr === 'guest' ? guestPtsMeter : hostPtsMeter
+  const oppPts = vr === 'guest' ? hostPtsMeter : guestPtsMeter
   const youShare = vr === 'guest' ? guestShare : hostShare
   const oppShare = vr === 'guest' ? hostShare : guestShare
   const youLabel = vr === 'guest' ? gn : hn
@@ -595,14 +1046,20 @@ export const DuelFinishBanner: FC<{
   const youTint = vr === 'guest' ? guestTint : hostTint
   const oppTint = vr === 'guest' ? hostTint : guestTint
 
-  const showBannerMeters = !children
+  const youAreHost = vr !== 'guest'
+  const youAvatar = youAreHost ? payload.playerAvatars.host : payload.playerAvatars.guest
+  const oppAvatar = youAreHost ? payload.playerAvatars.guest : payload.playerAvatars.host
+  const youAccent = duelAvatarAccent(youAvatar)
+  const oppAccent = duelAvatarAccent(oppAvatar)
+
+  const showBannerMeters = true
   const showRematch = Boolean(vr && onPlayAgain)
 
   return (
     <FinishPageShell>
       <FinishCardColumn>
         <Shell $variant="finish" style={{ marginTop: 0 }}>
-        <HeadRow style={{ marginBottom: children ? 10 : 14 }}>
+        <HeadRow style={{ marginBottom: children ? 12 : 14 }}>
           <Glyph $tone={tone}>{glyph}</Glyph>
           <div>
             <Title>{headline}</Title>
@@ -610,12 +1067,17 @@ export const DuelFinishBanner: FC<{
               {children ? (
                 payload.mode === 'hp' ? (
                   <>
-                    <HeartIcon style={{ width: 14, height: 14, opacity: 0.85 }} /> Final round and totals in the recap
+                    <HeartIcon style={{ width: 14, height: 14, opacity: 0.85 }} />
+                    {isFinalRoundSelected
+                      ? 'Final health — pick a round to review'
+                      : `Health after round ${selectedRoundOneBased} — pick another round`}
                   </>
                 ) : (
                   <>
-                    <LightningBoltIcon style={{ width: 14, height: 14, opacity: 0.85 }} /> Final round and totals in the
-                    recap
+                    <LightningBoltIcon style={{ width: 14, height: 14, opacity: 0.85 }} />
+                    {isFinalRoundSelected
+                      ? 'Final totals — pick a round to review'
+                      : `Totals through round ${selectedRoundOneBased} — pick another round`}
                   </>
                 )
               ) : payload.mode === 'hp' ? (
@@ -632,26 +1094,36 @@ export const DuelFinishBanner: FC<{
         </HeadRow>
 
         {showBannerMeters ? (
-          <MeterRow>
+          <FinishMeterPanel $withRecap={Boolean(children)}>
             {payload.mode === 'hp' ? (
               <>
                 <div className="meter-slot">
                   <DuelHpMeter
                     label={youLabel}
+                    labelTransform="none"
+                    icon={duelHudAvatarIcon(youAvatar)}
                     current={youHp}
                     max={youHpMax}
-                    accent="#7eb8ea"
-                    icon={<HeartIcon />}
+                    accent={youAccent}
+                    dense
+                    valueBesideBar
+                    asideIcon="left"
+                    valueSide="right"
                   />
                 </div>
                 <Vs>VS</Vs>
                 <div className="meter-slot">
                   <DuelHpMeter
                     label={oppLabel}
+                    labelTransform="none"
+                    icon={duelHudAvatarIcon(oppAvatar)}
                     current={oppHp}
                     max={oppHpMax}
-                    accent="#fbbf24"
-                    icon={<HeartIcon />}
+                    accent={oppAccent}
+                    dense
+                    valueBesideBar
+                    asideIcon="right"
+                    valueSide="left"
                   />
                 </div>
               </>
@@ -660,27 +1132,39 @@ export const DuelFinishBanner: FC<{
                 <div className="meter-slot">
                   <DuelPointsMeter
                     label={youLabel}
+                    labelTransform="none"
+                    icon={duelHudAvatarIcon(youAvatar)}
                     points={youPts}
-                    accent="#7eb8ea"
+                    accent={youAccent}
+                    dense
                     sharePct={youShare}
                     barTint={youTint}
-                    icon={<LightningBoltIcon />}
+                    barFillColor={youAccent}
+                    valueBesideBar
+                    asideIcon="left"
+                    valueSide="right"
                   />
                 </div>
                 <Vs>VS</Vs>
                 <div className="meter-slot">
                   <DuelPointsMeter
                     label={oppLabel}
+                    labelTransform="none"
+                    icon={duelHudAvatarIcon(oppAvatar)}
                     points={oppPts}
-                    accent="#fbbf24"
+                    accent={oppAccent}
+                    dense
                     sharePct={oppShare}
                     barTint={oppTint}
-                    icon={<LightningBoltIcon />}
+                    barFillColor={oppAccent}
+                    valueBesideBar
+                    asideIcon="right"
+                    valueSide="left"
                   />
                 </div>
               </>
             )}
-          </MeterRow>
+          </FinishMeterPanel>
         ) : null}
 
         {children}
@@ -729,145 +1213,102 @@ export const DuelFinishBanner: FC<{
 
 export const DuelLobbyHostWaitingPanel: FC<{
   shortCode: string
+  match: DuelLobbyMatchInfo
   friends?: { id: string; name: string }[]
   invitingFriendId?: string | null
   onInviteFriend?: (friend: { id: string; name: string }) => void | Promise<void>
-}> = ({ shortCode, friends, invitingFriendId, onInviteFriend }) => {
-  const [menuOpen, setMenuOpen] = useState(true)
-  const list = friends ?? []
-
-  return (
-    <LobbyWideGrid>
-      <Shell style={{ maxWidth: '100%' }}>
+  chat?: DuelLobbyChatProps
+}> = ({ shortCode, match, friends, invitingFriendId, onInviteFriend, chat }) => (
+  <LobbyWideGrid>
+    <LobbyMainColumn>
+      <Shell $variant="lobby">
         <LobbyHead>
           <UserGroupIcon className="tile" />
           <div>
             <LobbyTitle>Waiting for opponent</LobbyTitle>
-            <Subtle style={{ marginTop: 4 }}>Share this room code or ping someone below.</Subtle>
+            <Subtle style={{ marginTop: 4 }}>Share the code or invite a friend. Chat is open on the right.</Subtle>
           </div>
         </LobbyHead>
 
-        <LobbyCodeProminent aria-label="Room code">{shortCode}</LobbyCodeProminent>
-        <LobbyCodeCaption>They enter this code on Join duel, or accept a friend invite.</LobbyCodeCaption>
-
-        {onInviteFriend && (
-          <InviteCard>
-            <InviteToggle type="button" onClick={() => setMenuOpen((o) => !o)} aria-expanded={menuOpen}>
-              <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
-                <span>Invite a friend</span>
-                <span style={{ fontSize: 11, fontWeight: 500, opacity: 0.72 }}>
-                  Sends a notification to their account
-                </span>
-              </span>
-              <ChevronDownIcon
-                className="chevron"
-                style={{ transform: menuOpen ? 'rotate(180deg)' : undefined }}
-              />
-            </InviteToggle>
-            {menuOpen &&
-              (list.length === 0 ? (
-                <Subtle style={{ padding: '10px 12px 12px', margin: 0, fontSize: 12 }}>
-                  Add friends in Settings to invite them here.
-                </Subtle>
-              ) : (
-                <>
-                  <InviteSub>Pick someone on your friends list — they can jump in with one tap.</InviteSub>
-                  {list.map((f) => (
-                    <FriendInviteRow key={f.id}>
-                      <FriendName title={f.name}>{f.name}</FriendName>
-                      <Button
-                        variant="solidGray"
-                        size="sm"
-                        disabled={invitingFriendId === f.id}
-                        isLoading={invitingFriendId === f.id}
-                        spinnerSize={18}
-                        onClick={() => void onInviteFriend(f)}
-                      >
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                          <PaperAirplaneIcon style={{ width: 14, height: 14 }} />
-                          Invite
-                        </span>
-                      </Button>
-                    </FriendInviteRow>
-                  ))}
-                </>
-              ))}
-          </InviteCard>
-        )}
+        <DuelLobbyMatchSummary match={match} />
+        <DuelRoomCodeCard
+          shortCode={shortCode}
+          hint="Friends can join from the invite notification, or enter this code on Join duel."
+        />
+        <DuelLobbyFriendsInvite
+          friends={friends}
+          invitingFriendId={invitingFriendId}
+          onInviteFriend={onInviteFriend}
+        />
       </Shell>
-      <LobbyPlonkAside>
-        <DuelLobbyPlonkStrip />
-      </LobbyPlonkAside>
-    </LobbyWideGrid>
-  )
-}
+    </LobbyMainColumn>
+    <DuelLobbyAside chat={chat} />
+  </LobbyWideGrid>
+)
 
 export const DuelLobbyGuestJoinPanel: FC<{
   shortCode: string
-  mode: DuelClientPayload['mode']
-  totalRounds?: number
+  match: DuelLobbyMatchInfo
   onJoin: (opts?: { displayName?: string }) => void
   isAuthenticated: boolean
   loginHref: string
-}> = ({ shortCode, mode, totalRounds, onJoin, isAuthenticated, loginHref }) => {
+  joinLoading?: boolean
+}> = ({ shortCode, match, onJoin, isAuthenticated, loginHref, joinLoading }) => {
   const [nick, setNick] = useState('')
 
   return (
     <LobbyWideGrid>
-      <Shell style={{ maxWidth: '100%' }}>
-        <LobbyHead>
-          <PlayIcon className="tile" />
-          <div>
-            <LobbyTitle>Join duel</LobbyTitle>
-            <Subtle style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
-              {mode === 'hp' ? (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                  <HeartIcon style={{ width: 14, height: 14 }} /> HP duel
-                </span>
-              ) : (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                  <LightningBoltIcon style={{ width: 14, height: 14 }} />
-                  {totalRounds ?? '—'} rounds
-                </span>
-              )}
-            </Subtle>
-          </div>
-        </LobbyHead>
+      <LobbyMainColumn>
+        <Shell $variant="lobby">
+          <LobbyHead>
+            <PlayIcon className="tile" />
+            <div>
+              <LobbyTitle>Join duel</LobbyTitle>
+              <Subtle style={{ marginTop: 4 }}>Confirm the room code, then join as the second player.</Subtle>
+            </div>
+          </LobbyHead>
 
-        <LobbyCodeProminent aria-label="Room code">{shortCode}</LobbyCodeProminent>
-        <LobbyCodeCaption>Confirm this matches what the host gave you, then join.</LobbyCodeCaption>
-        {!isAuthenticated && (
-          <>
-            <NickField
-              placeholder="Your name (optional)"
-              value={nick}
-              onChange={(e) => setNick(e.target.value)}
-              maxLength={32}
-              autoComplete="nickname"
-            />
-            <TipLink>
-              <Link href={loginHref} passHref>
-                <a>Sign in</a>
-              </Link>{' '}
-              to use friends list and your account display name.
-            </TipLink>
-          </>
-        )}
-        <BtnRow>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() =>
-              onJoin(isAuthenticated ? undefined : { displayName: nick.trim() || undefined })
-            }
-          >
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-              <UserGroupIcon style={{ width: 16, height: 16 }} />
-              Join duel
-            </span>
-          </Button>
-        </BtnRow>
-      </Shell>
+          <DuelLobbyMatchSummary match={match} />
+          <DuelRoomCodeCard shortCode={shortCode} hint="This should match the code your host shared." />
+
+          {!isAuthenticated && (
+            <>
+              <NickField
+                placeholder="Your name (optional)"
+                value={nick}
+                onChange={(e) => setNick(e.target.value)}
+                maxLength={32}
+                autoComplete="nickname"
+              />
+              <TipLink>
+                <Link href={loginHref} passHref>
+                  <a>Sign in</a>
+                </Link>{' '}
+                to use your account name and friends list.
+              </TipLink>
+            </>
+          )}
+
+          <StartCtaRow>
+            <Button
+              variant="primary"
+              size="md"
+              style={{ width: '100%' }}
+              disabled={joinLoading}
+              isLoading={joinLoading}
+              spinnerSize={22}
+              onClick={() =>
+                onJoin(isAuthenticated ? undefined : { displayName: nick.trim() || undefined })
+              }
+            >
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                <UserGroupIcon style={{ width: 16, height: 16 }} />
+                Join duel
+              </span>
+            </Button>
+          </StartCtaRow>
+        </Shell>
+      </LobbyMainColumn>
       <LobbyPlonkAside>
         <DuelLobbyPlonkStrip />
       </LobbyPlonkAside>
@@ -875,53 +1316,82 @@ export const DuelLobbyGuestJoinPanel: FC<{
   )
 }
 
-export const DuelLobbyHostStartPanel: FC<{ onStart: () => void; opponentName?: string }> = ({
-  onStart,
-  opponentName,
-}) => (
+export const DuelLobbyHostStartPanel: FC<{
+  shortCode: string
+  match: DuelLobbyMatchInfo
+  onStart: () => void
+  opponentName?: string
+  chat?: DuelLobbyChatProps
+  startLoading?: boolean
+}> = ({ shortCode, match, onStart, opponentName, chat, startLoading }) => (
   <LobbyWideGrid>
-    <Shell style={{ maxWidth: '100%' }}>
-      <LobbyHead>
-        <PlayIcon className="tile" />
-        <div>
-          <LobbyTitle>{opponentName ? `${opponentName} joined` : 'Opponent ready'}</LobbyTitle>
-          <Subtle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <SparklesIcon style={{ width: 14, height: 14, opacity: 0.85 }} />
-            Start when you are ready — Street View loads after you begin.
-          </Subtle>
-        </div>
-      </LobbyHead>
-      <BtnRow>
-        <Button variant="primary" size="sm" onClick={onStart}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-            <PlayIcon style={{ width: 16, height: 16 }} />
-            Start duel
-          </span>
-        </Button>
-      </BtnRow>
-    </Shell>
-    <LobbyPlonkAside>
-      <DuelLobbyPlonkStrip />
-    </LobbyPlonkAside>
+    <LobbyMainColumn>
+      <Shell $variant="lobby">
+        <LobbyHead>
+          <PlayIcon className="tile" />
+          <div>
+            <LobbyTitle>Ready to start</LobbyTitle>
+            <Subtle style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+              <SparklesIcon style={{ width: 14, height: 14, opacity: 0.85 }} />
+              Street View loads once you begin the match.
+            </Subtle>
+          </div>
+        </LobbyHead>
+
+        {opponentName ? (
+          <OpponentJoinedBadge>
+            <UserGroupIcon style={{ width: 16, height: 16, flexShrink: 0 }} />
+            {opponentName} joined
+          </OpponentJoinedBadge>
+        ) : null}
+
+        <DuelLobbyMatchSummary match={match} />
+        <DuelRoomCodeCard shortCode={shortCode} hint="Need a backup invite? Copy the link or code above." />
+
+        <StartCtaRow>
+          <Button
+            variant="primary"
+            size="lg"
+            style={{ width: '100%' }}
+            onClick={onStart}
+            disabled={startLoading}
+            isLoading={startLoading}
+            spinnerSize={24}
+          >
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              <PlayIcon style={{ width: 18, height: 18 }} />
+              Start duel
+            </span>
+          </Button>
+        </StartCtaRow>
+      </Shell>
+    </LobbyMainColumn>
+    <DuelLobbyAside chat={chat} />
   </LobbyWideGrid>
 )
 
-export const DuelLobbyGuestWaitingPanel: FC<{ hostPlayerName?: string }> = ({ hostPlayerName }) => (
+export const DuelLobbyGuestWaitingPanel: FC<{
+  match: DuelLobbyMatchInfo
+  hostPlayerName?: string
+  chat?: DuelLobbyChatProps
+}> = ({ match, hostPlayerName, chat }) => (
   <LobbyWideGrid>
-    <Shell style={{ maxWidth: '100%' }}>
-      <LobbyHead>
-        <ClockIcon className="tile" />
-        <div>
-          <LobbyTitle>{hostPlayerName ? `Waiting for ${hostPlayerName}` : 'Waiting for room host'}</LobbyTitle>
-          <Subtle style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <SparklesIcon style={{ width: 14, height: 14, opacity: 0.75 }} /> Hang tight — they start the match.
-          </Subtle>
-        </div>
-      </LobbyHead>
-    </Shell>
-    <LobbyPlonkAside>
-      <DuelLobbyPlonkStrip />
-    </LobbyPlonkAside>
+    <LobbyMainColumn>
+      <Shell $variant="lobby">
+        <LobbyHead>
+          <ClockIcon className="tile" />
+          <div>
+            <LobbyTitle>{hostPlayerName ? `Waiting for ${hostPlayerName}` : 'Waiting for host'}</LobbyTitle>
+            <Subtle style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+              <SparklesIcon style={{ width: 14, height: 14, opacity: 0.75 }} />
+              You are in. The host starts the match when ready.
+            </Subtle>
+          </div>
+        </LobbyHead>
+        <DuelLobbyMatchSummary match={match} />
+      </Shell>
+    </LobbyMainColumn>
+    <DuelLobbyAside chat={chat} />
   </LobbyWideGrid>
 )
 

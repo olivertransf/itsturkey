@@ -6,7 +6,7 @@ type MultiSession = {
   anonymousId?: string
   mapId: string
   mapName?: string
-  panelCount: 1 | 2 | 3 | 4
+  panelCount: 2 | 4 | 8
   totalRoundsPerPanel: number
   perGuessSeconds: number
   cooldownSeconds: number

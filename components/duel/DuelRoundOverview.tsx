@@ -7,6 +7,7 @@ import { DuelHpMeter, DuelPointsMeter } from '@components/duel/DuelHpMeter'
 import { useAppSelector } from '@redux/hook'
 import type { DuelGuessAvatar, DuelRoundResultClient, DuelViewerRole } from './duelApiTypes'
 import { DUEL_GUESS_MARKER_FALLBACK } from './duelApiTypes'
+import { duelAvatarAccent } from './duelHudAvatar'
 import type { GuessType, LocationType } from '@types'
 import { DUEL_DEFAULT_HP } from '@backend/utils/duelConstants'
 import { duelRoundDamageMultiplier } from '@backend/utils/duelConstants'
@@ -170,39 +171,133 @@ const BattleRow = styled.div`
   }
 `
 
-const ImpactStrip = styled.div`
+const FinishRecapFoot = styled.div`
+  margin-top: 12px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+`
+
+const FinishRecapGrid = styled.div`
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  gap: 8px 14px;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+`
+
+const FinishRecapCol = styled.div<{ $align: 'left' | 'right' }>`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  align-items: ${({ $align }) => ($align === 'left' ? 'flex-start' : 'flex-end')};
+  text-align: ${({ $align }) => $align};
+`
+
+const FinishRecapDist = styled.div<{ $accent: string; $align: 'left' | 'right' }>`
+  font-size: 15px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #f4f4f5;
+  line-height: 1.2;
+
+  ${({ $align, $accent }) =>
+    $align === 'left'
+      ? css`
+          padding-left: 10px;
+          border-left: 3px solid ${$accent};
+        `
+      : css`
+          padding-right: 10px;
+          border-right: 3px solid ${$accent};
+        `}
+`
+
+const FinishRecapPts = styled.div`
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: rgba(228, 228, 231, 0.72);
+  line-height: 1.2;
+`
+
+const FinishRecapMid = styled.div<{ $row: 1 | 2 }>`
+  grid-row: ${({ $row }) => $row};
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 56px;
+  text-align: center;
+`
+
+const FinishRecapMidMeta = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
   font-variant-numeric: tabular-nums;
 
-  .impact-score {
-    font-size: clamp(1.1rem, 2.5vw, 1.45rem);
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    text-align: center;
-  }
-
-  .impact-score.you {
-    color: #7eb8ea;
-  }
-
-  .impact-score.opp {
-    color: #f87171;
-  }
-
-  .impact-mid {
+  .mult {
     font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
+    font-weight: 800;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: rgba(255, 255, 255, 0.55);
   }
+
+  .damage {
+    font-size: 13px;
+    font-weight: 800;
+    color: #fca5a5;
+    letter-spacing: -0.01em;
+  }
+`
+
+const FinishRecapHeaderStack = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  text-align: center;
+  padding: 0 4px;
+`
+
+const FinishRecapMeta = styled.div`
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(228, 228, 231, 0.72);
+  line-height: 1.45;
+`
+
+const FinishRecapWinner = styled.div<{ $tier: 'host' | 'guest' | 'tie' }>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  border: 1px solid
+    ${({ $tier }) =>
+      $tier === 'tie'
+        ? 'rgba(148, 163, 184, 0.45)'
+        : $tier === 'host'
+        ? 'rgba(47, 127, 255, 0.45)'
+        : 'rgba(251, 191, 36, 0.55)'};
+  background: ${({ $tier }) =>
+    $tier === 'tie'
+      ? 'rgba(51, 65, 85, 0.45)'
+      : $tier === 'host'
+      ? 'rgba(47, 127, 255, 0.22)'
+      : 'rgba(180, 83, 9, 0.35)'};
+  color: ${({ $tier }) => ($tier === 'tie' ? '#e2e8f0' : $tier === 'host' ? '#dbeafe' : '#fef3c7')};
 `
 
 const ActionRow = styled.div`
@@ -379,18 +474,19 @@ const StatPill = styled.span`
   }
 `
 
-const MapWrap = styled.div<{ $compact: boolean }>`
+const MapWrap = styled.div<{ $compact: boolean; $finishRecap?: boolean }>`
   flex: 0 0 auto;
-  min-height: ${({ $compact }) => ($compact ? '220px' : '280px')};
+  min-height: ${({ $compact, $finishRecap }) => ($finishRecap ? '200px' : $compact ? '220px' : '280px')};
   border-radius: 12px;
   overflow: hidden;
   border: none;
-  padding: ${({ $compact }) => ($compact ? '0 4px' : '0 88px')};
+  padding: ${({ $compact, $finishRecap }) => ($finishRecap ? '0' : $compact ? '0 4px' : '0 88px')};
   box-sizing: border-box;
 
   .map {
-    height: ${({ $compact }) => ($compact ? '240px' : 'min(58vh, 520px)')};
-    min-height: ${({ $compact }) => ($compact ? '220px' : '300px')};
+    height: ${({ $compact, $finishRecap }) =>
+      $finishRecap ? '220px' : $compact ? '240px' : 'min(58vh, 520px)'};
+    min-height: ${({ $compact, $finishRecap }) => ($finishRecap ? '200px' : $compact ? '220px' : '300px')};
     border: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 10px;
     box-sizing: border-box;
@@ -662,7 +758,7 @@ type Props = {
   variant: 'fullscreen' | 'compact'
   roundOneBased: number
   totalRounds?: number
-  useRoundRamp?: boolean
+  multiplierMode?: 'round_ramp' | 'win_streak'
   mode: 'hp' | 'points'
   actual: LocationType
   result: DuelRoundResultClient
@@ -679,13 +775,15 @@ type Props = {
   onContinue?: () => void
   /** Hide bottom cumulative points row (e.g. duel finish — totals already in parent). */
   omitScoreRow?: boolean
+  /** Duel match finish: no duplicate player HP rows; compact round-only stats. */
+  finishRecap?: boolean
 }
 
 const DuelRoundOverview: FC<Props> = ({
   variant,
   roundOneBased,
   totalRounds,
-  useRoundRamp = true,
+  multiplierMode = 'round_ramp',
   mode,
   actual,
   result,
@@ -699,6 +797,7 @@ const DuelRoundOverview: FC<Props> = ({
   playerAvatars,
   onContinue,
   omitScoreRow = false,
+  finishRecap = false,
 }) => {
   const user = useAppSelector((state) => state.user)
   const mapRef = useRef<google.maps.Map | null>(null)
@@ -862,7 +961,12 @@ const DuelRoundOverview: FC<Props> = ({
 
   const guideMapKey = sessionMapId?.trim() ? sessionMapId : EQUITABLE_COUNTRY_STREAK_ID
   const plonkIso = resolvePlonkitGuideCountryIso(guideMapKey, actual)
-  const roundRamp = duelRoundDamageMultiplier(roundOneBased, useRoundRamp)
+  const damageMultDisplay =
+    result.damageMultiplierUsed > 0
+      ? result.damageMultiplierUsed
+      : multiplierMode === 'round_ramp'
+      ? duelRoundDamageMultiplier(roundOneBased, true)
+      : 1
 
   const leftPts = leftIsHost ? result.hostPoints : result.guestPoints
   const rightPts = leftIsHost ? result.guestPoints : result.hostPoints
@@ -982,16 +1086,81 @@ const DuelRoundOverview: FC<Props> = ({
     mode === 'hp' ? (
       <UnderMapCenter>
         <div className="mid-label">Damage mult</div>
-        <div className="mid-mult">×{roundRamp.toFixed(1)}</div>
+        <div className="mid-mult">×{damageMultDisplay.toFixed(1)}</div>
       </UnderMapCenter>
     ) : (
       <UnderMapCenter>
         <div className="mid-label">Round result</div>
-        <div className="mid-mult">×1.0</div>
+        <div className="mid-mult">{winnerLabel}</div>
       </UnderMapCenter>
     )
 
   const isCompact = variant === 'compact'
+
+  const leftDist = leftIsHost
+    ? result.hostNoGuess
+      ? '—'
+      : hostDistLabel
+    : result.guestNoGuess
+    ? '—'
+    : guestDistLabel
+  const rightDist = leftIsHost
+    ? result.guestNoGuess
+      ? '—'
+      : guestDistLabel
+    : result.hostNoGuess
+    ? '—'
+    : hostDistLabel
+
+  const leftAccent = duelAvatarAccent(leftIsHost ? hostGuessPin : guestGuessPin)
+  const rightAccent = duelAvatarAccent(leftIsHost ? guestGuessPin : hostGuessPin)
+  const roundDamage = Math.max(result.damageToHost, result.damageToGuest)
+
+  const finishRecapStats = finishRecap ? (
+    <FinishRecapFoot>
+      <FinishRecapGrid>
+        <FinishRecapCol $align="left">
+          <FinishRecapDist $accent={leftAccent} $align="left">
+            {leftDist}
+          </FinishRecapDist>
+        </FinishRecapCol>
+        <FinishRecapMid $row={1}>
+          {plonkIso ? (
+            <PlonkitGuideLauncher
+              variant="compact"
+              countryIso={plonkIso}
+              mapLabel={plonkMapLabel}
+              compactAlign="center"
+              compactShowLabel={false}
+              compactShrinkWrap
+            />
+          ) : null}
+        </FinishRecapMid>
+        <FinishRecapCol $align="right">
+          <FinishRecapDist $accent={rightAccent} $align="right">
+            {rightDist}
+          </FinishRecapDist>
+        </FinishRecapCol>
+
+        <FinishRecapCol $align="left">
+          <FinishRecapPts>{Math.round(leftPts).toLocaleString()} pts</FinishRecapPts>
+        </FinishRecapCol>
+        <FinishRecapMid $row={2}>
+          {mode === 'hp' ? (
+            <FinishRecapMidMeta>
+              <span className="mult">×{damageMultDisplay.toFixed(1)}</span>
+              {roundDamage > 0 ? (
+                <span className="damage">−{Math.round(roundDamage).toLocaleString()} HP</span>
+              ) : null}
+            </FinishRecapMidMeta>
+          ) : null}
+        </FinishRecapMid>
+        <FinishRecapCol $align="right">
+          <FinishRecapPts>{Math.round(rightPts).toLocaleString()} pts</FinishRecapPts>
+        </FinishRecapCol>
+      </FinishRecapGrid>
+    </FinishRecapFoot>
+  ) : null
 
   const distanceRowBand = (
     <DistanceRowBand>
@@ -1042,13 +1211,25 @@ const DuelRoundOverview: FC<Props> = ({
 
   return (
     <OverlayRoot $fullscreen={variant === 'fullscreen'} $compact={isCompact}>
-      <RoundHeader $compact={isCompact}>
-        Round {roundOneBased}
-        {totalRounds ? ` of ${totalRounds}` : ''} · {mode === 'hp' ? 'Damage round' : 'Points round'}
-        {plonkMapLabel ? ` · ${plonkMapLabel}` : ''}
-      </RoundHeader>
+      {finishRecap ? (
+        <FinishRecapHeaderStack>
+          <FinishRecapMeta>
+            Round {roundOneBased}
+            {totalRounds ? ` of ${totalRounds}` : ''} · {mode === 'hp' ? 'Damage round' : 'Points round'}
+            {plonkMapLabel ? ` · ${plonkMapLabel}` : ''}
+          </FinishRecapMeta>
+          <FinishRecapWinner $tier={winTier}>{winnerLabel}</FinishRecapWinner>
+        </FinishRecapHeaderStack>
+      ) : (
+        <RoundHeader $compact={isCompact}>
+          Round {roundOneBased}
+          {totalRounds ? ` of ${totalRounds}` : ''} · {mode === 'hp' ? 'Damage round' : 'Points round'}
+          {plonkMapLabel ? ` · ${plonkMapLabel}` : ''}
+          <WinnerBanner $tier={winTier}>{winnerLabel}</WinnerBanner>
+        </RoundHeader>
+      )}
 
-      <MapWrap $compact={isCompact}>
+      <MapWrap $compact={isCompact} $finishRecap={finishRecap}>
         <StyledResultMap>
           <div className="map">
             <GoogleMapReact
@@ -1091,29 +1272,33 @@ const DuelRoundOverview: FC<Props> = ({
         </StyledResultMap>
       </MapWrap>
 
-      <UnderMapGrid $compact={isCompact}>
-        {leftIsHost ? hostBarHeadEl : guestBarHeadEl}
-        <MidSpacer aria-hidden />
-        {leftIsHost ? guestBarHeadEl : hostBarHeadEl}
+      {finishRecap ? (
+        finishRecapStats
+      ) : (
+        <UnderMapGrid $compact={isCompact}>
+          {leftIsHost ? hostBarHeadEl : guestBarHeadEl}
+          <MidSpacer aria-hidden />
+          {leftIsHost ? guestBarHeadEl : hostBarHeadEl}
 
-        {leftIsHost ? hostHpEl : guestHpEl}
-        {centerBetweenMeters}
-        {leftIsHost ? guestHpEl : hostHpEl}
+          {leftIsHost ? hostHpEl : guestHpEl}
+          {centerBetweenMeters}
+          {leftIsHost ? guestHpEl : hostHpEl}
 
-        {distanceRowBand}
+          {distanceRowBand}
 
-        {!omitScoreRow && (
-          <>
-            <ScoreCell>
-              <span className="points">{Math.round(leftPts)}</span>
-            </ScoreCell>
-            <MidSpacer aria-hidden />
-            <ScoreCell>
-              <span className="points">{Math.round(rightPts)}</span>
-            </ScoreCell>
-          </>
-        )}
-      </UnderMapGrid>
+          {!omitScoreRow && (
+            <>
+              <ScoreCell>
+                <span className="points">{Math.round(leftPts)}</span>
+              </ScoreCell>
+              <MidSpacer aria-hidden />
+              <ScoreCell>
+                <span className="points">{Math.round(rightPts)}</span>
+              </ScoreCell>
+            </>
+          )}
+        </UnderMapGrid>
+      )}
 
       {onContinue ? (
         <ActionRow>

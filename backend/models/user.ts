@@ -9,6 +9,8 @@ type User = {
   avatar: { emoji: string; color: string }
   /** Stable invite-style code for adding friends (unique). */
   friendCode?: string
+  lastSeenAt?: Date
+  presenceActivity?: 'idle' | 'browsing' | 'in_game' | 'in_duel'
   createdAt?: Date
   isAdmin?: boolean
 }

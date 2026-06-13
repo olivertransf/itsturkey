@@ -172,6 +172,11 @@ const StyledMapPage = styled.div`
     margin-top: var(--stack-gap-md);
   }
 
+  .mapLeaderboardBucketTabs {
+    margin-bottom: var(--stack-gap-sm);
+    padding: 0 var(--page-gutter);
+  }
+
   .mapLeaderboardGrid {
     display: grid;
     grid-template-columns: 1fr 1fr;
