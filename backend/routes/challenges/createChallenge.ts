@@ -1,11 +1,11 @@
 import { ObjectId } from 'mongodb'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { storageMapIdForStandardGame } from '@backend/utils/equitableCountryMap'
-import { collections, getLocations, getUserId } from '@backend/utils'
+import { collections, getLocations, requirePlayableUser } from '@backend/utils'
 import { DEFAULT_TOTAL_ROUNDS, MAX_TOTAL_ROUNDS } from '@utils/constants/gameModes'
 
 const createChallenge = async (req: NextApiRequest, res: NextApiResponse) => {
-  const userId = await getUserId(req, res)
+  const { userId } = await requirePlayableUser(req, res)
   const { mapId, gameSettings, mode } = req.body
 
   const parsed = Number.parseInt(String(req.body.totalRounds ?? ''), 10)

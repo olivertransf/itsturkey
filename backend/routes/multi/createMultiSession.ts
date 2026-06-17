@@ -3,11 +3,10 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { Game, MultiSession } from '@backend/models'
 import {
   collections,
-  getAnonymousGameId,
   getLocations,
-  getUserId,
   isUserBanned,
   normalizeMultiSessionSettings,
+  requirePlayableUser,
   throwError,
 } from '@backend/utils'
 import { OFFICIAL_WORLD_ID } from '@utils/constants/random'
@@ -57,12 +56,11 @@ const getFallbackMapSources = (): MultiGuessrMapSource[] => {
 const getRandomMapSource = (maps: MultiGuessrMapSource[]) => maps[Math.floor(Math.random() * maps.length)]
 
 const createMultiSession = async (req: NextApiRequest, res: NextApiResponse) => {
-  const userId = await getUserId(req, res)
-  const anonymousId = userId ? undefined : getAnonymousGameId(req, res)
+  const { userId } = await requirePlayableUser(req, res)
   const { mapId, mapName, gameSettings } = req.body
   const { panelCount, totalRoundsPerPanel, perGuessSeconds, cooldownSeconds } = normalizeMultiSessionSettings(req.body)
 
-  const { isBanned } = userId ? await isUserBanned(userId) : { isBanned: false }
+  const { isBanned } = await isUserBanned(userId)
 
   if (isBanned) {
     return throwError(res, 401, 'You are currently banned from playing games')
@@ -109,8 +107,7 @@ const createMultiSession = async (req: NextApiRequest, res: NextApiResponse) => 
         timeLimit: perGuessSeconds,
       },
       mode: 'standard',
-      userId: userId ? new ObjectId(userId) : undefined,
-      anonymousId,
+      userId: new ObjectId(userId),
       notForLeaderboard: true,
       guesses: [],
       rounds: locations,
@@ -134,8 +131,7 @@ const createMultiSession = async (req: NextApiRequest, res: NextApiResponse) => 
 
   const panelGameIds = Object.values(gamesResult.insertedIds)
   const session: MultiSession = {
-    userId: userId ? new ObjectId(userId) : undefined,
-    anonymousId,
+    userId: new ObjectId(userId),
     mapId: useAllMaps ? 'all' : mapId,
     mapName: useAllMaps ? 'All Maps' : mapName,
     panelCount: panelCount as MultiSession['panelCount'],

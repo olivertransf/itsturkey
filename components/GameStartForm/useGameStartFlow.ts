@@ -135,6 +135,19 @@ export function useGameStartFlow({
   }, [onRequestClose])
 
   const handleStartGame = useCallback(async () => {
+    if (!user?.id) {
+      showToast('error', 'Sign in to play')
+      const callbackUrl = `/map/${encodeURIComponent(String(activeMapDetails._id))}`
+      await router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`)
+      return
+    }
+
+    if (!user.mapsAPIKey) {
+      showToast('error', 'Add a Google Maps API key in Account settings to play')
+      await router.push('/account')
+      return
+    }
+
     setIsSubmitting(true)
 
     const gameSettings: GameSettingsType = {

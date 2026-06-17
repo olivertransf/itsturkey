@@ -13,6 +13,8 @@ type User = {
   presenceActivity?: 'idle' | 'browsing' | 'in_game' | 'in_duel'
   createdAt?: Date
   isAdmin?: boolean
+  mapsAPIKey?: string
+  mapsAPIKeyVerifiedAt?: Date | null
 }
 
 export default User

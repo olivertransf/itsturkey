@@ -5,10 +5,9 @@ import type DuelSession from '@backend/models/duelSession'
 import getMapFromGame from '@backend/queries/getMapFromGame'
 import {
   collections,
-  getAnonymousGameId,
   getLocations,
-  getUserId,
   isUserBanned,
+  requirePlayableUser,
   throwError,
 } from '@backend/utils'
 import { fetchUserDisplayName, sanitizeDuelDisplayName } from '@backend/utils/resolveDuelPlayerNames'
@@ -17,10 +16,9 @@ import { normalizeCreateDuelBody } from '@backend/utils/normalizeDuelSettings'
 import { randomDuelShortCode } from '@backend/utils/duelShortCode'
 
 const createDuel = async (req: NextApiRequest, res: NextApiResponse) => {
-  const userId = await getUserId(req, res)
-  const anonymousId = userId ? undefined : getAnonymousGameId(req, res)
+  const { userId } = await requirePlayableUser(req, res)
 
-  const { isBanned } = userId ? await isUserBanned(userId) : { isBanned: false }
+  const { isBanned } = await isUserBanned(userId)
 
   if (isBanned) {
     return throwError(res, 401, 'You are currently banned from playing games')
@@ -57,15 +55,11 @@ const createDuel = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   let hostDisplayName: string | undefined
-  if (userId) {
-    hostDisplayName = (await fetchUserDisplayName(userId)) ?? undefined
-  } else if (anonymousId) {
-    hostDisplayName = sanitizeDuelDisplayName(cfg.displayName)
-  }
+  hostDisplayName = (await fetchUserDisplayName(userId)) ?? sanitizeDuelDisplayName(cfg.displayName)
 
   const hostSlot = {
-    userId: userId ? new ObjectId(userId) : undefined,
-    anonymousId: userId ? undefined : anonymousId,
+    userId: new ObjectId(userId),
+    anonymousId: undefined,
     displayName: hostDisplayName,
     hp: cfg.startingHpHost,
     totalPoints: 0,

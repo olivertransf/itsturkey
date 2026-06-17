@@ -4,9 +4,8 @@ import type Game from '@backend/models/game'
 import type DuelSession from '@backend/models/duelSession'
 import {
   collections,
-  getAnonymousGameId,
-  getUserId,
   isUserBanned,
+  requirePlayableUser,
   throwError,
 } from '@backend/utils'
 import {
@@ -21,10 +20,9 @@ import { replyWithDuelPayload } from './buildDuelPayload'
 
 const joinDuel = async (req: NextApiRequest, res: NextApiResponse) => {
   const duelId = req.query.id as string
-  const userId = await getUserId(req, res)
-  const anonymousId = userId ? undefined : getAnonymousGameId(req, res)
+  const { userId } = await requirePlayableUser(req, res)
 
-  const { isBanned } = userId ? await isUserBanned(userId) : { isBanned: false }
+  const { isBanned } = await isUserBanned(userId)
 
   if (isBanned) {
     return throwError(res, 401, 'You are currently banned from playing games')
@@ -44,27 +42,19 @@ const joinDuel = async (req: NextApiRequest, res: NextApiResponse) => {
     return throwError(res, 400, 'Someone has already joined this duel')
   }
 
-  const existingRole = duelParticipantRole(duel, userId, anonymousId)
+  const existingRole = duelParticipantRole(duel, userId, undefined)
 
   if (existingRole === 'host') {
     return throwError(res, 400, 'You cannot join as the second player — you created this duel')
   }
 
-  if (!userId && duel.host.anonymousId && duel.host.anonymousId === anonymousId) {
-    return throwError(res, 400, 'Open this link in a different browser or incognito window to play as the second player')
-  }
-
   let guestDisplayName: string | undefined
-  if (userId) {
-    guestDisplayName = (await fetchUserDisplayName(userId)) ?? undefined
-  } else if (anonymousId) {
-    guestDisplayName = sanitizeDuelDisplayName(req.body?.displayName)
-  }
+  guestDisplayName = (await fetchUserDisplayName(userId)) ?? sanitizeDuelDisplayName(req.body?.displayName)
 
   duel.guest = {
     ...duel.guest,
-    userId: userId ? new ObjectId(userId) : undefined,
-    anonymousId: userId ? undefined : anonymousId,
+    userId: new ObjectId(userId),
+    anonymousId: undefined,
     displayName: guestDisplayName,
     joined: true,
     hp: duel.startingHpGuest,
@@ -94,7 +84,7 @@ const joinDuel = async (req: NextApiRequest, res: NextApiResponse) => {
   void notifyDuelUpdated(duelId, 'join')
 
   const mapDetails = await getMapFromGame({ mapId: duel.mapId } as unknown as Game)
-  const role = duelParticipantRole(duel, userId, anonymousId)
+  const role = duelParticipantRole(duel, userId, undefined)
 
   await replyWithDuelPayload(res, duel, role, mapDetails)
 }

@@ -12,6 +12,7 @@
     "maps:split-equitable": "node scripts/split-equitable-into-maps.js --layout weighted --replace-existing",
     "maps:export-bundle": "node scripts/export-maps-for-repo.mjs",
     "maps:import-bundle": "node scripts/import-maps-bundle.mjs",
+    "users:backfill-legacy-maps-key": "node scripts/backfill-legacy-maps-api-key.js",
     "test": "jest"
   },
   "dependencies": {

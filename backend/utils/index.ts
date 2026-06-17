@@ -9,6 +9,7 @@ export { default as getMapBounds } from './getMapBounds'
 export { default as getQueryLimit } from './getQueryLimit'
 export { default as getUserId } from './getUserId'
 export { canAccessGame, getAnonymousGameId, getExistingAnonymousGameId } from './anonymousGame'
+export { default as requirePlayableUser } from './requirePlayableUser'
 export {
   calculateMultiSessionTotalPoints,
   normalizeMultiSessionSettings,

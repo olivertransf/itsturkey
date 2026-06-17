@@ -159,7 +159,7 @@ const StreaksGuessMap: FC<Props> = ({
         <div className="map">
           <GoogleMapReact
             googleMapLoader={googleMapLoaderAsync}
-            bootstrapURLKeys={getMapsKey(user.mapsAPIKey)}
+            bootstrapURLKeys={getMapsKey(user.mapsAPIKey, { allowFallback: false })}
             defaultCenter={{ lat: 0, lng: 0 }}
             defaultZoom={1}
             yesIWantToUseGoogleMapApiInternals

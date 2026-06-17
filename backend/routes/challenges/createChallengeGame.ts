@@ -3,17 +3,13 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { Game } from '@backend/models'
 import getMapFromGame from '@backend/queries/getMapFromGame'
 import { storageMapIdForStandardGame } from '@backend/utils/equitableCountryMap'
-import { collections, getUserId, isUserBanned, throwError } from '@backend/utils'
+import { collections, isUserBanned, requirePlayableUser, throwError } from '@backend/utils'
 import { DEFAULT_TOTAL_ROUNDS } from '@utils/constants/gameModes'
 
 const createChallengeGame = async (req: NextApiRequest, res: NextApiResponse) => {
-  const userId = await getUserId(req, res)
+  const { userId } = await requirePlayableUser(req, res)
   const challengeId = req.query.id as string
   const { mapId, mode, gameSettings, locations, isDailyChallenge } = req.body
-
-  if (!userId) {
-    return throwError(res, 401, 'Unauthorized')
-  }
 
   const { isBanned } = await isUserBanned(userId)
 

@@ -2,17 +2,16 @@ import { ObjectId } from 'mongodb'
 import { NextApiRequest, NextApiResponse } from 'next'
 import Game from '@backend/models/game'
 import { storageMapIdForStandardGame } from '@backend/utils/equitableCountryMap'
-import { collections, getAnonymousGameId, getLocations, getUserId, isUserBanned, throwError } from '@backend/utils'
+import { collections, getLocations, isUserBanned, requirePlayableUser, throwError } from '@backend/utils'
 import { isEquitableContinentVirtualMapId } from '@utils/helpers/equitableContinentMapId'
 import { isEquitableCountryVirtualMapId } from '@utils/helpers/equitableCountryMapId'
 import { DEFAULT_TOTAL_ROUNDS, MAX_TOTAL_ROUNDS, UNLIMITED_LOCATION_BATCH } from '@utils/constants/gameModes'
 
 const createGame = async (req: NextApiRequest, res: NextApiResponse) => {
-  const userId = await getUserId(req, res)
+  const { userId } = await requirePlayableUser(req, res)
   const { mode, mapId, mapName, gameSettings } = req.body
-  const anonymousId = userId ? undefined : getAnonymousGameId(req, res)
 
-  const { isBanned } = userId ? await isUserBanned(userId) : { isBanned: false }
+  const { isBanned } = await isUserBanned(userId)
 
   if (isBanned) {
     return throwError(res, 401, 'You are currently banned from playing games')
@@ -47,9 +46,8 @@ const createGame = async (req: NextApiRequest, res: NextApiResponse) => {
     mapName,
     gameSettings,
     mode,
-    userId: userId ? new ObjectId(userId) : undefined,
-    anonymousId,
-    notForLeaderboard: !userId,
+    userId: new ObjectId(userId),
+    notForLeaderboard: false,
     guesses: [],
     rounds: locations,
     round: 1,

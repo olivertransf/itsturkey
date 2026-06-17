@@ -1234,7 +1234,7 @@ const DuelRoundOverview: FC<Props> = ({
           <div className="map">
             <GoogleMapReact
               googleMapLoader={googleMapLoaderAsync}
-              bootstrapURLKeys={getMapsKey(user.mapsAPIKey)}
+              bootstrapURLKeys={getMapsKey(user.mapsAPIKey, { allowFallback: false })}
               center={{ lat: actual.lat, lng: actual.lng }}
               zoom={3}
               yesIWantToUseGoogleMapApiInternals
