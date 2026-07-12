@@ -21,6 +21,16 @@ const StyledStreetView = styled.div<StyledProps>`
     position: relative;
   }
 
+  /* Above Google canvas, below HUD / guess map (z-index 2–3). Blocks drag pan/zoom. */
+  .streetview-interaction-block {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    touch-action: none;
+    cursor: default;
+    user-select: none;
+  }
+
   .toggle-map-button {
     display: none;
 

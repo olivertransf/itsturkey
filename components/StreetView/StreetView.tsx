@@ -465,58 +465,119 @@ const Streetview: FC<Props> = ({
     }
   }, [view, enableGlobalShortcuts, panZoomEnabled, gameData.gameSettings.canMove])
 
+  useEffect(() => {
+    if (panZoomEnabled || view !== 'Game') return
+    const root = panoContainerRef.current
+    if (!root) return
+
+    const isStreetViewUi = (target: EventTarget | null) =>
+      target instanceof Element && Boolean(target.closest('[data-streetview-ui]'))
+
+    const blockInteraction = (e: Event) => {
+      if (isStreetViewUi(e.target)) return
+      e.preventDefault()
+      e.stopPropagation()
+    }
+
+    const opts: AddEventListenerOptions = { capture: true, passive: false }
+    const types = [
+      'pointerdown',
+      'pointermove',
+      'touchstart',
+      'touchmove',
+      'wheel',
+      'mousedown',
+      'mousemove',
+      'dblclick',
+      'contextmenu',
+    ] as const
+
+    for (const type of types) {
+      root.addEventListener(type, blockInteraction, opts)
+    }
+
+    return () => {
+      for (const type of types) {
+        root.removeEventListener(type, blockInteraction, opts)
+      }
+    }
+  }, [panZoomEnabled, view, googleMapsConfig])
+
   return (
     <>
       <StyledStreetView showMap={!loading}>
         {loading && <LoadingPage />}
 
         <div ref={panoContainerRef} id={panoElementId} className="streetview-pano">
-          <StreetViewControls
-            handleBackToStart={handleBackToStart}
-            handleExitGame={handleExitGame}
-            hideExit={isDuel}
-            hudPrimaryStyle={isDuel}
-            handleUndoLastMove={
-              !isDuel && gameData.gameSettings.canMove ? handleUndoLastMove : undefined
-            }
-            leadingPrimaryControls={primaryLeadingControls}
-          />
+          {!panZoomEnabled && view === 'Game' ? (
+            <div
+              className="streetview-interaction-block"
+              aria-hidden
+              onContextMenu={(e) => e.preventDefault()}
+              onWheel={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+              }}
+            />
+          ) : null}
+          <div data-streetview-ui>
+            <StreetViewControls
+              handleBackToStart={handleBackToStart}
+              handleExitGame={handleExitGame}
+              hideExit={isDuel}
+              hudPrimaryStyle={isDuel}
+              handleUndoLastMove={
+                !isDuel && gameData.gameSettings.canMove ? handleUndoLastMove : undefined
+              }
+              leadingPrimaryControls={primaryLeadingControls}
+            />
+          </div>
           {view === 'Game' && !isDuel && (
-            <GameStatus gameData={gameData} handleSubmitGuess={handleSubmitGuess} />
+            <div data-streetview-ui>
+              <GameStatus gameData={gameData} handleSubmitGuess={handleSubmitGuess} />
+            </div>
           )}
 
           {gameData.mode === 'standard' && (
-            <GuessMap
-              currGuess={currGuess}
-              setCurrGuess={updateCurrGuess}
-              handleSubmitGuess={handleSubmitGuess}
-              mobileMapOpen={mobileMapOpen}
-              closeMobileMap={() => setMobileMapOpen(false)}
-              googleMapsConfig={googleMapsConfig}
-              setGoogleMapsConfig={setGoogleMapsConfig}
-              resetMap={view === 'Game'}
-              gameData={gameData}
-              duelLayout={isDuel}
-              guessLocked={isDuel && duelGuessLocked}
-              submitLabel={isDuel ? 'Lock in' : undefined}
-            />
+            <div data-streetview-ui>
+              <GuessMap
+                currGuess={currGuess}
+                setCurrGuess={updateCurrGuess}
+                handleSubmitGuess={handleSubmitGuess}
+                mobileMapOpen={mobileMapOpen}
+                closeMobileMap={() => setMobileMapOpen(false)}
+                googleMapsConfig={googleMapsConfig}
+                setGoogleMapsConfig={setGoogleMapsConfig}
+                resetMap={view === 'Game'}
+                gameData={gameData}
+                duelLayout={isDuel}
+                guessLocked={isDuel && duelGuessLocked}
+                submitLabel={isDuel ? 'Lock in' : undefined}
+              />
+            </div>
           )}
 
           {gameData.mode === 'streak' && (
-            <StreaksGuessMap
-              countryStreakGuess={countryStreakGuess}
-              setCountryStreakGuess={setCountryStreakGuess}
-              handleSubmitGuess={handleSubmitGuess}
-              mobileMapOpen={mobileMapOpen}
-              closeMobileMap={() => setMobileMapOpen(false)}
-              googleMapsConfig={googleMapsConfig}
-              setGoogleMapsConfig={setGoogleMapsConfig}
-              resetMap={view === 'Game'}
-              gameData={gameData}
-            />
+            <div data-streetview-ui>
+              <StreaksGuessMap
+                countryStreakGuess={countryStreakGuess}
+                setCountryStreakGuess={setCountryStreakGuess}
+                handleSubmitGuess={handleSubmitGuess}
+                mobileMapOpen={mobileMapOpen}
+                closeMobileMap={() => setMobileMapOpen(false)}
+                googleMapsConfig={googleMapsConfig}
+                setGoogleMapsConfig={setGoogleMapsConfig}
+                resetMap={view === 'Game'}
+                gameData={gameData}
+              />
+            </div>
           )}
 
-          <button className="toggle-map-button" onClick={() => setMobileMapOpen(true)}>
+          <button
+            data-streetview-ui
+            className="toggle-map-button"
+            onClick={() => setMobileMapOpen(true)}
+          >
             <MapIcon />
           </button>
 
