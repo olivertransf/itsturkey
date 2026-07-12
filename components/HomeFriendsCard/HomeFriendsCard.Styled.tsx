@@ -2,32 +2,52 @@ import styled from 'styled-components'
 
 const StyledHomeFriendsCard = styled.div`
   width: 100%;
+  height: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 14px 16px;
-  border-radius: 14px;
-  border: 1px solid var(--border-subtle);
-  background: var(--bg-elevated);
+  padding: 14px 14px 12px;
+  border-radius: 12px;
+  border: var(--border-default);
+  background: var(--palette-surface);
+  box-shadow: var(--shadow-card);
 
   .friends-card-head {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
-    gap: 12px;
+    gap: 10px;
+  }
+
+  .friends-card-title-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .friends-card-title {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
   }
 
   .friends-card-summary {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--text-muted);
   }
 
   .friends-card-link,
   .friends-card-more {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--text-primary);
     text-decoration: none;
+    flex-shrink: 0;
 
     &:hover {
       text-decoration: underline;
@@ -60,7 +80,7 @@ const StyledHomeFriendsCard = styled.div`
   }
 
   .friends-skel {
-    height: 36px;
+    height: 44px;
     border-radius: 10px;
     background: linear-gradient(
       90deg,
@@ -94,8 +114,8 @@ const StyledHomeFriendsCard = styled.div`
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    min-height: 36px;
+    gap: 8px;
+    min-height: 44px;
     padding: 6px 8px;
     border-radius: 10px;
 
@@ -104,8 +124,16 @@ const StyledHomeFriendsCard = styled.div`
     }
   }
 
+  .friends-card-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+  }
+
   .friends-card-name {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--text-primary);
     text-decoration: none;
@@ -123,10 +151,21 @@ const StyledHomeFriendsCard = styled.div`
   .friends-card-status {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
+    gap: 6px;
     flex-shrink: 0;
-    font-size: 12px;
+    font-size: 11px;
     color: var(--text-muted);
+  }
+
+  .friends-invite-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    svg {
+      width: 13px;
+      height: 13px;
+    }
   }
 
   .status-text--active {
@@ -135,8 +174,8 @@ const StyledHomeFriendsCard = styled.div`
   }
 
   .status-dot {
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
     border-radius: 999px;
     flex-shrink: 0;
   }

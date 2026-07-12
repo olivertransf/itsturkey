@@ -13,9 +13,9 @@ const base = (overrides: Partial<FriendRow>): FriendRow => ({
 })
 
 describe('friendPresenceLabel', () => {
-  test('labels offline, online, and in-game states', () => {
-    expect(friendPresenceLabel(base({ online: false }))).toBe('Offline')
-    expect(friendPresenceLabel(base({ online: true }))).toBe('Online')
+  test('labels inactive, active, and in-game states', () => {
+    expect(friendPresenceLabel(base({ online: false }))).toBe('Inactive')
+    expect(friendPresenceLabel(base({ online: true }))).toBe('Active')
     expect(friendPresenceLabel(base({ online: true, presenceActivity: 'in_game' }))).toBe('In a game')
     expect(friendPresenceLabel(base({ online: true, presenceActivity: 'in_duel' }))).toBe('In a duel')
   })

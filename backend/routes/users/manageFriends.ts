@@ -53,12 +53,11 @@ export const listFriends = async (req: NextApiRequest, res: NextApiResponse) => 
     let presenceActivity =
       typeof u.presenceActivity === 'string' ? u.presenceActivity : undefined
 
-    // Online peers: prefer live sessions over stale heartbeat labels
-    if (online) {
-      const fromSession = activeSessions.get(id)
-      if (fromSession) {
-        presenceActivity = fromSession
-      }
+    // Heartbeat is source of truth for solo/multi. Only promote to in_duel from live rooms.
+    if (online && activeSessions.get(id) === 'in_duel') {
+      presenceActivity = 'in_duel'
+    } else if (!online) {
+      presenceActivity = undefined
     }
 
     return {

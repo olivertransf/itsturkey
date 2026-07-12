@@ -10,10 +10,10 @@ export type FriendRow = {
 }
 
 export function friendPresenceLabel(friend: Pick<FriendRow, 'online' | 'presenceActivity'>): string {
-  if (!friend.online) return 'Offline'
+  if (!friend.online) return 'Inactive'
   if (friend.presenceActivity === 'in_duel') return 'In a duel'
   if (friend.presenceActivity === 'in_game') return 'In a game'
-  return 'Online'
+  return 'Active'
 }
 
 export function friendIsInGame(friend: Pick<FriendRow, 'online' | 'presenceActivity'>): boolean {
@@ -23,7 +23,7 @@ export function friendIsInGame(friend: Pick<FriendRow, 'online' | 'presenceActiv
   )
 }
 
-/** In-game / duel first, then other online, then offline; name within each group. */
+/** In-game / duel first, then other active, then inactive; name within each group. */
 export function sortFriendsByPresence(friends: FriendRow[]): FriendRow[] {
   const rank = (f: FriendRow) => {
     if (f.online && f.presenceActivity === 'in_duel') return 0

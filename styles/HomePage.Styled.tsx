@@ -154,6 +154,26 @@ const StyledHomePage = styled.div`
       justify-items: stretch;
     }
 
+    .home-gamemodes-row {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .home-gamemodes-row--with-friends {
+      grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
+
+      @media (max-width: 900px) {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .home-gamemodes-row--with-friends > .card-grid {
+      grid-template-columns: 1fr;
+    }
+
     .home-geo-cta-row {
       width: 100%;
       display: flex;

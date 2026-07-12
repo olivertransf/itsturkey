@@ -1,45 +1,25 @@
 import { ObjectId } from 'mongodb'
 import { collections } from '@backend/utils'
 
-export type DerivedFriendActivity = 'in_game' | 'in_duel'
-
 /**
- * Authoritative session lookups for friends who are currently online.
- * Returns peer id hex → activity (duel beats solo/multi).
+ * Live duel membership for friend status.
+ * Solo/multi unfinished games are ignored — abandoned `started` games would
+ * falsely mark friends as in-game forever.
  */
 export async function resolveFriendsActiveSessions(
   peerIds: ObjectId[]
-): Promise<Map<string, DerivedFriendActivity>> {
-  const result = new Map<string, DerivedFriendActivity>()
+): Promise<Map<string, 'in_duel'>> {
+  const result = new Map<string, 'in_duel'>()
   if (!peerIds.length) return result
 
-  const [duels, games, multi] = await Promise.all([
-    collections.duelSessions
+  const duels =
+    (await collections.duelSessions
       ?.find({
         status: { $in: ['waiting', 'in_progress'] },
         $or: [{ 'host.userId': { $in: peerIds } }, { 'guest.userId': { $in: peerIds } }],
       })
       .project({ 'host.userId': 1, 'guest.userId': 1 })
-      .toArray() ?? [],
-    collections.games
-      ?.find({ userId: { $in: peerIds }, state: 'started' })
-      .project({ userId: 1 })
-      .toArray() ?? [],
-    collections.multiSessions
-      ?.find({ userId: { $in: peerIds }, state: 'started' })
-      .project({ userId: 1 })
-      .toArray() ?? [],
-  ])
-
-  for (const game of games) {
-    const id = game.userId instanceof ObjectId ? game.userId.toHexString() : null
-    if (id) result.set(id, 'in_game')
-  }
-
-  for (const session of multi) {
-    const id = session.userId instanceof ObjectId ? session.userId.toHexString() : null
-    if (id) result.set(id, 'in_game')
-  }
+      .toArray()) ?? []
 
   for (const duel of duels) {
     const hostId =

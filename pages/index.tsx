@@ -102,19 +102,15 @@ const Home: NextPage = () => {
 
           <section className="home-section">
             <h2 className="section-title">Gamemodes</h2>
-            <div className="card-grid">
-              <CountryStreakCard />
-              <MultiGuessrCard />
-              <DuelGuessrCard />
+            <div className={`home-gamemodes-row${session?.user?.id ? ' home-gamemodes-row--with-friends' : ''}`}>
+              <div className="card-grid">
+                <CountryStreakCard />
+                <MultiGuessrCard />
+                <DuelGuessrCard />
+              </div>
+              {session?.user?.id ? <HomeFriendsCard /> : null}
             </div>
           </section>
-
-          {session?.user?.id ? (
-            <section className="home-section">
-              <h2 className="section-title">Friends</h2>
-              <HomeFriendsCard />
-            </section>
-          ) : null}
 
           <section className="home-section">
             <h2 className="section-title">Maps</h2>
