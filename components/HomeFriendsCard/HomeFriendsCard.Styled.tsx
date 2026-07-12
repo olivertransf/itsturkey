@@ -3,12 +3,14 @@ import styled from 'styled-components'
 const StyledHomeFriendsCard = styled.div`
   width: 100%;
   min-width: 0;
-  max-height: inherit;
+  max-height: none;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 0;
   overflow: hidden;
+  flex: 0 1 auto;
+  min-height: 0;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background:
@@ -120,6 +122,7 @@ const StyledHomeFriendsCard = styled.div`
     display: flex;
     flex-direction: column;
     gap: 4px;
+    max-height: min(42vh, 420px);
     overflow-y: auto;
     overscroll-behavior: contain;
     scrollbar-width: thin;

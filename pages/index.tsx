@@ -5,6 +5,7 @@ import { CountryStreakCard } from '@components/CountryStreakCard'
 import HomeEquitableContinentGrid from '@components/HomeEquitableContinentGrid'
 import HomeEquitableCountryGrid from '@components/HomeEquitableCountryGrid'
 import { HomeFriendsCard } from '@components/HomeFriendsCard'
+import { HomeUserStats } from '@components/HomeUserStats'
 import { HomeWorldCard } from '@components/HomeWorldCard'
 import { Meta } from '@components/Meta'
 import { DuelGuessrCard } from '@components/DuelGuessrCard'
@@ -157,8 +158,9 @@ const Home: NextPage = () => {
             </div>
 
             {showFriendsRail ? (
-              <aside className="home-friends-rail" aria-label="Friends">
+              <aside className="home-friends-rail" aria-label="Friends and stats">
                 <HomeFriendsCard />
+                <HomeUserStats />
               </aside>
             ) : null}
           </div>

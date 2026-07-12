@@ -114,10 +114,17 @@ const StyledHomePage = styled.div`
     align-self: start;
     max-height: calc(100vh - 36px);
     display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
 
     @media (max-width: 960px) {
       position: static;
       max-height: none;
+      overflow: visible;
       order: -1;
     }
   }
