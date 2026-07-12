@@ -33,6 +33,7 @@ export const getGuessMapOptions = (gameSettings: Pick<GameSettingsType, 'canPan'
 
   return {
     ...GUESS_MAP_OPTIONS,
+    draggable: panEnabled,
     gestureHandling: panEnabled ? 'greedy' : 'none',
     scrollwheel: panEnabled,
     disableDoubleClickZoom: !panEnabled,
@@ -73,9 +74,11 @@ export const PREVIEW_MAP_OPTIONS = {
 }
 
 export const getStreetviewOptions = (gameData: Game) => {
+  const panEnabled = isPanZoomEnabled(gameData.gameSettings)
+
   return {
     addressControl: false, // hide address
-    panControl: true, // compass
+    panControl: panEnabled, // compass / look-around control
     panControlOptions: {
       position: google.maps.ControlPosition.LEFT_BOTTOM,
     }, // compass position
@@ -86,7 +89,7 @@ export const getStreetviewOptions = (gameData: Game) => {
     fullscreenControl: false, // hide default UI elements
     showRoadLabels: false, // hide road labels
     clickToGo: gameData.gameSettings.canMove, // move on click
-    scrollwheel: isPanZoomEnabled(gameData.gameSettings), // pan toggle controls scroll zoom
+    scrollwheel: panEnabled, // pan toggle controls look-around + zoom
     linksControl: gameData.gameSettings.canMove, // arrows to move
   }
 }

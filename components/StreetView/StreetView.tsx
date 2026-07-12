@@ -9,9 +9,13 @@ import { StreetViewControls } from '@components/StreetViewControls'
 import { MapIcon } from '@heroicons/react/outline'
 import { useAppSelector } from '@redux/hook'
 import { GameViewType, GoogleMapsConfigType, LocationType } from '@types'
-import { getStreetviewOptions } from '@utils/constants/googleMapOptions'
+import { getStreetviewOptions, isPanZoomEnabled } from '@utils/constants/googleMapOptions'
 import { KEY_CODES } from '@utils/constants/keyCodes'
 import { mailman, showToast } from '@utils/helpers'
+import {
+  attachStreetViewPanZoomLock,
+  type LockedStreetViewPose,
+} from '@utils/helpers/lockStreetViewPanZoom'
 import { StyledStreetView } from './'
 import { DailyQuotaModal } from '@components/modals/DailyQuotaModal'
 import { PlonkitGuideLauncher } from '@components/PlonkitCountryGuide'
@@ -107,8 +111,19 @@ const Streetview: FC<Props> = ({
   const serviceRef = useRef<google.maps.StreetViewService | null>(null)
   const panoramaRef = useRef<google.maps.StreetViewPanorama | null>(null)
   const panoContainerRef = useRef<HTMLDivElement | null>(null)
+  const lockedPoseRef = useRef<LockedStreetViewPose | null>(null)
+  const detachPanZoomLockRef = useRef<(() => void) | null>(null)
 
   const undoLocRef = useRef<LocationType[]>([])
+  const panZoomEnabled = isPanZoomEnabled(gameData.gameSettings)
+
+  const lockPoseTo = useCallback((heading: number, pitch: number, zoom: number) => {
+    if (!isPanZoomEnabled(gameData.gameSettings)) {
+      lockedPoseRef.current = { heading, pitch, zoom }
+      return
+    }
+    lockedPoseRef.current = null
+  }, [gameData.gameSettings])
 
   // Initializes Streetview & loads first pano
   useEffect(() => {
@@ -118,7 +133,12 @@ const Streetview: FC<Props> = ({
 
     const timeoutId = setTimeout(checkForQuotaExceeded, 300)
 
-    return () => clearTimeout(timeoutId)
+    return () => {
+      clearTimeout(timeoutId)
+      detachPanZoomLockRef.current?.()
+      detachPanZoomLockRef.current = null
+      lockedPoseRef.current = null
+    }
   }, [googleMapsConfig])
 
   useEffect(() => {
@@ -181,7 +201,18 @@ const Streetview: FC<Props> = ({
 
     const svPanorama = new google.maps.StreetViewPanorama(panoEl, getStreetviewOptions(gameData))
 
-    svPanorama.addListener("position_changed", trackLocations)
+    svPanorama.addListener('position_changed', trackLocations)
+
+    detachPanZoomLockRef.current?.()
+    detachPanZoomLockRef.current = null
+    lockedPoseRef.current = null
+
+    if (!isPanZoomEnabled(gameData.gameSettings)) {
+      detachPanZoomLockRef.current = attachStreetViewPanZoomLock(
+        svPanorama,
+        () => lockedPoseRef.current
+      )
+    }
 
     serviceRef.current = svService
     panoramaRef.current = svPanorama
@@ -230,13 +261,15 @@ const Streetview: FC<Props> = ({
           return
         }
 
+        const heading = loc.heading ?? 0
+        const pitch = loc.pitch ?? 0
+        const zoom = loc.zoom ?? 0
+
         svPanorama.setPano(data.location.pano)
-        svPanorama.setPov({
-          heading: loc.heading ?? 0,
-          pitch: loc.pitch ?? 0,
-        })
-        svPanorama.setZoom(loc.zoom ?? 0)
+        svPanorama.setPov({ heading, pitch })
+        svPanorama.setZoom(zoom)
         svPanorama.setVisible(true)
+        lockPoseTo(heading, pitch, zoom)
 
         undoLocRef.current = []
         triggerPanoramaResize(svPanorama)
@@ -306,8 +339,13 @@ const Streetview: FC<Props> = ({
   const handleBackToStart = () => {
     if (!panoramaRef.current) return
 
+    const heading = location.heading || 0
+    const pitch = location.pitch || 0
+    const zoom = panoramaRef.current.getZoom() ?? location.zoom ?? 0
+
     panoramaRef.current.setPosition(location)
-    panoramaRef.current.setPov({ heading: location.heading || 0, pitch: location.pitch || 0 })
+    panoramaRef.current.setPov({ heading, pitch })
+    lockPoseTo(heading, pitch, zoom)
   }
 
   const handleExitGame = async () => {
@@ -389,8 +427,8 @@ const Streetview: FC<Props> = ({
     }
   }, [currGuess, countryStreakGuess, view, enableGlobalShortcuts, duelGuessLocked])
 
-  const handleMovingArrowKeys = (e: KeyboardEvent) => {
-    const movingArrowKeys = [
+  const handleRestrictedViewKeys = (e: KeyboardEvent) => {
+    const movingKeys = [
       KEY_CODES.ARROW_DOWN,
       KEY_CODES.ARROW_DOWN_IE11,
       KEY_CODES.ARROW_UP,
@@ -398,21 +436,36 @@ const Streetview: FC<Props> = ({
       'w',
       's',
     ]
+    const panKeys = [
+      KEY_CODES.ARROW_LEFT,
+      KEY_CODES.ARROW_LEFT_IE11,
+      KEY_CODES.ARROW_RIGHT,
+      KEY_CODES.ARROW_RIGHT_IE11,
+      'a',
+      'd',
+    ]
+    const zoomKeys = ['+', '=', '-', '_']
 
-    if (!gameData.gameSettings.canMove && movingArrowKeys.includes(e.key)) {
+    if (!gameData.gameSettings.canMove && movingKeys.includes(e.key)) {
       e.stopPropagation()
+      e.preventDefault()
+    }
+
+    if (!panZoomEnabled && (panKeys.includes(e.key) || zoomKeys.includes(e.key))) {
+      e.stopPropagation()
+      e.preventDefault()
     }
   }
 
   useEffect(() => {
     if (view !== 'Game' || !enableGlobalShortcuts) return
 
-    document.addEventListener('keydown', handleMovingArrowKeys, { capture: true })
+    document.addEventListener('keydown', handleRestrictedViewKeys, { capture: true })
 
     return () => {
-      document.removeEventListener('keydown', handleMovingArrowKeys, { capture: true })
+      document.removeEventListener('keydown', handleRestrictedViewKeys, { capture: true })
     }
-  }, [view, enableGlobalShortcuts])
+  }, [view, enableGlobalShortcuts, panZoomEnabled, gameData.gameSettings.canMove])
 
   return (
     <>
