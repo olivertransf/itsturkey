@@ -12,10 +12,8 @@ import { GameViewType, GoogleMapsConfigType, LocationType } from '@types'
 import { getStreetviewOptions, isPanZoomEnabled } from '@utils/constants/googleMapOptions'
 import { KEY_CODES } from '@utils/constants/keyCodes'
 import { mailman, showToast } from '@utils/helpers'
-import {
-  attachStreetViewPanZoomLock,
-  type LockedStreetViewPose,
-} from '@utils/helpers/lockStreetViewPanZoom'
+import { attachStreetViewPanZoomLock } from '@utils/helpers/lockStreetViewPanZoom'
+import type { LockedStreetViewPose } from '@utils/helpers/lockStreetViewPanZoom'
 import { StyledStreetView } from './'
 import { DailyQuotaModal } from '@components/modals/DailyQuotaModal'
 import { PlonkitGuideLauncher } from '@components/PlonkitCountryGuide'
