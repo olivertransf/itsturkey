@@ -59,13 +59,14 @@ const getHomeMaps = (): Pick<MapType, '_id' | 'name' | 'description' | 'previewI
 const Home: NextPage = () => {
   const { data: session } = useSession()
   const homeMaps = getHomeMaps()
+  const showFriendsRail = Boolean(session?.user?.id)
 
   return (
     <StyledHomePage>
       <Meta title={SITE_NAME} />
 
       <div className="main-content">
-        <div className="home-stack">
+        <div className={`home-shell${showFriendsRail ? ' home-shell--with-friends' : ''}`}>
           <div className="home-auth-row">
             {session?.user?.id ? (
               <Link href={`/user/${session.user.id}`}>
@@ -100,60 +101,67 @@ const Home: NextPage = () => {
             <h1 className="site-title">{SITE_NAME}</h1>
           </header>
 
-          <section className="home-section">
-            <h2 className="section-title">Gamemodes</h2>
-            <div className={`home-gamemodes-row${session?.user?.id ? ' home-gamemodes-row--with-friends' : ''}`}>
-              <div className="card-grid">
-                <CountryStreakCard />
-                <MultiGuessrCard />
-                <DuelGuessrCard />
+          <div className="home-body">
+            <div className="home-main">
+              <section className="home-section">
+                <h2 className="section-title">Gamemodes</h2>
+                <div className="card-grid">
+                  <CountryStreakCard />
+                  <MultiGuessrCard />
+                  <DuelGuessrCard />
+                </div>
+              </section>
+
+              <section className="home-section">
+                <h2 className="section-title">Maps</h2>
+                <div className="card-grid">
+                  {homeMaps.map((map) => (
+                    <HomeWorldCard key={String(map._id)} mapId={String(map._id)} name={map.name} />
+                  ))}
+                </div>
+              </section>
+
+              <section className="home-section" id="equitable-by-country">
+                <h2 className="section-title">By country</h2>
+                <HomeEquitableCountryGrid variant="spotlight" />
+              </section>
+
+              <section className="home-section" id="equitable-by-continent">
+                <h2 className="section-title">By continent</h2>
+                <HomeEquitableContinentGrid />
+              </section>
+
+              <div className="home-geo-cta-row">
+                <Link href="/maps">
+                  <a className="home-geo-cta">Browse all maps</a>
+                </Link>
               </div>
-              {session?.user?.id ? <HomeFriendsCard /> : null}
+
+              {homeMaps.length === 0 && (
+                <div className="home-empty">
+                  No homepage maps configured. Set <code>NEXT_PUBLIC_HOME_MAP_CARDS</code> to a JSON array of maps (one
+                  entry per card). Example after{' '}
+                  <code>npm run maps:split-equitable</code>: paste the printed JSON into <code>.env</code>.
+                </div>
+              )}
+
+              <footer className="home-footer">
+                <p className="home-footer-note">
+                  Uses open-source code from{' '}
+                  <a href={GEOHUB_UPSTREAM_REPO_URL} target="_blank" rel="noreferrer">
+                    GeoHub
+                  </a>
+                  . APIs and hosting for this site are separate.
+                </p>
+              </footer>
             </div>
-          </section>
 
-          <section className="home-section">
-            <h2 className="section-title">Maps</h2>
-            <div className="card-grid">
-              {homeMaps.map((map) => (
-                <HomeWorldCard key={String(map._id)} mapId={String(map._id)} name={map.name} />
-              ))}
-            </div>
-          </section>
-
-          <section className="home-section" id="equitable-by-country">
-            <h2 className="section-title">By country</h2>
-            <HomeEquitableCountryGrid variant="spotlight" />
-          </section>
-
-          <section className="home-section" id="equitable-by-continent">
-            <h2 className="section-title">By continent</h2>
-            <HomeEquitableContinentGrid />
-          </section>
-
-          <div className="home-geo-cta-row">
-            <Link href="/maps">
-              <a className="home-geo-cta">Browse all maps</a>
-            </Link>
+            {showFriendsRail ? (
+              <aside className="home-friends-rail" aria-label="Friends">
+                <HomeFriendsCard />
+              </aside>
+            ) : null}
           </div>
-
-          {homeMaps.length === 0 && (
-            <div className="home-empty">
-              No homepage maps configured. Set <code>NEXT_PUBLIC_HOME_MAP_CARDS</code> to a JSON array of maps (one
-              entry per card). Example after{' '}
-              <code>npm run maps:split-equitable</code>: paste the printed JSON into <code>.env</code>.
-            </div>
-          )}
-
-          <footer className="home-footer">
-            <p className="home-footer-note">
-              Uses open-source code from{' '}
-              <a href={GEOHUB_UPSTREAM_REPO_URL} target="_blank" rel="noreferrer">
-                GeoHub
-              </a>
-              . APIs and hosting for this site are separate.
-            </p>
-          </footer>
         </div>
       </div>
     </StyledHomePage>

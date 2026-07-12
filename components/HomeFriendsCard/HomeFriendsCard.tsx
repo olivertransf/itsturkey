@@ -83,7 +83,7 @@ const HomeFriendsCard: FC = () => {
 
   if (!isAuthed) return null
 
-  const preview = friends?.slice(0, 8) ?? null
+  const preview = friends?.slice(0, 12) ?? null
   const activeCount = friends?.filter((f) => f.online).length ?? 0
   const inGameCount = friends?.filter((f) => friendIsInGame(f)).length ?? 0
 
@@ -115,14 +115,15 @@ const HomeFriendsCard: FC = () => {
           <div className="friends-skel" />
           <div className="friends-skel" />
           <div className="friends-skel" />
+          <div className="friends-skel" />
         </div>
       ) : friends.length === 0 ? (
         <p className="friends-card-empty">
           Add players from{' '}
           <Link href="/friends">
             <a>Friends</a>
-          </Link>
-          .
+          </Link>{' '}
+          to see who is active and invite them to a duel.
         </p>
       ) : (
         <ul className="friends-card-list">
@@ -169,9 +170,9 @@ const HomeFriendsCard: FC = () => {
         </ul>
       )}
 
-      {friends && friends.length > 8 ? (
+      {friends && friends.length > 12 ? (
         <Link href="/friends">
-          <a className="friends-card-more">View all {friends.length}</a>
+          <a className="friends-card-more">View all {friends.length} friends</a>
         </Link>
       ) : null}
     </StyledHomeFriendsCard>
