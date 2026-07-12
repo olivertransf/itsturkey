@@ -28,20 +28,21 @@ const postDuelGuess = async (req: NextApiRequest, res: NextApiResponse) => {
     return throwError(res, 404, 'Duel not found')
   }
 
+  const roundsBeforeAdvance = duel.completedRounds
   const { duel: step0, mutated: z0 } = await advanceDuelState(duel)
   duel = step0
   if (z0) {
     await collections.duelSessions?.replaceOne({ _id: duel._id }, duel)
-  }
-
-  if (duel.status !== 'in_progress') {
-    const mapDetails = await getMapFromGame({ mapId: duel.mapId } as unknown as Game)
-    const role = duelParticipantRole(duel, userId, anonymousId)
-    await replyWithDuelPayload(res, duel, role, mapDetails)
-    return
+    void notifyDuelUpdated(duelId, 'guess')
   }
 
   const role = duelParticipantRole(duel, userId, anonymousId)
+
+  if (duel.status !== 'in_progress' || duel.completedRounds !== roundsBeforeAdvance) {
+    const mapDetails = await getMapFromGame({ mapId: duel.mapId } as unknown as Game)
+    await replyWithDuelPayload(res, duel, role, mapDetails)
+    return
+  }
 
   if (!role) {
     return throwError(res, 401, 'You are not part of this duel')
@@ -58,7 +59,15 @@ const postDuelGuess = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   if (duel.roundDeadlineAt && now.getTime() > new Date(duel.roundDeadlineAt).getTime()) {
-    return throwError(res, 400, 'Time is up for this guess')
+    const { duel: timedOut, mutated: tMut } = await advanceDuelState(duel)
+    duel = timedOut
+    if (tMut) {
+      await collections.duelSessions?.replaceOne({ _id: duel._id }, duel)
+      void notifyDuelUpdated(duelId, 'guess')
+    }
+    const mapDetails = await getMapFromGame({ mapId: duel.mapId } as unknown as Game)
+    await replyWithDuelPayload(res, duel, role, mapDetails)
+    return
   }
 
   const locked = { lat, lng, lockedAt: now }

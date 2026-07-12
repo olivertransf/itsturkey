@@ -13,7 +13,7 @@ export function friendPresenceLabel(friend: Pick<FriendRow, 'online' | 'presence
   if (!friend.online) return 'Inactive'
   if (friend.presenceActivity === 'in_duel') return 'In a duel'
   if (friend.presenceActivity === 'in_game') return 'In a game'
-  return 'Active'
+  return 'Online'
 }
 
 export function friendIsInGame(friend: Pick<FriendRow, 'online' | 'presenceActivity'>): boolean {

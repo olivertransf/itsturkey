@@ -6,6 +6,7 @@ import { collections, getExistingAnonymousGameId, getUserId, throwError } from '
 import getMapFromGame from '@backend/queries/getMapFromGame'
 import { resolveDuelViewerRole } from '@backend/utils/duelParticipant'
 import { findDuelSessionByInvite } from '@backend/utils/resolveDuelInvite'
+import { notifyDuelUpdated } from '@backend/utils/pusherNotify'
 import { replyWithDuelPayload } from './buildDuelPayload'
 
 const getDuel = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -32,6 +33,7 @@ const getDuel = async (req: NextApiRequest, res: NextApiResponse) => {
 
   if (mutated) {
     await collections.duelSessions?.replaceOne({ _id: duel._id }, duel)
+    void notifyDuelUpdated(duelId, 'guess')
   }
 
   const fakeGame = { mapId: duel.mapId } as unknown as Game

@@ -1,7 +1,6 @@
 import { ObjectId } from 'mongodb'
 import { NextApiRequest, NextApiResponse } from 'next'
 import type FriendshipEdge from '@backend/models/friendship'
-import { resolveFriendsActiveSessions } from '@backend/utils/resolveFriendsActiveSessions'
 import { collections, getUserId, throwError } from '@backend/utils'
 
 function sortedPair(a: ObjectId, b: ObjectId): { low: ObjectId; high: ObjectId } {
@@ -37,7 +36,6 @@ export const listFriends = async (req: NextApiRequest, res: NextApiResponse) => 
 
   const now = Date.now()
   const onlineWindowMs = 2 * 60 * 1000
-  const activeSessions = await resolveFriendsActiveSessions(peerIds)
 
   const rows = users.map((u) => {
     const id = u._id.toHexString()
@@ -53,11 +51,13 @@ export const listFriends = async (req: NextApiRequest, res: NextApiResponse) => 
     let presenceActivity =
       typeof u.presenceActivity === 'string' ? u.presenceActivity : undefined
 
-    // Heartbeat is source of truth for solo/multi. Only promote to in_duel from live rooms.
-    if (online && activeSessions.get(id) === 'in_duel') {
-      presenceActivity = 'in_duel'
-    } else if (!online) {
+    // Heartbeat only — abandoned waiting/in_progress duel rows must not stick "In a duel".
+    if (!online) {
       presenceActivity = undefined
+    } else if (presenceActivity === 'in_game' || presenceActivity === 'in_duel') {
+      // keep live heartbeat activity
+    } else {
+      presenceActivity = 'browsing'
     }
 
     return {

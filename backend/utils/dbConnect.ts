@@ -27,45 +27,73 @@ export const collections: {
 
 const MONGO_URI = process.env.MONGO_URI as string
 
-let cachedDb: Db | null = null
+type MongoGlobal = {
+  client?: MongoClient
+  db?: Db
+  connectPromise?: Promise<Db>
+}
 
-const client = new MongoClient(MONGO_URI)
+const globalForMongo = globalThis as typeof globalThis & { __geohubMongo?: MongoGlobal }
+
+if (!globalForMongo.__geohubMongo) {
+  globalForMongo.__geohubMongo = {}
+}
+
+const mongoGlobal = globalForMongo.__geohubMongo
+
+/** Keep pools tiny — Atlas M0 caps ~500 connections; each serverless/HMR client multiplies. */
+const CLIENT_OPTIONS = {
+  maxPoolSize: 5,
+  minPoolSize: 0,
+  maxIdleTimeMS: 30_000,
+  serverSelectionTimeoutMS: 5_000,
+  connectTimeoutMS: 10_000,
+}
+
+function assignCollections(db: Db) {
+  collections.users = db.collection('users')
+  collections.games = db.collection('games')
+  collections.challenges = db.collection('challenges')
+  collections.maps = db.collection('maps')
+  collections.mapLikes = db.collection('mapLikes')
+  collections.locations = db.collection('locations')
+  collections.userLocations = db.collection('userLocations')
+  collections.recentSearches = db.collection('recentSearches')
+  collections.passwordResets = db.collection('passwordResets')
+  collections.featureFlags = db.collection('featureFlags')
+  collections.mapLeaderboard = db.collection('mapLeaderboard')
+  collections.multiSessions = db.collection('multiSessions')
+  collections.duelSessions = db.collection('duelSessions')
+  collections.duelFriendInvites = db.collection('duelFriendInvites')
+  collections.friendships = db.collection('friendships')
+  collections.userBans = db.collection('userBans')
+  collections.analytics = db.collection('analytics')
+}
 
 export const dbConnect = async () => {
-  if (cachedDb) {
-    console.log('Using existing DB connection')
-    return cachedDb
+  if (mongoGlobal.db) {
+    assignCollections(mongoGlobal.db)
+    return mongoGlobal.db
   }
 
-  try {
-    const dbConnection = await client.connect()
-    const db = dbConnection.db(process.env.DB_NAME)
+  if (!mongoGlobal.connectPromise) {
+    if (!mongoGlobal.client) {
+      mongoGlobal.client = new MongoClient(MONGO_URI, CLIENT_OPTIONS)
+    }
 
-    console.log('Using new DB connection')
-
-    cachedDb = db
-
-    collections.users = db.collection('users')
-    collections.games = db.collection('games')
-    collections.challenges = db.collection('challenges')
-    collections.maps = db.collection('maps')
-    collections.mapLikes = db.collection('mapLikes')
-    collections.locations = db.collection('locations')
-    collections.userLocations = db.collection('userLocations')
-    collections.recentSearches = db.collection('recentSearches')
-    collections.passwordResets = db.collection('passwordResets')
-    collections.featureFlags = db.collection('featureFlags')
-    collections.mapLeaderboard = db.collection('mapLeaderboard')
-    collections.multiSessions = db.collection('multiSessions')
-    collections.duelSessions = db.collection('duelSessions')
-    collections.duelFriendInvites = db.collection('duelFriendInvites')
-    collections.friendships = db.collection('friendships')
-    collections.userBans = db.collection('userBans')
-    collections.analytics = db.collection('analytics')
-
-    return cachedDb
-  } catch (err) {
-    console.log(err)
-    throw err
+    mongoGlobal.connectPromise = mongoGlobal.client
+      .connect()
+      .then((connected) => {
+        const db = connected.db(process.env.DB_NAME)
+        mongoGlobal.db = db
+        assignCollections(db)
+        return db
+      })
+      .catch((err) => {
+        mongoGlobal.connectPromise = undefined
+        throw err
+      })
   }
+
+  return mongoGlobal.connectPromise
 }

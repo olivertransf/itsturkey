@@ -5,6 +5,7 @@ import DuelPlaySurface from '@components/duel/DuelPlaySurface'
 import DuelSpectateSurface from '@components/duel/DuelSpectateSurface'
 import DuelRoundOverview from '@components/duel/DuelRoundOverview'
 import DuelMatchRecap from '@components/duel/DuelMatchRecap'
+import type { DuelMatchRecapView } from '@components/duel/DuelMatchRecap'
 import {
   DuelFinishBanner,
   DuelLobbyGuestJoinPanel,
@@ -54,7 +55,8 @@ const DuelRoomPage: PageType = () => {
   const [friends, setFriends] = useState<FriendRow[]>([])
   const [invitingFriendId, setInvitingFriendId] = useState<string | null>(null)
   const [rematchNudgeDismissed, setRematchNudgeDismissed] = useState(false)
-  const [recapRoundIdx, setRecapRoundIdx] = useState(0)
+  const [recapView, setRecapView] = useState<DuelMatchRecapView>('all')
+  const [endPhase, setEndPhase] = useState<'final_damage' | 'summary'>('final_damage')
 
   const isAuthenticated = status === 'authenticated'
   const loginHref =
@@ -120,12 +122,21 @@ const DuelRoomPage: PageType = () => {
 
   useEffect(() => {
     if (!isAuthenticated) return
-    void mailman('users/presence', 'POST', JSON.stringify({ activity: 'in_duel' }))
+    const inLiveDuel =
+      payload != null &&
+      (payload.status === 'waiting' || payload.status === 'in_progress') &&
+      (payload.viewerRole === 'host' || payload.viewerRole === 'guest')
+
+    const activity = inLiveDuel ? 'in_duel' : 'browsing'
+    void mailman('users/presence', 'POST', JSON.stringify({ activity }))
     const id = window.setInterval(() => {
-      void mailman('users/presence', 'POST', JSON.stringify({ activity: 'in_duel' }))
+      void mailman('users/presence', 'POST', JSON.stringify({ activity }))
     }, 45000)
-    return () => window.clearInterval(id)
-  }, [isAuthenticated])
+    return () => {
+      window.clearInterval(id)
+      void mailman('users/presence', 'POST', JSON.stringify({ activity: 'browsing' }))
+    }
+  }, [isAuthenticated, payload])
 
   useEffect(() => {
     if (!isAuthenticated || !payload) return
@@ -144,8 +155,31 @@ const DuelRoomPage: PageType = () => {
   }, [payload?.status])
 
   useEffect(() => {
-    const n = payload?.roundResults.length ?? 0
-    if (n > 0) setRecapRoundIdx(n - 1)
+    if (payload?.id) setRecapView('all')
+  }, [payload?.id])
+
+  useEffect(() => {
+    if (!payload?.id || payload.status !== 'finished') {
+      setEndPhase('final_damage')
+      return
+    }
+    try {
+      const stored = sessionStorage.getItem(`duel-end-phase-${payload.id}`)
+      setEndPhase(stored === 'summary' ? 'summary' : 'final_damage')
+    } catch {
+      setEndPhase('final_damage')
+    }
+  }, [payload?.id, payload?.status])
+
+  const advanceToMatchSummary = useCallback(() => {
+    if (payload?.id) {
+      try {
+        sessionStorage.setItem(`duel-end-phase-${payload.id}`, 'summary')
+      } catch {
+        /* ignore */
+      }
+    }
+    setEndPhase('summary')
   }, [payload?.id])
 
   const handleJoin = useCallback(
@@ -340,9 +374,15 @@ const DuelRoomPage: PageType = () => {
       : ('loss' as const)
 
   const lobbyOrFinish =
-    payload.status === 'finished' ||
+    (payload.status === 'finished' && endPhase === 'summary') ||
     waitingLobby ||
     lobbyGuestReady
+
+  const showFinalDamage =
+    payload.status === 'finished' &&
+    endPhase === 'final_damage' &&
+    payload.lastRoundResult != null &&
+    payload.lastRoundActualLocation != null
 
   const opponentRematchLabel =
     you === 'host' ? payload.playerNames.guest : you === 'guest' ? payload.playerNames.host : 'Opponent'
@@ -365,9 +405,31 @@ const DuelRoomPage: PageType = () => {
     <StyledMultiGamePage>
       <Meta title="Duel" />
 
+      {showFinalDamage && payload.lastRoundResult && payload.lastRoundActualLocation ? (
+        <DuelRoundOverview
+          variant="fullscreen"
+          roundOneBased={payload.lastRoundResult.roundIndex + 1}
+          totalRounds={payload.totalRounds}
+          multiplierMode={payload.multiplierMode}
+          mode={payload.mode}
+          actual={payload.lastRoundActualLocation}
+          result={payload.lastRoundResult}
+          hostMaxHp={payload.startingHpHost}
+          guestMaxHp={payload.startingHpGuest}
+          viewerRole={you === 'spectator' ? null : you}
+          sessionMapId={payload.mapId}
+          plonkMapLabel={payload.mapDetails?.name}
+          hostPlayerName={payload.playerNames.host}
+          guestPlayerName={payload.playerNames.guest}
+          playerAvatars={payload.playerAvatars}
+          continueLabel="See match summary"
+          onContinue={advanceToMatchSummary}
+        />
+      ) : null}
+
       {lobbyOrFinish && (
         <GamifiedCenterStage>
-          <div style={{ width: '100%', maxWidth: 'min(960px, 100%)', marginBottom: 14 }}>
+          <div style={{ width: '100%', maxWidth: 'min(1100px, 100%)', marginBottom: 14 }}>
             <PageBackLink href="/" label="Back to home" compact />
           </div>
 
@@ -384,43 +446,48 @@ const DuelRoomPage: PageType = () => {
             />
           )}
 
-          {payload.status === 'finished' && (
-            <DuelFinishBanner
-              headline={headline}
-              tone={finishTone}
-              payload={payload}
-              recapRoundIdx={recapRoundIdx}
-              onHome={() => router.push('/')}
-              onPlayAgain={isPlayer ? () => void handleRematchReady() : undefined}
-              playAgainLoading={rematchLoading}
-            >
-              {payload.roundResults.length > 0 ? (
-                <DuelMatchRecap
-                  payload={payload}
-                  viewerRole={you}
-                  selectedIdx={recapRoundIdx}
-                  onSelectRound={setRecapRoundIdx}
-                />
-              ) : payload.lastRoundResult && payload.lastRoundActualLocation ? (
-                <DuelRoundOverview
-                  variant="compact"
-                  roundOneBased={payload.lastRoundResult.roundIndex + 1}
-                  mode={payload.mode}
-                  actual={payload.lastRoundActualLocation}
-                  result={payload.lastRoundResult}
-                  hostMaxHp={payload.startingHpHost}
-                  guestMaxHp={payload.startingHpGuest}
-                  viewerRole={you}
-                  sessionMapId={payload.mapId}
-                  plonkMapLabel={payload.mapDetails?.name}
-                  hostPlayerName={payload.playerNames.host}
-                  guestPlayerName={payload.playerNames.guest}
-                  playerAvatars={payload.playerAvatars}
-                  omitScoreRow
-                />
-              ) : null}
-            </DuelFinishBanner>
-          )}
+          {payload.status === 'finished' &&
+            (payload.roundResults.length > 0 ? (
+              <DuelMatchRecap
+                payload={payload}
+                viewerRole={you}
+                selectedView={recapView}
+                onSelectView={setRecapView}
+                headline={headline}
+                tone={finishTone}
+                onHome={() => router.push('/')}
+                onPlayAgain={isPlayer ? () => void handleRematchReady() : undefined}
+                playAgainLoading={rematchLoading}
+              />
+            ) : (
+              <DuelFinishBanner
+                headline={headline}
+                tone={finishTone}
+                payload={payload}
+                onHome={() => router.push('/')}
+                onPlayAgain={isPlayer ? () => void handleRematchReady() : undefined}
+                playAgainLoading={rematchLoading}
+              >
+                {payload.lastRoundResult && payload.lastRoundActualLocation ? (
+                  <DuelRoundOverview
+                    variant="compact"
+                    roundOneBased={payload.lastRoundResult.roundIndex + 1}
+                    mode={payload.mode}
+                    actual={payload.lastRoundActualLocation}
+                    result={payload.lastRoundResult}
+                    hostMaxHp={payload.startingHpHost}
+                    guestMaxHp={payload.startingHpGuest}
+                    viewerRole={you}
+                    sessionMapId={payload.mapId}
+                    plonkMapLabel={payload.mapDetails?.name}
+                    hostPlayerName={payload.playerNames.host}
+                    guestPlayerName={payload.playerNames.guest}
+                    playerAvatars={payload.playerAvatars}
+                    omitScoreRow
+                  />
+                ) : null}
+              </DuelFinishBanner>
+            ))}
 
           {spectateMode && (waitingLobby || lobbyGuestReady) && (
             <p style={{ color: '#e4e4e7', textAlign: 'center', maxWidth: 420, lineHeight: 1.5 }}>

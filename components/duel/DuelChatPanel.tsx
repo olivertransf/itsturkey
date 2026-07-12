@@ -18,11 +18,12 @@ const Root = styled.div<{ $embedded?: boolean; $sidebar?: boolean; $popover?: bo
     $popover ? '1px solid rgba(255, 255, 255, 0.1)' : 'var(--border-default)'};
   overflow: hidden;
   box-sizing: border-box;
-  display: ${({ $sidebar, $popover }) => ($sidebar || $popover ? 'flex' : 'block')};
-  flex-direction: ${({ $sidebar, $popover }) => ($sidebar || $popover ? 'column' : 'initial')};
+  display: flex;
+  flex-direction: column;
   min-height: ${({ $sidebar, $popover }) =>
     $popover ? '0' : $sidebar ? 'min(480px, 58vh)' : 'auto'};
   height: ${({ $sidebar, $popover }) => ($sidebar || $popover ? '100%' : 'auto')};
+  flex: ${({ $sidebar }) => ($sidebar ? '1 1 auto' : '0 1 auto')};
   box-shadow: ${({ $popover }) => ($popover ? '0 16px 40px rgba(0, 0, 0, 0.5)' : 'none')};
   backdrop-filter: ${({ $popover }) => ($popover ? 'blur(14px) saturate(140%)' : 'none')};
 `
@@ -118,11 +119,14 @@ const Body = styled.div<{ $sidebar?: boolean; $popover?: boolean }>`
 const MessageList = styled.div<{ $popover?: boolean }>`
   flex: 1 1 auto;
   overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: ${({ $popover }) => ($popover ? '14px 12px' : '10px 12px')};
   display: flex;
   flex-direction: column;
   gap: ${({ $popover }) => ($popover ? '12px' : '8px')};
-  min-height: ${({ $popover }) => ($popover ? '0' : '72px')};
+  min-height: ${({ $popover }) => ($popover ? '0' : '96px')};
 `
 
 const EmptyHint = styled.p`
@@ -187,9 +191,9 @@ const Composer = styled.form<{ $popover?: boolean }>`
 
 const ComposerInput = styled.textarea`
   flex: 1;
-  min-height: 36px;
-  max-height: 88px;
-  resize: none;
+  min-height: 40px;
+  max-height: 120px;
+  resize: vertical;
   padding: 8px 10px;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -395,9 +399,15 @@ const DuelChatPanel: FC<Props> = ({
               <ComposerInput
                 value={draft}
                 onChange={(e) => setDraft(e.target.value.slice(0, MAX_DUEL_CHAT_TEXT))}
-                placeholder="Message…"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    void handleSubmit(e as unknown as React.FormEvent)
+                  }
+                }}
+                placeholder="Message… (Enter to send)"
                 maxLength={MAX_DUEL_CHAT_TEXT}
-                rows={popover ? 2 : 1}
+                rows={popover ? 2 : 2}
                 aria-label="Duel chat message"
               />
               {!popover ? (

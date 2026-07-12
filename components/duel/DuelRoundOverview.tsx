@@ -1,5 +1,5 @@
 import GoogleMapReact from 'google-map-react'
-import { FC, useEffect, useRef, useState } from 'react'
+import { FC, ReactNode, useEffect, useRef, useState } from 'react'
 import { HeartIcon } from '@heroicons/react/outline'
 import { Marker } from '@components/Marker'
 import { Avatar, Button } from '@components/system'
@@ -12,11 +12,8 @@ import type { GuessType, LocationType } from '@types'
 import { DUEL_DEFAULT_HP } from '@backend/utils/duelConstants'
 import { duelRoundDamageMultiplier } from '@backend/utils/duelConstants'
 import { RESULT_MAP_OPTIONS } from '@utils/constants/googleMapOptions'
-import { EQUITABLE_COUNTRY_STREAK_ID } from '@utils/constants/random'
 import createMapPolyline from '@utils/helpers/createMapPolyline'
 import { formatDistance } from '@utils/helpers'
-import { PlonkitGuideLauncher } from '@components/PlonkitCountryGuide'
-import { resolvePlonkitGuideCountryIso } from '@utils/helpers/resolvePlonkitGuideCountryIso'
 import { getMapsKey, googleMapLoaderAsync } from '@utils/helpers'
 import styled, { css, keyframes } from 'styled-components'
 import StyledResultMap from '@components/ResultMap/ResultMap.Styled'
@@ -98,14 +95,49 @@ const RoundTag = styled.div`
   }
 `
 
-const WinnerBanner = styled.div<{ $tier: 'host' | 'guest' | 'tie' }>`
+const RoundHeader = styled.div<{ $compact?: boolean; $inline?: boolean }>`
+  display: flex;
+  flex-direction: ${({ $inline }) => ($inline ? 'row' : 'column')};
+  flex-wrap: ${({ $inline }) => ($inline ? 'wrap' : 'nowrap')};
+  justify-content: center;
+  align-items: center;
+  gap: ${({ $inline }) => ($inline ? '8px 14px' : '10px')};
+  text-align: center;
+  margin-top: ${({ $compact }) => ($compact ? '0' : '86px')};
+  margin-bottom: ${({ $compact, $inline }) => ($compact ? ($inline ? '4px' : '6px') : '10px')};
+  padding: 0 10px;
+  font-size: ${({ $compact }) => ($compact ? '11px' : '12px')};
+  font-weight: 800;
+  letter-spacing: ${({ $compact }) => ($compact ? '0.06em' : '0.08em')};
+  text-transform: uppercase;
+  color: rgba(240, 244, 255, 0.92);
+  line-height: 1.35;
+  word-break: break-word;
+  hyphens: auto;
+
+  @media (max-width: 760px) {
+    margin-top: ${({ $compact }) => ($compact ? '0' : '52px')};
+    font-size: ${({ $compact }) => ($compact ? '10px' : '10px')};
+    letter-spacing: 0.06em;
+  }
+
+  @media (max-width: 480px) {
+    margin-top: ${({ $compact }) => ($compact ? '0' : '36px')};
+    font-size: ${({ $compact }) => ($compact ? '9px' : '9px')};
+    padding: 0 6px;
+    flex-direction: column;
+    gap: 8px;
+  }
+`
+
+const WinnerBanner = styled.div<{ $tier: 'host' | 'guest' | 'tie'; $compact?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 12px 16px;
-  border-radius: 14px;
-  font-size: 15px;
+  padding: ${({ $compact }) => ($compact ? '7px 12px' : '12px 16px')};
+  border-radius: ${({ $compact }) => ($compact ? '999px' : '14px')};
+  font-size: ${({ $compact }) => ($compact ? '12px' : '15px')};
   font-weight: 800;
   letter-spacing: 0.03em;
   border: 1px solid
@@ -131,36 +163,6 @@ const WinnerBanner = styled.div<{ $tier: 'host' | 'guest' | 'tie' }>`
   }
 `
 
-const RoundHeader = styled.div<{ $compact?: boolean }>`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  margin-top: ${({ $compact }) => ($compact ? '0' : '86px')};
-  margin-bottom: ${({ $compact }) => ($compact ? '6px' : '10px')};
-  padding: 0 10px;
-  font-size: ${({ $compact }) => ($compact ? '11px' : '12px')};
-  font-weight: 800;
-  letter-spacing: ${({ $compact }) => ($compact ? '0.06em' : '0.08em')};
-  text-transform: uppercase;
-  color: rgba(240, 244, 255, 0.92);
-  line-height: 1.35;
-  word-break: break-word;
-  hyphens: auto;
-
-  @media (max-width: 760px) {
-    margin-top: ${({ $compact }) => ($compact ? '0' : '52px')};
-    font-size: ${({ $compact }) => ($compact ? '10px' : '10px')};
-    letter-spacing: 0.06em;
-  }
-
-  @media (max-width: 480px) {
-    margin-top: ${({ $compact }) => ($compact ? '0' : '36px')};
-    font-size: ${({ $compact }) => ($compact ? '9px' : '9px')};
-    padding: 0 6px;
-  }
-`
-
 const BattleRow = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -172,88 +174,102 @@ const BattleRow = styled.div`
 `
 
 const FinishRecapFoot = styled.div`
-  margin-top: 12px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 `
 
-const FinishRecapGrid = styled.div`
+const FinishRecapTable = styled.div`
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  grid-template-rows: auto auto;
-  gap: 8px 14px;
-  align-items: center;
+  grid-template-columns: minmax(88px, 0.9fr) minmax(0, 1.1fr) minmax(0, 1.1fr);
+  gap: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.02);
 `
 
-const FinishRecapCol = styled.div<{ $align: 'left' | 'right' }>`
+const FinishRecapCell = styled.div<{
+  $role?: 'label' | 'value' | 'head'
+  $align?: 'left' | 'center' | 'right'
+  $accent?: string
+  $muted?: boolean
+  $damage?: boolean
+}>`
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-  align-items: ${({ $align }) => ($align === 'left' ? 'flex-start' : 'flex-end')};
-  text-align: ${({ $align }) => $align};
-`
-
-const FinishRecapDist = styled.div<{ $accent: string; $align: 'left' | 'right' }>`
-  font-size: 15px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  color: #f4f4f5;
-  line-height: 1.2;
-
-  ${({ $align, $accent }) =>
-    $align === 'left'
-      ? css`
-          padding-left: 10px;
-          border-left: 3px solid ${$accent};
-        `
-      : css`
-          padding-right: 10px;
-          border-right: 3px solid ${$accent};
-        `}
-`
-
-const FinishRecapPts = styled.div`
-  font-size: 12px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: rgba(228, 228, 231, 0.72);
-  line-height: 1.2;
-`
-
-const FinishRecapMid = styled.div<{ $row: 1 | 2 }>`
-  grid-row: ${({ $row }) => $row};
-  grid-column: 2;
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
-  min-width: 56px;
-  text-align: center;
-`
-
-const FinishRecapMidMeta = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
+  justify-content: ${({ $align }) =>
+    $align === 'left' ? 'flex-start' : $align === 'right' ? 'flex-end' : 'center'};
+  gap: 8px;
+  min-height: ${({ $role }) => ($role === 'head' ? '44px' : '40px')};
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  box-sizing: border-box;
   font-variant-numeric: tabular-nums;
+  line-height: 1.25;
 
-  .mult {
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.55);
+  &:nth-child(3n) {
+    border-right: none;
   }
 
-  .damage {
+  &:nth-last-child(-n + 3) {
+    border-bottom: none;
+  }
+
+  ${({ $role }) =>
+    $role === 'label'
+      ? `
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: rgba(0, 0, 0, 0.18);
+  `
+      : $role === 'head'
+      ? `
     font-size: 13px;
     font-weight: 800;
-    color: #fca5a5;
-    letter-spacing: -0.01em;
-  }
+    color: #f4f4f5;
+    background: rgba(0, 0, 0, 0.22);
+  `
+      : `
+    font-size: 15px;
+    font-weight: 800;
+    color: #f8fafc;
+  `}
+
+  ${({ $accent, $role }) =>
+    $accent && $role === 'head'
+      ? `
+    box-shadow: inset 0 -2px 0 ${$accent};
+  `
+      : ''}
+
+  ${({ $muted }) => ($muted ? `color: rgba(228, 228, 231, 0.55); font-weight: 700;` : '')}
+  ${({ $damage }) => ($damage ? `color: #f87171;` : '')}
+`
+
+const FinishRecapNote = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+`
+
+const FinishRecapChip = styled.span<{ $tone?: 'neutral' | 'damage' }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 12px;
+  font-weight: 700;
+  color: ${({ $tone }) => ($tone === 'damage' ? '#fca5a5' : '#e4e4e7')};
 `
 
 const FinishRecapHeaderStack = styled.div`
@@ -261,18 +277,36 @@ const FinishRecapHeaderStack = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
   text-align: center;
   padding: 0 4px;
 `
 
-const FinishRecapMeta = styled.div`
-  font-size: 10px;
+const FinishRecapTitle = styled.div`
+  font-size: 18px;
   font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(228, 228, 231, 0.72);
-  line-height: 1.45;
+  letter-spacing: 0.02em;
+  color: #f8fafc;
+  line-height: 1.2;
+`
+
+const FinishRecapMetaRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+`
+
+const FinishRecapMetaChip = styled.span`
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(228, 228, 231, 0.82);
 `
 
 const FinishRecapWinner = styled.div<{ $tier: 'host' | 'guest' | 'tie' }>`
@@ -339,28 +373,6 @@ const NextRoundButton = styled(Button)`
   @media (max-width: 480px) {
     min-width: 0 !important;
     width: 100%;
-  }
-`
-
-/** Fullscreen inter-round overlay: country tips control sits in the viewport top-right. */
-const FullscreenPlonkTips = styled.div`
-  position: absolute;
-  right: 18px;
-  top: calc(12px + env(safe-area-inset-top, 0px));
-  bottom: auto;
-  z-index: 2;
-  max-width: min(200px, calc(100vw - 24px));
-
-  @media (max-width: 760px) {
-    right: 10px;
-    top: calc(10px + env(safe-area-inset-top, 0px));
-    max-width: min(180px, calc(100vw - 20px));
-  }
-
-  @media (max-width: 480px) {
-    right: 8px;
-    top: calc(8px + env(safe-area-inset-top, 0px));
-    max-width: calc(100vw - 16px);
   }
 `
 
@@ -474,65 +486,77 @@ const StatPill = styled.span`
   }
 `
 
-const MapWrap = styled.div<{ $compact: boolean; $finishRecap?: boolean }>`
+const MapWrap = styled.div<{ $compact: boolean; $tall?: boolean }>`
   flex: 0 0 auto;
-  min-height: ${({ $compact, $finishRecap }) => ($finishRecap ? '200px' : $compact ? '220px' : '280px')};
+  min-height: ${({ $compact, $tall }) =>
+    $tall ? '360px' : $compact ? '220px' : '280px'};
   border-radius: 12px;
   overflow: hidden;
   border: none;
-  padding: ${({ $compact, $finishRecap }) => ($finishRecap ? '0' : $compact ? '0 4px' : '0 88px')};
+  padding: ${({ $compact, $tall }) =>
+    $tall ? '0 48px' : $compact ? '0 4px' : '0 88px'};
   box-sizing: border-box;
 
   .map {
-    height: ${({ $compact, $finishRecap }) =>
-      $finishRecap ? '220px' : $compact ? '240px' : 'min(58vh, 520px)'};
-    min-height: ${({ $compact, $finishRecap }) => ($finishRecap ? '200px' : $compact ? '220px' : '300px')};
+    height: ${({ $compact, $tall }) =>
+      $tall ? 'min(56vh, 560px)' : $compact ? '240px' : 'min(58vh, 520px)'};
+    min-height: ${({ $compact, $tall }) =>
+      $tall ? '360px' : $compact ? '220px' : '300px'};
     border: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 10px;
     box-sizing: border-box;
   }
 
   @media (max-width: 900px) {
-    padding: ${({ $compact }) => ($compact ? '0 4px' : '0 28px')};
+    padding: ${({ $compact, $tall }) =>
+      $tall ? '0 20px' : $compact ? '0 4px' : '0 28px'};
   }
 
   @media (max-width: 760px) {
-    padding: ${({ $compact }) => ($compact ? '0 2px' : '0 16px')};
+    padding: ${({ $compact, $tall }) =>
+      $tall ? '0 12px' : $compact ? '0 2px' : '0 16px'};
   }
 
   @media (max-width: 480px) {
-    padding: ${({ $compact }) => ($compact ? '0' : '0 10px')};
+    padding: ${({ $compact, $tall }) =>
+      $tall ? '0 8px' : $compact ? '0' : '0 10px'};
 
     .map {
-      min-height: ${({ $compact }) => ($compact ? '200px' : '240px')};
-      height: ${({ $compact }) => ($compact ? '220px' : 'min(42vh, 380px)')};
+      min-height: ${({ $compact, $tall }) =>
+        $tall ? '280px' : $compact ? '200px' : '240px'};
+      height: ${({ $compact, $tall }) =>
+        $tall ? 'min(48vh, 420px)' : $compact ? '220px' : 'min(42vh, 380px)'};
     }
   }
 `
 
-const UnderMapGrid = styled.div<{ $compact?: boolean }>`
+const UnderMapGrid = styled.div<{ $compact?: boolean; $tall?: boolean }>`
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   gap: ${({ $compact }) => ($compact ? '8px 10px' : '12px 18px')};
   align-items: start;
-  padding: ${({ $compact }) => ($compact ? '0 4px' : '0 88px')};
+  padding: ${({ $compact, $tall }) =>
+    $tall ? '0 48px' : $compact ? '0 4px' : '0 88px'};
   box-sizing: border-box;
   width: 100%;
   max-width: 100%;
   min-width: 0;
 
   @media (max-width: 900px) {
-    padding: ${({ $compact }) => ($compact ? '0 4px' : '0 28px')};
+    padding: ${({ $compact, $tall }) =>
+      $tall ? '0 20px' : $compact ? '0 4px' : '0 28px'};
   }
 
   @media (max-width: 760px) {
-    padding: ${({ $compact }) => ($compact ? '0 2px' : '0 16px')};
+    padding: ${({ $compact, $tall }) =>
+      $tall ? '0 12px' : $compact ? '0 2px' : '0 16px'};
     column-gap: ${({ $compact }) => ($compact ? '6px' : '8px')};
     row-gap: ${({ $compact }) => ($compact ? '8px' : '10px')};
   }
 
   @media (max-width: 480px) {
-    padding: ${({ $compact }) => ($compact ? '0' : '0 10px')};
+    padding: ${({ $compact, $tall }) =>
+      $tall ? '0 8px' : $compact ? '0' : '0 10px'};
     column-gap: ${({ $compact }) => ($compact ? '4px' : '6px')};
     row-gap: ${({ $compact }) => ($compact ? '6px' : '8px')};
   }
@@ -552,13 +576,6 @@ const DistanceRowBand = styled.div`
     margin-top: 6px;
     column-gap: 8px;
   }
-`
-
-const DistInlinePlonk = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
 `
 
 const UnderMapCenter = styled.div`
@@ -773,10 +790,28 @@ type Props = {
   /** From duel API (`playerAvatars`); guess pins use emoji SVG + color from each profile. */
   playerAvatars?: { host: DuelGuessAvatar; guest: DuelGuessAvatar }
   onContinue?: () => void
+  /** Override default “Next round” continue button label. */
+  continueLabel?: string
   /** Hide bottom cumulative points row (e.g. duel finish — totals already in parent). */
   omitScoreRow?: boolean
   /** Duel match finish: no duplicate player HP rows; compact round-only stats. */
   finishRecap?: boolean
+  /** Match summary: taller map (compact variant is otherwise too short). */
+  tallMap?: boolean
+  /** Match summary: round meta + winner on one horizontal row. */
+  inlineHeader?: boolean
+  /** Replace the round map (e.g. all-guesses map) while keeping the same chrome. */
+  customMap?: ReactNode
+  /** Skip HP drain animation (final match totals). */
+  skipDamageAnim?: boolean
+  /** Override the upper meta line (e.g. “All rounds”). */
+  headerLabel?: string
+  /** Override winner banner text / tier. */
+  winnerLabelOverride?: string
+  winnerTierOverride?: 'host' | 'guest' | 'tie'
+  /** Center column between meters. */
+  centerLabel?: string
+  centerValue?: string
 }
 
 const DuelRoundOverview: FC<Props> = ({
@@ -790,14 +825,24 @@ const DuelRoundOverview: FC<Props> = ({
   hostMaxHp,
   guestMaxHp,
   viewerRole,
-  sessionMapId,
+  sessionMapId: _sessionMapId,
   plonkMapLabel,
   hostPlayerName = 'Player 1',
   guestPlayerName = 'Player 2',
   playerAvatars,
   onContinue,
+  continueLabel = 'Next round',
   omitScoreRow = false,
   finishRecap = false,
+  tallMap = false,
+  inlineHeader = false,
+  customMap,
+  skipDamageAnim = false,
+  headerLabel,
+  winnerLabelOverride,
+  winnerTierOverride,
+  centerLabel,
+  centerValue,
 }) => {
   const user = useAppSelector((state) => state.user)
   const mapRef = useRef<google.maps.Map | null>(null)
@@ -812,9 +857,9 @@ const DuelRoundOverview: FC<Props> = ({
   const hostBefore = result.hostHpAfter + result.damageToHost
   const guestBefore = result.guestHpAfter + result.damageToGuest
 
-  const [displayHostHp, setDisplayHostHp] = useState(hostBefore)
-  const [displayGuestHp, setDisplayGuestHp] = useState(guestBefore)
-  const [damagePhase, setDamagePhase] = useState(false)
+  const [displayHostHp, setDisplayHostHp] = useState(skipDamageAnim ? result.hostHpAfter : hostBefore)
+  const [displayGuestHp, setDisplayGuestHp] = useState(skipDamageAnim ? result.guestHpAfter : guestBefore)
+  const [damagePhase, setDamagePhase] = useState(skipDamageAnim)
 
   const sumPtsPreview =
     mode === 'points'
@@ -822,6 +867,13 @@ const DuelRoundOverview: FC<Props> = ({
       : 1
 
   useEffect(() => {
+    if (skipDamageAnim) {
+      setDisplayHostHp(result.hostHpAfter)
+      setDisplayGuestHp(result.guestHpAfter)
+      setDamagePhase(true)
+      return
+    }
+
     setDisplayHostHp(hostBefore)
     setDisplayGuestHp(guestBefore)
     setDamagePhase(false)
@@ -836,6 +888,7 @@ const DuelRoundOverview: FC<Props> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed by round ledger
   }, [
     mode,
+    skipDamageAnim,
     result.roundIndex,
     result.hostHpAfter,
     result.guestHpAfter,
@@ -917,14 +970,15 @@ const DuelRoundOverview: FC<Props> = ({
     'metric'
   )
 
-  const winTier = result.winner === 'tie' ? 'tie' : result.winner
+  const winTier = winnerTierOverride ?? (result.winner === 'tie' ? 'tie' : result.winner)
 
   const winnerLabel =
-    result.winner === 'tie'
+    winnerLabelOverride ??
+    (result.winner === 'tie'
       ? 'Tie round'
       : result.winner === 'host'
       ? `${hostPlayerName} takes the round`
-      : `${guestPlayerName} takes the round`
+      : `${guestPlayerName} takes the round`)
 
   const hostYou = viewerRole === 'host'
   const guestYou = viewerRole === 'guest'
@@ -959,8 +1013,6 @@ const DuelRoundOverview: FC<Props> = ({
     ? { emoji: user.avatar.emoji, color: user.avatar.color }
     : DUEL_GUESS_MARKER_FALLBACK
 
-  const guideMapKey = sessionMapId?.trim() ? sessionMapId : EQUITABLE_COUNTRY_STREAK_ID
-  const plonkIso = resolvePlonkitGuideCountryIso(guideMapKey, actual)
   const damageMultDisplay =
     result.damageMultiplierUsed > 0
       ? result.damageMultiplierUsed
@@ -1083,7 +1135,15 @@ const DuelRoundOverview: FC<Props> = ({
   )
 
   const centerBetweenMeters =
-    mode === 'hp' ? (
+    centerLabel || centerValue ? (
+      <UnderMapCenter>
+        <div className="mid-label">{centerLabel ?? (mode === 'hp' ? 'Damage mult' : 'Round result')}</div>
+        <div className="mid-mult">
+          {centerValue ??
+            (mode === 'hp' ? `×${damageMultDisplay.toFixed(1)}` : winnerLabel)}
+        </div>
+      </UnderMapCenter>
+    ) : mode === 'hp' ? (
       <UnderMapCenter>
         <div className="mid-label">Damage mult</div>
         <div className="mid-mult">×{damageMultDisplay.toFixed(1)}</div>
@@ -1116,49 +1176,75 @@ const DuelRoundOverview: FC<Props> = ({
   const rightAccent = duelAvatarAccent(leftIsHost ? guestGuessPin : hostGuessPin)
   const roundDamage = Math.max(result.damageToHost, result.damageToGuest)
 
+  const leftName = leftIsHost ? hostPlayerName : guestPlayerName
+  const rightName = leftIsHost ? guestPlayerName : hostPlayerName
+  const leftDamageTaken = leftIsHost ? result.damageToHost : result.damageToGuest
+  const rightDamageTaken = leftIsHost ? result.damageToGuest : result.damageToHost
+
   const finishRecapStats = finishRecap ? (
     <FinishRecapFoot>
-      <FinishRecapGrid>
-        <FinishRecapCol $align="left">
-          <FinishRecapDist $accent={leftAccent} $align="left">
-            {leftDist}
-          </FinishRecapDist>
-        </FinishRecapCol>
-        <FinishRecapMid $row={1}>
-          {plonkIso ? (
-            <PlonkitGuideLauncher
-              variant="compact"
-              countryIso={plonkIso}
-              mapLabel={plonkMapLabel}
-              compactAlign="center"
-              compactShowLabel={false}
-              compactShrinkWrap
-            />
-          ) : null}
-        </FinishRecapMid>
-        <FinishRecapCol $align="right">
-          <FinishRecapDist $accent={rightAccent} $align="right">
-            {rightDist}
-          </FinishRecapDist>
-        </FinishRecapCol>
+      <FinishRecapTable>
+        <FinishRecapCell $role="label" />
+        <FinishRecapCell $role="head" $align="center" $accent={leftAccent}>
+          {leftName}
+        </FinishRecapCell>
+        <FinishRecapCell $role="head" $align="center" $accent={rightAccent}>
+          {rightName}
+        </FinishRecapCell>
 
-        <FinishRecapCol $align="left">
-          <FinishRecapPts>{Math.round(leftPts).toLocaleString()} pts</FinishRecapPts>
-        </FinishRecapCol>
-        <FinishRecapMid $row={2}>
-          {mode === 'hp' ? (
-            <FinishRecapMidMeta>
-              <span className="mult">×{damageMultDisplay.toFixed(1)}</span>
-              {roundDamage > 0 ? (
-                <span className="damage">−{Math.round(roundDamage).toLocaleString()} HP</span>
-              ) : null}
-            </FinishRecapMidMeta>
-          ) : null}
-        </FinishRecapMid>
-        <FinishRecapCol $align="right">
-          <FinishRecapPts>{Math.round(rightPts).toLocaleString()} pts</FinishRecapPts>
-        </FinishRecapCol>
-      </FinishRecapGrid>
+        <FinishRecapCell $role="label">Distance</FinishRecapCell>
+        <FinishRecapCell $role="value" $align="center">
+          {leftDist}
+        </FinishRecapCell>
+        <FinishRecapCell $role="value" $align="center">
+          {rightDist}
+        </FinishRecapCell>
+
+        <FinishRecapCell $role="label">Round score</FinishRecapCell>
+        <FinishRecapCell $role="value" $align="center">
+          {Math.round(leftPts).toLocaleString()}
+        </FinishRecapCell>
+        <FinishRecapCell $role="value" $align="center">
+          {Math.round(rightPts).toLocaleString()}
+        </FinishRecapCell>
+
+        {mode === 'hp' ? (
+          <>
+            <FinishRecapCell $role="label">HP taken</FinishRecapCell>
+            <FinishRecapCell
+              $role="value"
+              $align="center"
+              $damage={leftDamageTaken > 0}
+              $muted={leftDamageTaken <= 0}
+            >
+              {leftDamageTaken > 0
+                ? `−${Math.round(leftDamageTaken).toLocaleString()}`
+                : '0'}
+            </FinishRecapCell>
+            <FinishRecapCell
+              $role="value"
+              $align="center"
+              $damage={rightDamageTaken > 0}
+              $muted={rightDamageTaken <= 0}
+            >
+              {rightDamageTaken > 0
+                ? `−${Math.round(rightDamageTaken).toLocaleString()}`
+                : '0'}
+            </FinishRecapCell>
+          </>
+        ) : null}
+      </FinishRecapTable>
+
+      {mode === 'hp' ? (
+        <FinishRecapNote>
+          <FinishRecapChip>Damage mult ×{damageMultDisplay.toFixed(1)}</FinishRecapChip>
+          <FinishRecapChip $tone={roundDamage > 0 ? 'damage' : 'neutral'}>
+            {roundDamage > 0
+              ? `−${Math.round(roundDamage).toLocaleString()} HP dealt this round`
+              : 'No damage this round'}
+          </FinishRecapChip>
+        </FinishRecapNote>
+      ) : null}
     </FinishRecapFoot>
   ) : null
 
@@ -1179,18 +1265,7 @@ const DuelRoundOverview: FC<Props> = ({
             : guestDistLabel}
         </DistanceRow>
       </UnderMapPlayerCol>
-      <DistInlinePlonk>
-        {isCompact && plonkIso ? (
-          <PlonkitGuideLauncher
-            variant="compact"
-            countryIso={plonkIso}
-            mapLabel={plonkMapLabel}
-            compactAlign="center"
-            compactShowLabel={false}
-            compactShrinkWrap
-          />
-        ) : null}
-      </DistInlinePlonk>
+      <div aria-hidden style={{ width: 1 }} />
       <UnderMapPlayerCol $side="right">
         <DistanceRow
           $color={leftIsHost ? guestMeterAccent : hostMeterAccent}
@@ -1213,69 +1288,81 @@ const DuelRoundOverview: FC<Props> = ({
     <OverlayRoot $fullscreen={variant === 'fullscreen'} $compact={isCompact}>
       {finishRecap ? (
         <FinishRecapHeaderStack>
-          <FinishRecapMeta>
-            Round {roundOneBased}
-            {totalRounds ? ` of ${totalRounds}` : ''} · {mode === 'hp' ? 'Damage round' : 'Points round'}
-            {plonkMapLabel ? ` · ${plonkMapLabel}` : ''}
-          </FinishRecapMeta>
+          <FinishRecapTitle>Round {roundOneBased}</FinishRecapTitle>
+          <FinishRecapMetaRow>
+            <FinishRecapMetaChip>{mode === 'hp' ? 'Damage round' : 'Points round'}</FinishRecapMetaChip>
+            {totalRounds ? <FinishRecapMetaChip>of {totalRounds}</FinishRecapMetaChip> : null}
+            {plonkMapLabel ? <FinishRecapMetaChip>{plonkMapLabel}</FinishRecapMetaChip> : null}
+          </FinishRecapMetaRow>
           <FinishRecapWinner $tier={winTier}>{winnerLabel}</FinishRecapWinner>
         </FinishRecapHeaderStack>
       ) : (
-        <RoundHeader $compact={isCompact}>
-          Round {roundOneBased}
-          {totalRounds ? ` of ${totalRounds}` : ''} · {mode === 'hp' ? 'Damage round' : 'Points round'}
-          {plonkMapLabel ? ` · ${plonkMapLabel}` : ''}
-          <WinnerBanner $tier={winTier}>{winnerLabel}</WinnerBanner>
+        <RoundHeader $compact={isCompact} $inline={inlineHeader}>
+          <span>
+            {headerLabel ??
+              `Round ${roundOneBased}${totalRounds ? ` of ${totalRounds}` : ''} · ${
+                mode === 'hp' ? 'Damage round' : 'Points round'
+              }${!inlineHeader && plonkMapLabel ? ` · ${plonkMapLabel}` : ''}`}
+          </span>
+          <WinnerBanner $tier={winTier} $compact={inlineHeader}>
+            {winnerLabel}
+          </WinnerBanner>
         </RoundHeader>
       )}
 
-      <MapWrap $compact={isCompact} $finishRecap={finishRecap}>
-        <StyledResultMap>
-          <div className="map">
-            <GoogleMapReact
-              googleMapLoader={googleMapLoaderAsync}
-              bootstrapURLKeys={getMapsKey(user.mapsAPIKey, { allowFallback: false })}
-              center={{ lat: actual.lat, lng: actual.lng }}
-              zoom={3}
-              yesIWantToUseGoogleMapApiInternals
-              onGoogleApiLoaded={({ map }) => {
-                mapRef.current = map
-                fitAndDraw(map)
-              }}
-              options={RESULT_MAP_OPTIONS}
-            >
-              {hostGuess && (
-                <Marker
-                  key="host-g"
-                  type="guess"
-                  lat={hostGuess.lat}
-                  lng={hostGuess.lng}
-                  userAvatar={{ emoji: hostGuessPin.emoji, color: hostGuessPin.color }}
-                  isFinalResults={false}
-                />
+      {!finishRecap ? (
+        <MapWrap $compact={isCompact} $tall={tallMap}>
+          <StyledResultMap>
+            <div className="map">
+              {customMap ? (
+                customMap
+              ) : (
+                <GoogleMapReact
+                  googleMapLoader={googleMapLoaderAsync}
+                  bootstrapURLKeys={getMapsKey(user.mapsAPIKey, { allowFallback: false })}
+                  center={{ lat: actual.lat, lng: actual.lng }}
+                  zoom={3}
+                  yesIWantToUseGoogleMapApiInternals
+                  onGoogleApiLoaded={({ map }) => {
+                    mapRef.current = map
+                    fitAndDraw(map)
+                  }}
+                  options={RESULT_MAP_OPTIONS}
+                >
+                  {hostGuess && (
+                    <Marker
+                      key="host-g"
+                      type="guess"
+                      lat={hostGuess.lat}
+                      lng={hostGuess.lng}
+                      userAvatar={{ emoji: hostGuessPin.emoji, color: hostGuessPin.color }}
+                      isFinalResults={false}
+                    />
+                  )}
+                  {guestGuess && (
+                    <Marker
+                      key="guest-g"
+                      type="guess"
+                      lat={guestGuess.lat}
+                      lng={guestGuess.lng}
+                      userAvatar={{ emoji: guestGuessPin.emoji, color: guestGuessPin.color }}
+                      isFinalResults={false}
+                    />
+                  )}
+                  {actualMarkers.map((m, idx) => (
+                    <Marker key={`a-${idx}`} type="actual" lat={m.lat} lng={m.lng} isFinalResults={false} />
+                  ))}
+                </GoogleMapReact>
               )}
-              {guestGuess && (
-                <Marker
-                  key="guest-g"
-                  type="guess"
-                  lat={guestGuess.lat}
-                  lng={guestGuess.lng}
-                  userAvatar={{ emoji: guestGuessPin.emoji, color: guestGuessPin.color }}
-                  isFinalResults={false}
-                />
-              )}
-              {actualMarkers.map((m, idx) => (
-                <Marker key={`a-${idx}`} type="actual" lat={m.lat} lng={m.lng} isFinalResults={false} />
-              ))}
-            </GoogleMapReact>
-          </div>
-        </StyledResultMap>
-      </MapWrap>
+            </div>
+          </StyledResultMap>
+        </MapWrap>
+      ) : null}
 
       {finishRecap ? (
         finishRecapStats
       ) : (
-        <UnderMapGrid $compact={isCompact}>
+        <UnderMapGrid $compact={isCompact} $tall={tallMap}>
           {leftIsHost ? hostBarHeadEl : guestBarHeadEl}
           <MidSpacer aria-hidden />
           {leftIsHost ? guestBarHeadEl : hostBarHeadEl}
@@ -1316,22 +1403,10 @@ const DuelRoundOverview: FC<Props> = ({
               fontSize: 12,
             }}
           >
-            Next round
+            {continueLabel}
           </NextRoundButton>
           <div className="action-spacer" />
         </ActionRow>
-      ) : null}
-
-      {plonkIso && variant === 'fullscreen' ? (
-        <FullscreenPlonkTips>
-          <PlonkitGuideLauncher
-            variant="compact"
-            countryIso={plonkIso}
-            mapLabel={plonkMapLabel}
-            compactAlign="end"
-            compactShrinkWrap
-          />
-        </FullscreenPlonkTips>
       ) : null}
     </OverlayRoot>
   )

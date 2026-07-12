@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import type { FC, ReactNode } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -18,12 +18,10 @@ import {
   UserGroupIcon,
   XIcon,
 } from '@heroicons/react/outline'
-import PlonkitGuideLauncher from '@components/PlonkitCountryGuide/PlonkitGuideLauncher'
-import type { PlonkitGuidePayload } from '@components/PlonkitCountryGuide/plonkitGuideTypes'
 import { Button } from '@components/system'
 import { DuelHpMeter, DuelPointsMeter } from '@components/duel/DuelHpMeter'
 import { duelAvatarAccent, duelHudAvatarIcon } from '@components/duel/duelHudAvatar'
-import { mailman, showToast } from '@utils/helpers'
+import { showToast } from '@utils/helpers'
 import { resolveMapImageSrc } from '@utils/helpers/mapPreviewSrc'
 import DuelChatPanel from './DuelChatPanel'
 import type { DuelClientPayload, DuelChatMessageClient, DuelGuessAvatar, DuelViewerRole } from './duelApiTypes'
@@ -32,9 +30,9 @@ import styled from 'styled-components'
 const Shell = styled.div<{ $variant?: 'lobby' | 'finish' }>`
   width: 100%;
   max-width: ${({ $variant }) =>
-    $variant === 'finish' ? 'min(720px, 100%)' : $variant === 'lobby' ? '100%' : 'min(480px, 100%)'};
+    $variant === 'finish' ? '100%' : $variant === 'lobby' ? '100%' : 'min(480px, 100%)'};
   margin-inline: ${({ $variant }) => ($variant === 'finish' ? 'auto' : '0')};
-  padding: ${({ $variant }) => ($variant === 'finish' ? 'var(--pad-card) var(--pad-card) 22px' : 'var(--pad-card)')};
+  padding: ${({ $variant }) => ($variant === 'finish' ? '14px 14px 16px' : 'var(--pad-card)')};
   border-radius: var(--radius-xl);
   box-sizing: border-box;
   background-color: var(--bg-elevated);
@@ -108,7 +106,7 @@ const FinishMeterPanel = styled.div<{ $withRecap?: boolean }>`
   border-radius: 14px;
   background: rgba(12, 14, 18, 0.52);
   border: 1px solid rgba(255, 255, 255, 0.09);
-  margin-bottom: ${({ $withRecap }) => ($withRecap ? 20 : 14)}px;
+  margin-bottom: ${({ $withRecap }) => ($withRecap ? 12 : 14)}px;
 
   .meter-slot {
     min-width: 0;
@@ -251,11 +249,11 @@ const LobbyWideGrid = styled.div`
   display: grid;
   gap: 16px;
   width: 100%;
-  max-width: min(1040px, 100%);
+  max-width: min(1100px, 100%);
   align-items: stretch;
 
   @media (min-width: 820px) {
-    grid-template-columns: minmax(0, 1fr) minmax(320px, 400px);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 `
 
@@ -270,21 +268,18 @@ const LobbyAsideColumn = styled.aside`
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  min-height: min(520px, 68vh);
 
   @media (min-width: 820px) {
     position: sticky;
     top: 12px;
-    align-self: start;
-    min-height: min(540px, 64vh);
+    align-self: stretch;
+    height: 100%;
   }
-`
 
-const LobbyPlonkAside = styled.div`
-  min-width: 0;
-
-  @media (min-width: 820px) {
-    display: none;
+  > * {
+    flex: 1 1 auto;
+    min-height: 0;
   }
 `
 
@@ -412,33 +407,8 @@ const OpponentJoinedBadge = styled.div`
   max-width: 100%;
 `
 
-const LobbyTipsBlock = styled.div`
-  margin-top: 0;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: var(--bg-surface);
-  border: var(--border-default);
-  box-sizing: border-box;
-`
 
-const LobbyTipsLabel = styled.div`
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.4);
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-`
 
-const LobbyTipsText = styled.p`
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.52;
-  color: rgba(228, 228, 231, 0.92);
-`
 
 const LobbyPlonkFoot = styled.p`
   margin: 10px 0 0;
@@ -723,27 +693,24 @@ const DuelLobbyFriendsInvite: FC<{
 const DuelLobbyAside: FC<{ chat?: DuelLobbyChatProps }> = ({ chat }) => (
   <LobbyAsideColumn>
     {chat ? <DuelLobbyChat {...chat} /> : null}
-    <LobbyPlonkAside>
-      <DuelLobbyPlonkStrip />
-    </LobbyPlonkAside>
   </LobbyAsideColumn>
 )
 
 const FinishPageShell = styled.div`
-  width: min(880px, 100%);
+  width: min(1100px, 100%);
   margin-inline: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
   flex: 0 1 auto;
-  padding-top: clamp(36px, 5vh, 52px);
-  padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  padding-top: clamp(20px, 3vh, 36px);
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
   box-sizing: border-box;
 `
 
 const FinishCardColumn = styled.div`
-  width: min(720px, 100%);
+  width: min(1040px, 100%);
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -837,8 +804,13 @@ const RematchModalClose = styled.button`
   justify-content: center;
   padding: 0;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.06);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   svg {
@@ -847,94 +819,6 @@ const RematchModalClose = styled.button`
   }
 `
 
-export const DuelLobbyPlonkStrip: FC = () => {
-  const [iso, setIso] = useState<string | null>(null)
-  const [title, setTitle] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const firstLoad = useRef(true)
-
-  const load = useCallback(async () => {
-    setError(null)
-    if (firstLoad.current) setLoading(true)
-
-    const res = await mailman('plonkit-guide?random=1&lightweight=1', 'GET')
-
-    if (firstLoad.current) {
-      firstLoad.current = false
-      setLoading(false)
-    }
-
-    if (
-      !res ||
-      (typeof res === 'object' &&
-        res !== null &&
-        'error' in res &&
-        (res as { error?: unknown }).error)
-    ) {
-      const e = (res as { error?: unknown } | null)?.error
-      const msg =
-        typeof e === 'string'
-          ? e
-          : typeof e === 'object' && e !== null && 'message' in e
-          ? String((e as { message: unknown }).message)
-          : 'Could not load a Plonk It guide.'
-      setError(msg)
-      setIso(null)
-      setTitle(null)
-      return
-    }
-
-    const p = res as PlonkitGuidePayload
-    if (!p.meta?.code) {
-      setError('Invalid guide response')
-      setIso(null)
-      setTitle(null)
-      return
-    }
-
-    setIso(p.meta.code)
-    setTitle(p.meta.title?.trim() || p.meta.code)
-  }, [])
-
-  useEffect(() => {
-    void load()
-  }, [load])
-
-  useEffect(() => {
-    const id = window.setInterval(() => void load(), 75000)
-    return () => window.clearInterval(id)
-  }, [load])
-
-  return (
-    <LobbyTipsBlock>
-      <LobbyTipsLabel>
-        <SparklesIcon style={{ width: 13, height: 13, opacity: 0.85 }} />
-        Plonk It · random guide
-      </LobbyTipsLabel>
-      {loading && !title ? <LobbyTipsText>Loading a country guide…</LobbyTipsText> : null}
-      {error ? <LobbyTipsText style={{ opacity: 0.88 }}>{error}</LobbyTipsText> : null}
-      {title ? <LobbyTipsText style={{ fontWeight: 700, marginBottom: 8 }}>{title}</LobbyTipsText> : null}
-      {iso ? (
-        <div style={{ marginTop: 4 }}>
-          <PlonkitGuideLauncher
-            variant="compact"
-            countryIso={iso}
-            mapLabel={title ?? undefined}
-            compactAlign="start"
-          />
-        </div>
-      ) : null}
-      <LobbyPlonkFoot>
-        From{' '}
-        <a href="https://www.plonkit.net/guide" target="_blank" rel="noopener noreferrer">
-          Plonk It
-        </a>
-        . CC BY-NC-SA 4.0 — noncommercial, attribution required.
-      </LobbyPlonkFoot>
-    </LobbyTipsBlock>
-  )
-}
 
 type FinishTone = 'win' | 'loss' | 'tie' | 'neutral'
 
@@ -1069,15 +953,15 @@ export const DuelFinishBanner: FC<{
                   <>
                     <HeartIcon style={{ width: 14, height: 14, opacity: 0.85 }} />
                     {isFinalRoundSelected
-                      ? 'Final health — pick a round to review'
-                      : `Health after round ${selectedRoundOneBased} — pick another round`}
+                      ? 'Final health'
+                      : `Health after round ${selectedRoundOneBased}`}
                   </>
                 ) : (
                   <>
                     <LightningBoltIcon style={{ width: 14, height: 14, opacity: 0.85 }} />
                     {isFinalRoundSelected
-                      ? 'Final totals — pick a round to review'
-                      : `Totals through round ${selectedRoundOneBased} — pick another round`}
+                      ? 'Final scores'
+                      : `Scores through round ${selectedRoundOneBased}`}
                   </>
                 )
               ) : payload.mode === 'hp' ? (
@@ -1309,9 +1193,6 @@ export const DuelLobbyGuestJoinPanel: FC<{
           </StartCtaRow>
         </Shell>
       </LobbyMainColumn>
-      <LobbyPlonkAside>
-        <DuelLobbyPlonkStrip />
-      </LobbyPlonkAside>
     </LobbyWideGrid>
   )
 }
@@ -1331,9 +1212,10 @@ export const DuelLobbyHostStartPanel: FC<{
           <PlayIcon className="tile" />
           <div>
             <LobbyTitle>Ready to start</LobbyTitle>
-            <Subtle style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-              <SparklesIcon style={{ width: 14, height: 14, opacity: 0.85 }} />
-              Street View loads once you begin the match.
+            <Subtle style={{ marginTop: 4 }}>
+              {opponentName
+                ? `${opponentName} is in the room. Start when you both are ready.`
+                : 'Both players are ready. Start the match when you are set.'}
             </Subtle>
           </div>
         </LobbyHead>
@@ -1346,7 +1228,7 @@ export const DuelLobbyHostStartPanel: FC<{
         ) : null}
 
         <DuelLobbyMatchSummary match={match} />
-        <DuelRoomCodeCard shortCode={shortCode} hint="Need a backup invite? Copy the link or code above." />
+        <DuelRoomCodeCard shortCode={shortCode} hint="Keep this code handy if someone needs to rejoin." />
 
         <StartCtaRow>
           <Button
@@ -1424,6 +1306,37 @@ export const DuelOpponentRematchModal: FC<{
           </Button>
           <Button variant="solidGray" size="sm" onClick={onDismiss}>
             Not now
+          </Button>
+        </RematchModalActions>
+      </RematchModalCard>
+    </RematchModalRoot>
+  )
+}
+
+export const DuelForfeitModal: FC<{
+  isOpen: boolean
+  onCancel: () => void
+  onConfirm: () => void
+  isSubmitting?: boolean
+}> = ({ isOpen, onCancel, onConfirm, isSubmitting }) => {
+  if (!isOpen) return null
+
+  return (
+    <RematchModalRoot role="dialog" aria-modal="true" aria-labelledby="duel-forfeit-title">
+      <RematchModalCard>
+        <RematchModalClose type="button" onClick={onCancel} aria-label="Close" disabled={!!isSubmitting}>
+          <XIcon />
+        </RematchModalClose>
+        <RematchModalTitle id="duel-forfeit-title">Forfeit this duel?</RematchModalTitle>
+        <RematchModalBody>
+          You will lose the match immediately and your opponent wins. This cannot be undone.
+        </RematchModalBody>
+        <RematchModalActions>
+          <Button variant="destroy" size="md" onClick={onConfirm} isLoading={!!isSubmitting} spinnerSize={22}>
+            Forfeit match
+          </Button>
+          <Button variant="solidGray" size="sm" onClick={onCancel} disabled={!!isSubmitting}>
+            Keep playing
           </Button>
         </RematchModalActions>
       </RematchModalCard>

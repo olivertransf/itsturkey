@@ -136,7 +136,7 @@ const UserSettingsPanel: FC<Props> = ({ embedded }) => {
   }
 
   const handleLogout = () => {
-    signOut({ callbackUrl: '/login' })
+    signOut({ callbackUrl: '/' })
     dispatch(logOutUser())
   }
 

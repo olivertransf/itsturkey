@@ -32,6 +32,7 @@ const patchDuelPin = async (req: NextApiRequest, res: NextApiResponse) => {
   duel = advanced
   if (m0) {
     await collections.duelSessions?.replaceOne({ _id: duel._id }, duel)
+    void notifyDuelUpdated(duelId, 'guess')
   }
 
   if (duel.status !== 'in_progress') {

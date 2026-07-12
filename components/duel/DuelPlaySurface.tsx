@@ -5,13 +5,13 @@ import type { DuelGuessSubmitPayload } from '@components/StreetView/StreetView'
 import { ChevronLeftIcon, FlagIcon, LockClosedIcon } from '@heroicons/react/outline'
 import { useRouter } from 'next/router'
 import { DuelHpMeter, DuelPointsMeter } from '@components/duel/DuelHpMeter'
-import { MainModal } from '@components/modals'
 import { useAppDispatch } from '@redux/hook'
+import { DuelForfeitModal } from '@components/duel/DuelRoomPanels'
 import { updateStartTime } from '@redux/slices'
 import type { GameViewType, LocationType } from '@types'
 import { mailman, showToast } from '@utils/helpers'
 import { useVisibleInterval } from '@utils/useVisibleInterval'
-import styled, { css, keyframes } from 'styled-components'
+import styled, { keyframes } from 'styled-components'
 import { duelRoundDamageMultiplier } from '@backend/utils/duelConstants'
 import DuelRoundOverview from './DuelRoundOverview'
 import DuelStreetChatDock from './DuelStreetChatDock'
@@ -39,21 +39,23 @@ const HudTop = styled.div`
   grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px 12px;
-  background: rgba(12, 14, 18, 0.76);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 14px;
-  backdrop-filter: blur(10px) saturate(135%);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.38);
-  padding: 9px 10px;
-  min-height: 56px;
+  background: rgba(10, 12, 16, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  backdrop-filter: blur(14px) saturate(145%);
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  padding: 10px 12px;
+  min-height: 60px;
   pointer-events: auto;
 
   @media (max-width: 880px) {
     gap: 8px 10px;
-    padding: 8px;
+    padding: 8px 10px;
   }
 
-  max-width: min(980px, 100%);
+  max-width: min(1000px, 100%);
   margin: 0 auto;
 
   .hud-meter {
@@ -69,8 +71,8 @@ const HudTop = styled.div`
   }
 
   .hud-round {
-    align-self: start;
-    padding-top: 1px;
+    align-self: center;
+    margin-top: 6px;
   }
 
   @media (max-width: 600px) {
@@ -113,11 +115,11 @@ const HudRoundStack = styled.div`
   justify-content: center;
   gap: 3px;
   text-align: center;
-  padding: 7px 14px;
-  min-width: 76px;
+  padding: 8px 16px;
+  min-width: 82px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(157, 200, 240, 0.1);
+  border: 1px solid rgba(157, 200, 240, 0.28);
   box-sizing: border-box;
 `
 
@@ -231,12 +233,15 @@ const lockPop = keyframes`
 
 const reactionSecondPulse = keyframes`
   0% {
-    transform: scale(0.92);
-    filter: brightness(1.35);
+    transform: scale(0.86);
+    filter: brightness(1.55);
+    text-shadow:
+      0 0 12px rgba(248, 113, 113, 0.95),
+      0 0 36px rgba(239, 68, 68, 0.7);
   }
-  55% {
-    transform: scale(1.08);
-    filter: brightness(1.15);
+  45% {
+    transform: scale(1.14);
+    filter: brightness(1.25);
   }
   100% {
     transform: scale(1);
@@ -246,7 +251,7 @@ const reactionSecondPulse = keyframes`
 
 const reactionEdgeFlash = keyframes`
   0% {
-    opacity: 0.95;
+    opacity: 1;
   }
   100% {
     opacity: 0;
@@ -256,12 +261,12 @@ const reactionEdgeFlash = keyframes`
 const reactionRingGlowPulse = keyframes`
   0%,
   100% {
-    opacity: 0.38;
-    filter: drop-shadow(0 0 3px rgba(239, 68, 68, 0.15));
+    opacity: 0.55;
+    filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.35));
   }
   50% {
     opacity: 1;
-    filter: drop-shadow(0 0 14px rgba(239, 68, 68, 0.72));
+    filter: drop-shadow(0 0 22px rgba(248, 113, 113, 0.95));
   }
 `
 
@@ -272,48 +277,18 @@ const ReactionTimerArcProgress = styled.circle`
   animation: ${reactionRingGlowPulse} 1.65s ease-in-out infinite;
 `
 
-const ReactionTimerVignette = styled.div<{ $urgency: number }>`
-  position: fixed;
-  inset: 0;
-  z-index: 49;
-  pointer-events: none;
-  transition:
-    opacity 0.1s linear,
-    box-shadow 0.1s linear;
-  ${({ $urgency }) => {
-    const u = Math.min(1, Math.max(0, $urgency))
-    const aBand = 0.06 + u * 0.34
-    const aMid = 0.1 + u * 0.42
-    const aDeep = 0.18 + u * 0.55
-    const borderW = 2 + u * 14
-    const borderA = 0.18 + u * 0.55
-    return css`
-      background: radial-gradient(
-        ellipse 145% 130% at 50% 46%,
-        transparent 0%,
-        transparent 26%,
-        rgba(239, 68, 68, ${aBand * 0.75}) 44%,
-        rgba(185, 28, 28, ${aMid}) 62%,
-        rgba(69, 10, 10, ${aDeep}) 82%,
-        rgba(24, 6, 6, ${Math.min(0.92, aDeep * 1.08)}) 100%
-      );
-      box-shadow: inset 0 0 0 ${borderW}px rgba(248, 113, 113, ${borderA});
-    `
-  }}
-`
-
 const ReactionTimerEdgePulse = styled.div`
   position: fixed;
   inset: 0;
   z-index: 49;
   pointer-events: none;
-  box-shadow: inset 0 0 0 5px rgba(248, 113, 113, 0.55);
-  animation: ${reactionEdgeFlash} 0.65s ease-out forwards;
+  box-shadow: inset 0 0 0 2px rgba(248, 113, 113, 0.55);
+  animation: ${reactionEdgeFlash} 0.4s ease-out forwards;
 `
 
 const ReactionTimerOverlay = styled.div`
   position: fixed;
-  top: max(16px, env(safe-area-inset-top));
+  top: max(12px, env(safe-area-inset-top));
   left: 50%;
   transform: translateX(-50%);
   z-index: 50;
@@ -325,20 +300,24 @@ const ReactionTimerOverlay = styled.div`
 
 const ReactionTimerCard = styled.div`
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 8px;
-  border-radius: var(--radius-xl, 18px);
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  backdrop-filter: none;
+  gap: 6px;
+  padding: 10px 12px 12px;
+  border-radius: 22px;
+  background: rgba(12, 8, 10, 0.55);
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.45),
+    0 0 28px rgba(239, 68, 68, 0.28);
+  backdrop-filter: blur(10px) saturate(140%);
 `
 
 const ReactionTimerRingWrap = styled.div`
   position: relative;
-  width: 108px;
-  height: 108px;
+  width: 132px;
+  height: 132px;
   flex-shrink: 0;
 `
 
@@ -346,19 +325,38 @@ const ReactionTimerSecondsCenter = styled.div`
   position: absolute;
   inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: clamp(1.5rem, 4.8vw, 1.95rem);
-  font-weight: 800;
+  gap: 2px;
+  font-size: clamp(2rem, 6vw, 2.55rem);
+  font-weight: 900;
   font-variant-numeric: tabular-nums;
   line-height: 1;
-  letter-spacing: -0.03em;
-  color: #f87171;
+  letter-spacing: -0.04em;
+  color: #fecaca;
   text-shadow:
-    0 0 20px rgba(239, 68, 68, 0.55),
-    0 0 40px rgba(185, 28, 28, 0.25);
-  animation: ${reactionSecondPulse} 0.48s ease-out;
+    0 0 18px rgba(248, 113, 113, 0.85),
+    0 0 42px rgba(185, 28, 28, 0.45);
+  animation: ${reactionSecondPulse} 0.42s ease-out;
   pointer-events: none;
+
+  .timer-unit {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(254, 202, 202, 0.82);
+    text-shadow: none;
+  }
+`
+
+const ReactionTimerCaption = styled.div`
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(254, 202, 202, 0.9);
 `
 
 const LockInBackdrop = styled.div`
@@ -415,9 +413,9 @@ const PanoStretch = styled.div`
 const PIN_PATCH_MS = 2000
 const PIN_EPS = 1e-7
 
-const REACTION_RING_R = 36
+const REACTION_RING_R = 44
 const REACTION_RING_C = 2 * Math.PI * REACTION_RING_R
-const REACTION_RING_STROKE = 8
+const REACTION_RING_STROKE = 10
 
 function reactionTimeRemainingFraction(deadlineMs: number, reactiveSeconds: number): number {
   const total = Math.max(250, reactiveSeconds * 1000)
@@ -657,6 +655,8 @@ type StreetSectionProps = {
   playerAvatars: DuelClientPayload['playerAvatars']
   viewerRole: DuelViewerRole
   onRefresh: () => Promise<void>
+  /** Force a provisional pin PATCH so timeout resolve has latest coords. */
+  forcePinFlush?: boolean
 }
 
 const DuelStreetSection = memo(
@@ -674,28 +674,38 @@ const DuelStreetSection = memo(
     playerAvatars,
     viewerRole,
     onRefresh,
+    forcePinFlush = false,
   }: StreetSectionProps) {
     const [view, setView] = useState<GameViewType>('Game')
     const pinRef = useRef<{ lat: number; lng: number } | null>(null)
     const lastSentPinRef = useRef<{ lat: number; lng: number } | null>(null)
 
-    const syncPin = useCallback(() => {
-      if (readOnly || youLocked) return
-      const p = pinRef.current
-      if (!p) return
-      const prev = lastSentPinRef.current
-      if (
-        prev &&
-        Math.abs(prev.lat - p.lat) < PIN_EPS &&
-        Math.abs(prev.lng - p.lng) < PIN_EPS
-      ) {
-        return
-      }
-      lastSentPinRef.current = { lat: p.lat, lng: p.lng }
-      void mailman(`duels/${duelId}/pin`, 'PATCH', JSON.stringify(p))
-    }, [duelId, readOnly, youLocked])
+    const syncPin = useCallback(
+      (force = false) => {
+        if (readOnly || youLocked) return
+        const p = pinRef.current
+        if (!p) return
+        const prev = lastSentPinRef.current
+        if (
+          !force &&
+          prev &&
+          Math.abs(prev.lat - p.lat) < PIN_EPS &&
+          Math.abs(prev.lng - p.lng) < PIN_EPS
+        ) {
+          return
+        }
+        lastSentPinRef.current = { lat: p.lat, lng: p.lng }
+        void mailman(`duels/${duelId}/pin`, 'PATCH', JSON.stringify(p))
+      },
+      [duelId, readOnly, youLocked]
+    )
 
-    useVisibleInterval(syncPin, readOnly ? null : PIN_PATCH_MS)
+    useVisibleInterval(() => syncPin(false), readOnly ? null : PIN_PATCH_MS)
+
+    useEffect(() => {
+      if (!forcePinFlush) return
+      syncPin(true)
+    }, [forcePinFlush, syncPin])
 
     const onGuessCoordinateChange = useCallback(
       (loc: LocationType | null) => {
@@ -750,7 +760,8 @@ const DuelStreetSection = memo(
     prev.chatOpen === next.chatOpen &&
     prev.chatMessages === next.chatMessages &&
     prev.playerAvatars === next.playerAvatars &&
-    prev.viewerRole === next.viewerRole
+    prev.viewerRole === next.viewerRole &&
+    prev.forcePinFlush === next.forcePinFlush
 )
 
 type Props = {
@@ -809,6 +820,7 @@ const DuelPlaySurface: FC<Props> = ({ duelId, payload, role, onRefresh }) => {
   const [now, setNow] = useState(() => Date.now())
   const [lockFlash, setLockFlash] = useState<'none' | 'locked' | 'timed'>('none')
   const [forfeitOpen, setForfeitOpen] = useState(false)
+  const [forfeitSubmitting, setForfeitSubmitting] = useState(false)
   const [chatOpen, setChatOpen] = useState(false)
 
   const lr = payload.lastRoundResult
@@ -837,6 +849,20 @@ const DuelPlaySurface: FC<Props> = ({ duelId, payload, role, onRefresh }) => {
     payload.roundDeadlineAt != null && payload.roundDeadlineAt !== ''
       ? Math.max(0, new Date(payload.roundDeadlineAt).getTime() - now)
       : null
+
+  const deadlineExpireKeyRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    const key = payload.roundDeadlineAt ?? null
+    if (!key || payload.status !== 'in_progress' || showRoundReveal) {
+      deadlineExpireKeyRef.current = null
+      return
+    }
+    if (deadlineMs === null || deadlineMs > 0) return
+    if (deadlineExpireKeyRef.current === key) return
+    deadlineExpireKeyRef.current = key
+    void onRefresh()
+  }, [deadlineMs, payload.roundDeadlineAt, payload.status, showRoundReveal, onRefresh])
 
   const loc = payload.currentLocation
   const md = payload.mapDetails
@@ -911,13 +937,20 @@ const DuelPlaySurface: FC<Props> = ({ duelId, payload, role, onRefresh }) => {
   )
 
   const handleForfeit = useCallback(async () => {
-    const res = await mailman(`duels/${duelId}/forfeit`, 'POST', JSON.stringify({}))
+    setForfeitSubmitting(true)
+    try {
+      const res = await mailman(`duels/${duelId}/forfeit`, 'POST', JSON.stringify({}))
 
-    if (res?.error) {
-      showToast('error', res.error.message)
+      if (res?.error) {
+        showToast('error', res.error.message)
+        return
+      }
+
+      setForfeitOpen(false)
+      await onRefresh()
+    } finally {
+      setForfeitSubmitting(false)
     }
-
-    await onRefresh()
   }, [duelId, onRefresh])
 
   const handleDuelExit = useCallback(async () => {
@@ -971,15 +1004,12 @@ const DuelPlaySurface: FC<Props> = ({ duelId, payload, role, onRefresh }) => {
 
   return (
     <PlayColumn>
-      {showReactionTimerStress && (
+      {showReactionTimerStress && deadlineMs !== null && (
         <>
-          <ReactionTimerVignette
-            aria-hidden
-            $urgency={1 - reactionTimeRemainingFraction(deadlineMs, payload.reactiveSeconds)}
-          />
           <ReactionTimerEdgePulse key={Math.ceil(deadlineMs / 1000)} aria-hidden />
           <ReactionTimerOverlay aria-live="polite">
             <ReactionTimerCard>
+              <ReactionTimerCaption>Reaction</ReactionTimerCaption>
               <ReactionTimerRingWrap>
                 <svg
                   width="100%"
@@ -990,9 +1020,9 @@ const DuelPlaySurface: FC<Props> = ({ duelId, payload, role, onRefresh }) => {
                 >
                   <defs>
                     <linearGradient id="reactionRingGradDuels" x1="14%" y1="14%" x2="86%" y2="86%">
-                      <stop offset="0%" stopColor="#fecaca" stopOpacity="0.25" />
+                      <stop offset="0%" stopColor="#fecaca" stopOpacity="0.35" />
                       <stop offset="45%" stopColor="#ef4444" stopOpacity="1" />
-                      <stop offset="100%" stopColor="#7f1d1d" stopOpacity="0.35" />
+                      <stop offset="100%" stopColor="#7f1d1d" stopOpacity="0.45" />
                     </linearGradient>
                   </defs>
                   <circle
@@ -1000,7 +1030,7 @@ const DuelPlaySurface: FC<Props> = ({ duelId, payload, role, onRefresh }) => {
                     cy="50"
                     r={REACTION_RING_R}
                     fill="none"
-                    stroke="rgba(255,255,255,0.12)"
+                    stroke="rgba(255,255,255,0.14)"
                     strokeWidth={REACTION_RING_STROKE}
                   />
                   <ReactionTimerArcProgress
@@ -1016,10 +1046,13 @@ const DuelPlaySurface: FC<Props> = ({ duelId, payload, role, onRefresh }) => {
                   />
                 </svg>
                 <ReactionTimerSecondsCenter key={Math.ceil(deadlineMs / 1000)}>
-                  {(deadlineMs / 1000).toLocaleString(undefined, {
-                    minimumFractionDigits: 1,
-                    maximumFractionDigits: 1,
-                  })}
+                  <span>
+                    {(deadlineMs / 1000).toLocaleString(undefined, {
+                      minimumFractionDigits: 1,
+                      maximumFractionDigits: 1,
+                    })}
+                  </span>
+                  <span className="timer-unit">sec left</span>
                 </ReactionTimerSecondsCenter>
               </ReactionTimerRingWrap>
             </ReactionTimerCard>
@@ -1046,20 +1079,15 @@ const DuelPlaySurface: FC<Props> = ({ duelId, payload, role, onRefresh }) => {
       )}
 
       {!spectating && (
-        <MainModal
+        <DuelForfeitModal
           isOpen={forfeitOpen}
-          onClose={() => setForfeitOpen(false)}
-          onCancel={() => setForfeitOpen(false)}
-          onAction={() => {
+          onCancel={() => {
+            if (forfeitSubmitting) return
             setForfeitOpen(false)
-            void handleForfeit()
           }}
-          title="Forfeit duel?"
-          actionButtonText="Forfeit"
-          cancelButtonText="Keep playing"
-        >
-          You will lose this match and your opponent wins.
-        </MainModal>
+          onConfirm={() => void handleForfeit()}
+          isSubmitting={forfeitSubmitting}
+        />
       )}
 
       <PlayStage>
@@ -1117,6 +1145,12 @@ const DuelPlaySurface: FC<Props> = ({ duelId, payload, role, onRefresh }) => {
             playerAvatars={payload.playerAvatars}
             viewerRole={role}
             onRefresh={onRefresh}
+            forcePinFlush={
+              !spectating &&
+              !payload.flags.youLocked &&
+              deadlineMs !== null &&
+              deadlineMs <= 400
+            }
           />
         )}
       </PlayStage>

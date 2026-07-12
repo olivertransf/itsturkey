@@ -1,8 +1,35 @@
 # itsturkey
 
-Street View geography guessing (GeoGuessr-style). Fork of **[GeoHub](https://github.com/benlikescode/geohub)** with equitable regional maps, MultiGuessr, duels, and hub UX changes. **Code layout, request flow, and fork details:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Street View geography guessing (GeoGuessr-style). Fork of **[GeoHub](https://github.com/benlikescode/geohub)** with equitable regional maps, MultiGuessr, real-time duels, and a gamified hub homepage.
 
-**Repos:** [olivertransf/itsturkey](https://github.com/olivertransf/itsturkey) · [benlikescode/geohub](https://github.com/benlikescode/geohub) (upstream)
+**Live:** [itsturkey.vercel.app](https://itsturkey.vercel.app) · **Repos:** [olivertransf/itsturkey](https://github.com/olivertransf/itsturkey) · [benlikescode/geohub](https://github.com/benlikescode/geohub) (upstream)
+
+**Architecture:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+
+## Features
+
+### Game modes
+
+- **Standard play** — Classic Street View guessing on official and custom maps; fixed or unlimited rounds with leaderboard scoring
+- **Country Streak** — Guess countries correctly in sequence until you miss
+- **Equitable Streaks** — Streak variant on equitable country maps with dedicated stats and leaderboard
+- **MultiGuessr** — Simultaneous 2/4/8-panel guessing with per-guess timers
+- **Duels** — Real-time 1v1 matches in HP mode (damage multipliers) or points mode; chat, spectate, rematch, friend invites via Pusher
+- **Daily Challenge** — Shared daily map with winners and leaderboard (cron-generated)
+- **Challenges** — Shared challenge games with fixed rounds
+
+### Maps & content
+
+- **Equitable maps** — Virtual country and continent maps (`eqcountry-*`, `eqcontinent-*`) for balanced regional coverage
+- **Custom maps** — Browse, create, like, and manage user maps
+- **Hub homepage** — World map cards, equitable country/continent grids, and gamemode entry points
+- **Map tooling** — Import/export scripts for moving map bundles between environments
+
+### Social & accounts
+
+- NextAuth login with profiles, stats, and score history
+- Friends with friend codes, online presence, and duel invite notifications
+- Search with recent history
 
 ---
 
