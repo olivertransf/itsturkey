@@ -9,6 +9,7 @@ import { MultiGameView } from '@components/multiGameView'
 import StyledMultiGamePage from '@styles/MultiGamePage.Styled'
 import { PageType } from '@types'
 import { mailman } from '@utils/helpers'
+import { usePresenceHeartbeat } from '@utils/hooks/usePresenceHeartbeat'
 
 type MultiSessionData = {
   session: MultiSession
@@ -19,6 +20,8 @@ const MultiGamePage: PageType = () => {
   const [multiData, setMultiData] = useState<MultiSessionData | null>()
   const router = useRouter()
   const sessionId = router.query.id as string
+
+  usePresenceHeartbeat('in_game', Boolean(multiData && multiData.session.state === 'started'))
 
   useEffect(() => {
     if (!sessionId) {

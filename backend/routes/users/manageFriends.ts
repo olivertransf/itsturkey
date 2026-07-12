@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb'
 import { NextApiRequest, NextApiResponse } from 'next'
 import type FriendshipEdge from '@backend/models/friendship'
+import { resolveFriendsActiveSessions } from '@backend/utils/resolveFriendsActiveSessions'
 import { collections, getUserId, throwError } from '@backend/utils'
 
 function sortedPair(a: ObjectId, b: ObjectId): { low: ObjectId; high: ObjectId } {
@@ -36,8 +37,10 @@ export const listFriends = async (req: NextApiRequest, res: NextApiResponse) => 
 
   const now = Date.now()
   const onlineWindowMs = 2 * 60 * 1000
+  const activeSessions = await resolveFriendsActiveSessions(peerIds)
 
   const rows = users.map((u) => {
+    const id = u._id.toHexString()
     const lastSeenAt =
       u.lastSeenAt instanceof Date
         ? u.lastSeenAt.toISOString()
@@ -47,17 +50,38 @@ export const listFriends = async (req: NextApiRequest, res: NextApiResponse) => 
     const lastSeenMs = lastSeenAt ? new Date(lastSeenAt).getTime() : 0
     const online = lastSeenMs > 0 && now - lastSeenMs < onlineWindowMs
 
+    let presenceActivity =
+      typeof u.presenceActivity === 'string' ? u.presenceActivity : undefined
+
+    // Online peers: prefer live sessions over stale heartbeat labels
+    if (online) {
+      const fromSession = activeSessions.get(id)
+      if (fromSession) {
+        presenceActivity = fromSession
+      }
+    }
+
     return {
-      id: u._id.toHexString(),
+      id,
       name: u.name,
       friendCode: typeof u.friendCode === 'string' ? u.friendCode : undefined,
       lastSeenAt,
-      presenceActivity:
-        typeof u.presenceActivity === 'string' ? u.presenceActivity : undefined,
+      presenceActivity,
       online,
     }
   })
-  rows.sort((a, b) => a.name.localeCompare(b.name))
+
+  rows.sort((a, b) => {
+    const rank = (f: (typeof rows)[number]) => {
+      if (f.online && f.presenceActivity === 'in_duel') return 0
+      if (f.online && f.presenceActivity === 'in_game') return 1
+      if (f.online) return 2
+      return 3
+    }
+    const diff = rank(a) - rank(b)
+    if (diff !== 0) return diff
+    return a.name.localeCompare(b.name)
+  })
 
   res.status(200).send(rows)
 }

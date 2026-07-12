@@ -9,18 +9,16 @@ import { Meta } from '@components/Meta'
 import { Button, Input } from '@components/system'
 import { SkeletonCards } from '@components/skeletons'
 import { UserAddIcon } from '@heroicons/react/outline'
+import {
+  friendIsInGame,
+  friendPresenceLabel,
+  sortFriendsByPresence,
+} from '@utils/friends/friendPresence'
+import type { FriendRow } from '@utils/friends/friendPresence'
 import { mailman, showToast } from '@utils/helpers'
+import { usePresenceHeartbeat } from '@utils/hooks/usePresenceHeartbeat'
 import { useVisibleInterval } from '@utils/useVisibleInterval'
 import styled from 'styled-components'
-
-type FriendRow = {
-  id: string
-  name: string
-  friendCode?: string
-  lastSeenAt?: string | null
-  presenceActivity?: string
-  online?: boolean
-}
 
 const StyledFriendsPage = styled.div`
   padding-bottom: 48px;
@@ -98,8 +96,18 @@ const StyledFriendsPage = styled.div`
     box-shadow: 0 0 8px rgba(74, 222, 128, 0.45);
   }
 
+  .status-dot--active {
+    background: #fbbf24;
+    box-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+  }
+
   .status-dot--offline {
     background: #52525b;
+  }
+
+  .status-text--active {
+    color: #fbbf24;
+    font-weight: 600;
   }
 
   .empty-hint {
@@ -110,26 +118,15 @@ const StyledFriendsPage = styled.div`
   }
 `
 
-function presenceLabel(friend: FriendRow): string {
-  if (friend.online) {
-    if (friend.presenceActivity === 'in_duel') return 'In a duel'
-    if (friend.presenceActivity === 'in_game') return 'In a game'
-    return 'Online'
-  }
-  return 'Offline'
-}
-
 const FriendsPage: NextPage = () => {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [friends, setFriends] = useState<FriendRow[] | null>(null)
   const [identifier, setIdentifier] = useState('')
   const [busy, setBusy] = useState(false)
+  const isAuthed = status === 'authenticated'
 
-  const heartbeat = useCallback(() => {
-    if (status !== 'authenticated') return
-    void mailman('users/presence', 'POST', JSON.stringify({ activity: 'browsing' }))
-  }, [status])
+  usePresenceHeartbeat('browsing', isAuthed)
 
   const fetchFriends = useCallback(async () => {
     const res = await mailman('users/friends')
@@ -137,7 +134,7 @@ const FriendsPage: NextPage = () => {
       showToast('error', res.error.message)
       return
     }
-    if (Array.isArray(res)) setFriends(res as FriendRow[])
+    if (Array.isArray(res)) setFriends(sortFriendsByPresence(res as FriendRow[]))
   }, [])
 
   useEffect(() => {
@@ -145,19 +142,11 @@ const FriendsPage: NextPage = () => {
       void router.replace(`/login?callbackUrl=${encodeURIComponent('/friends')}`)
       return
     }
-    if (status !== 'authenticated') return
-    void heartbeat()
+    if (!isAuthed) return
     void fetchFriends()
-  }, [status, router, heartbeat, fetchFriends])
+  }, [status, router, isAuthed, fetchFriends])
 
-  useVisibleInterval(
-    () => {
-      void heartbeat()
-      void fetchFriends()
-    },
-    45000,
-    status === 'authenticated'
-  )
+  useVisibleInterval(() => void fetchFriends(), 45000, isAuthed)
 
   const handleAdd = async () => {
     const id = identifier.trim()
@@ -196,7 +185,8 @@ const FriendsPage: NextPage = () => {
         <PageBackLink href="/" label="Back to home" compact />
         <PageHeader>Friends</PageHeader>
         <p className="empty-hint" style={{ marginTop: 8 }}>
-          Add players and see who is online.
+          Add players and see who is online or in a game.
+          {session?.user?.name ? ` Signed in as ${session.user.name}.` : ''}
         </p>
 
         <div className="friends-body">
@@ -225,31 +215,42 @@ const FriendsPage: NextPage = () => {
             <p className="empty-hint">No friends yet. Add someone with their friend code or exact display name.</p>
           ) : (
             <ul className="friends-list">
-              {friends.map((friend) => (
-                <li key={friend.id} className="friend-row">
-                  <div className="friend-info">
-                    <Link href={`/user/${encodeURIComponent(friend.id)}`}>
-                      <a className="friend-name">{friend.name}</a>
-                    </Link>
-                    <div className="friend-meta">
-                      <span
-                        className={`status-dot ${friend.online ? 'status-dot--online' : 'status-dot--offline'}`}
-                        aria-hidden
-                      />
-                      <span>{presenceLabel(friend)}</span>
-                      {friend.friendCode ? <span>· {friend.friendCode}</span> : null}
+              {friends.map((friend) => {
+                const inGame = friendIsInGame(friend)
+                return (
+                  <li key={friend.id} className="friend-row">
+                    <div className="friend-info">
+                      <Link href={`/user/${encodeURIComponent(friend.id)}`}>
+                        <a className="friend-name">{friend.name}</a>
+                      </Link>
+                      <div className="friend-meta">
+                        <span
+                          className={`status-dot ${
+                            inGame
+                              ? 'status-dot--active'
+                              : friend.online
+                                ? 'status-dot--online'
+                                : 'status-dot--offline'
+                          }`}
+                          aria-hidden
+                        />
+                        <span className={inGame ? 'status-text--active' : undefined}>
+                          {friendPresenceLabel(friend)}
+                        </span>
+                        {friend.friendCode ? <span>· {friend.friendCode}</span> : null}
+                      </div>
                     </div>
-                  </div>
-                  <Button
-                    variant="destroy"
-                    style={{ padding: '0 10px', fontSize: 12 }}
-                    disabled={busy}
-                    onClick={() => void handleRemove(friend.id)}
-                  >
-                    Remove
-                  </Button>
-                </li>
-              ))}
+                    <Button
+                      variant="destroy"
+                      style={{ padding: '0 10px', fontSize: 12 }}
+                      disabled={busy}
+                      onClick={() => void handleRemove(friend.id)}
+                    >
+                      Remove
+                    </Button>
+                  </li>
+                )
+              })}
             </ul>
           )}
         </div>

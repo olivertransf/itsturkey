@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { CountryStreakCard } from '@components/CountryStreakCard'
 import HomeEquitableContinentGrid from '@components/HomeEquitableContinentGrid'
 import HomeEquitableCountryGrid from '@components/HomeEquitableCountryGrid'
+import { HomeFriendsCard } from '@components/HomeFriendsCard'
 import { HomeWorldCard } from '@components/HomeWorldCard'
 import { Meta } from '@components/Meta'
 import { DuelGuessrCard } from '@components/DuelGuessrCard'
@@ -107,6 +108,13 @@ const Home: NextPage = () => {
               <DuelGuessrCard />
             </div>
           </section>
+
+          {session?.user?.id ? (
+            <section className="home-section">
+              <h2 className="section-title">Friends</h2>
+              <HomeFriendsCard />
+            </section>
+          ) : null}
 
           <section className="home-section">
             <h2 className="section-title">Maps</h2>

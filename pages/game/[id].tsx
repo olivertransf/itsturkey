@@ -10,6 +10,7 @@ import { updateRecentlyPlayed } from '@redux/slices'
 import StyledGamePage from '@styles/GamePage.Styled'
 import { GameViewType, PageType } from '@types'
 import { mailman } from '@utils/helpers'
+import { usePresenceHeartbeat } from '@utils/hooks/usePresenceHeartbeat'
 
 const GamePage: PageType = () => {
   const [view, setView] = useState<GameViewType>('Game')
@@ -18,6 +19,11 @@ const GamePage: PageType = () => {
   const router = useRouter()
   const gameId = router.query.id as string
   const dispatch = useAppDispatch()
+
+  usePresenceHeartbeat(
+    'in_game',
+    Boolean(gameData && gameData.state !== 'finished' && view === 'Game')
+  )
 
   const fetchGame = async () => {
     const res = await mailman(`games/${gameId}`)
