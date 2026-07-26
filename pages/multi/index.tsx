@@ -15,7 +15,6 @@ import {
   GamifiedDuelSettingsColumn,
   GamifiedFormCardWide,
 } from '@styles/GamifiedHubShell.Styled'
-import { DuelLobbyPlonkStrip } from '@components/duel/DuelRoomPanels'
 import { isMapExcludedFromPicker } from '@utils/constants/mapPicker'
 import {
   ALLOWED_MULTI_PANEL_COUNTS,
@@ -270,9 +269,6 @@ const MultiLobbyPage: NextPage = () => {
               >
                 {submitting ? 'Starting…' : 'Start'}
               </Button>
-              <div style={{ marginTop: 18 }}>
-                <DuelLobbyPlonkStrip />
-              </div>
             </GamifiedDuelSettingsColumn>
           </GamifiedDuelGrid>
         </GamifiedFormCardWide>

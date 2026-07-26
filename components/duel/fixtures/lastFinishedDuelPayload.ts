@@ -36,7 +36,6 @@ const LAST_FINISHED_DUEL_PAYLOAD: DuelClientPayload = {
   "startingHpHost": 6000,
   "startingHpGuest": 6000,
   "completedRounds": 5,
-  "totalRounds": null,
   "reactiveSeconds": 15,
   "roundDeadlineAt": null,
   "flags": {
