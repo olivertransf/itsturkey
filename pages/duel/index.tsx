@@ -10,10 +10,14 @@ import {
   CreateFieldLabel,
   CreateLobbyShell,
   CreateModeStrip,
+  CreateOnlyNarrow,
   CreateRow,
   CreateSection,
   CreateSectionStatic,
   CreateStickyActions,
+  CreateWideAside,
+  CreateWideLayout,
+  CreateWideMain,
 } from '@components/CreateLobby'
 import { VisualRestrictionsPanel } from '@components/GameStartForm'
 import { LobbyGameSettings } from '@components/LobbyGameSettings'
@@ -175,148 +179,173 @@ const DuelLobbyPage: NextPage = () => {
       <Meta title="Create Duel" />
 
       <CreateLobbyShell
+        wide
         title="Create duel"
-        tag="1v1 invite — share the link or code. Basics stay up top; map and filters fold away."
+        tag="1v1 invite — share the link or code. Basics stay on the right; pick a map on the left."
         glyph={<SparklesIcon />}
       >
-        <CreateSection>
-          <CreateSectionStatic>
-            {status !== 'authenticated' && status !== 'loading' ? (
-              <div>
-                <CreateFieldLabel htmlFor="hostNick">Your name (guests)</CreateFieldLabel>
-                <CreateFieldInput
-                  id="hostNick"
-                  type="text"
-                  maxLength={32}
-                  placeholder="Optional — lobby display"
-                  value={hostNickname}
-                  onChange={(e) => setHostNickname(e.target.value)}
+        <CreateWideLayout>
+          <CreateWideAside>
+            <CreateSection>
+              <CreateSectionStatic>
+                <CreateFieldLabel as="div">
+                  Map{mapNameForField ? ` · ${mapNameForField}` : ''}
+                </CreateFieldLabel>
+                <MapPickerGrid
+                  options={selectOptions}
+                  value={mapField}
+                  onChange={setMapField}
+                  loading={mapsLoading}
+                  maxHeight={420}
+                  showDescriptions={false}
                 />
-              </div>
-            ) : null}
+              </CreateSectionStatic>
+            </CreateSection>
+          </CreateWideAside>
 
-            <div>
-              <CreateFieldLabel as="div">Mode</CreateFieldLabel>
-              <CreateModeStrip>
-                <ToggleSwitch isActive={mode === 'points'} setIsActive={(on) => setMode(on ? 'points' : 'hp')} />
-                <span className="mode-copy">
-                  {mode === 'hp' ? (
-                    <>
-                      <HeartIcon /> HP · until KO
-                    </>
-                  ) : (
-                    <>
-                      <LightningBoltIcon /> Points · {rounds} rounds
-                    </>
-                  )}
-                </span>
-              </CreateModeStrip>
-            </div>
+          <CreateWideMain>
+            <CreateSection>
+              <CreateSectionStatic>
+                {status !== 'authenticated' && status !== 'loading' ? (
+                  <div>
+                    <CreateFieldLabel htmlFor="hostNick">Your name (guests)</CreateFieldLabel>
+                    <CreateFieldInput
+                      id="hostNick"
+                      type="text"
+                      maxLength={32}
+                      placeholder="Optional — lobby display"
+                      value={hostNickname}
+                      onChange={(e) => setHostNickname(e.target.value)}
+                    />
+                  </div>
+                ) : null}
 
-            {mode === 'points' ? (
-              <div>
-                <CreateFieldLabel htmlFor="rounds">Rounds</CreateFieldLabel>
-                <CreateFieldInput
-                  id="rounds"
-                  type="number"
-                  min={1}
-                  max={MAX_TOTAL_ROUNDS}
-                  value={rounds}
-                  onChange={(e) => setRounds(Number(e.target.value))}
+                <div>
+                  <CreateFieldLabel as="div">Mode</CreateFieldLabel>
+                  <CreateModeStrip>
+                    <ToggleSwitch isActive={mode === 'points'} setIsActive={(on) => setMode(on ? 'points' : 'hp')} />
+                    <span className="mode-copy">
+                      {mode === 'hp' ? (
+                        <>
+                          <HeartIcon /> HP · until KO
+                        </>
+                      ) : (
+                        <>
+                          <LightningBoltIcon /> Points · {rounds} rounds
+                        </>
+                      )}
+                    </span>
+                  </CreateModeStrip>
+                </div>
+
+                {mode === 'points' ? (
+                  <div>
+                    <CreateFieldLabel htmlFor="rounds">Rounds</CreateFieldLabel>
+                    <CreateFieldInput
+                      id="rounds"
+                      type="number"
+                      min={1}
+                      max={MAX_TOTAL_ROUNDS}
+                      value={rounds}
+                      onChange={(e) => setRounds(Number(e.target.value))}
+                    />
+                  </div>
+                ) : null}
+
+                <CreateRow>
+                  <CreateFieldGrow>
+                    <CreateFieldLabel htmlFor="hpHost">Your HP</CreateFieldLabel>
+                    <CreateFieldInput
+                      id="hpHost"
+                      type="number"
+                      min={100}
+                      value={startingHpHost}
+                      onChange={(e) => setStartingHpHost(Number(e.target.value))}
+                    />
+                  </CreateFieldGrow>
+                  <CreateFieldGrow>
+                    <CreateFieldLabel htmlFor="hpGuest">Opponent HP</CreateFieldLabel>
+                    <CreateFieldInput
+                      id="hpGuest"
+                      type="number"
+                      min={100}
+                      value={startingHpGuest}
+                      onChange={(e) => setStartingHpGuest(Number(e.target.value))}
+                    />
+                  </CreateFieldGrow>
+                </CreateRow>
+
+                {mode === 'hp' ? (
+                  <div>
+                    <CreateFieldLabel as="div">Damage multiplier</CreateFieldLabel>
+                    <CreateModeStrip>
+                      <ToggleSwitch
+                        isActive={multiplierMode === 'win_streak'}
+                        setIsActive={(on) => setMultiplierMode(on ? 'win_streak' : 'round_ramp')}
+                      />
+                      <span className="mode-copy">
+                        {multiplierMode === 'round_ramp'
+                          ? 'Round ramp — climbs each round'
+                          : 'Win streak — +0.5× per round won'}
+                      </span>
+                    </CreateModeStrip>
+                  </div>
+                ) : null}
+              </CreateSectionStatic>
+            </CreateSection>
+
+            <CreateOnlyNarrow>
+              <CreateAccordion
+                title="Map"
+                summary={mapNameForField || (mapsLoading ? 'Loading…' : 'Choose a map')}
+                defaultOpen={false}
+              >
+                <MapPickerGrid
+                  options={selectOptions}
+                  value={mapField}
+                  onChange={setMapField}
+                  loading={mapsLoading}
+                  maxHeight={280}
+                  showDescriptions={false}
                 />
-              </div>
-            ) : null}
+              </CreateAccordion>
+            </CreateOnlyNarrow>
 
-            <CreateRow>
-              <CreateFieldGrow>
-                <CreateFieldLabel htmlFor="hpHost">Your HP</CreateFieldLabel>
-                <CreateFieldInput
-                  id="hpHost"
-                  type="number"
-                  min={100}
-                  value={startingHpHost}
-                  onChange={(e) => setStartingHpHost(Number(e.target.value))}
-                />
-              </CreateFieldGrow>
-              <CreateFieldGrow>
-                <CreateFieldLabel htmlFor="hpGuest">Opponent HP</CreateFieldLabel>
-                <CreateFieldInput
-                  id="hpGuest"
-                  type="number"
-                  min={100}
-                  value={startingHpGuest}
-                  onChange={(e) => setStartingHpGuest(Number(e.target.value))}
-                />
-              </CreateFieldGrow>
-            </CreateRow>
+            <CreateAccordion
+              title="Round & movement"
+              summary={defaultsLocked ? 'Default time & movement' : 'Custom time & movement'}
+              defaultOpen={false}
+            >
+              <LobbyGameSettings
+                defaultsLocked={defaultsLocked}
+                onToggleDefaults={onToggleDefaults}
+                sliderVal={sliderVal}
+                setSliderVal={setSliderVal}
+                canMove={canMove}
+                canPan={canPan}
+                canZoom={canZoom}
+                setCanMove={setCanMove}
+                setCanPan={setCanPan}
+                setCanZoom={setCanZoom}
+                visualRestrictions={visualRestrictions}
+                setVisualRestrictions={setVisualRestrictions}
+                hideVisualRestrictions
+              />
+            </CreateAccordion>
 
-            {mode === 'hp' ? (
-              <div>
-                <CreateFieldLabel as="div">Damage multiplier</CreateFieldLabel>
-                <CreateModeStrip>
-                  <ToggleSwitch
-                    isActive={multiplierMode === 'win_streak'}
-                    setIsActive={(on) => setMultiplierMode(on ? 'win_streak' : 'round_ramp')}
-                  />
-                  <span className="mode-copy">
-                    {multiplierMode === 'round_ramp'
-                      ? 'Round ramp — climbs each round'
-                      : 'Win streak — +0.5× per round won'}
-                  </span>
-                </CreateModeStrip>
-              </div>
-            ) : null}
-          </CreateSectionStatic>
-        </CreateSection>
-
-        <CreateAccordion
-          title="Map"
-          summary={mapNameForField || (mapsLoading ? 'Loading…' : 'Choose a map')}
-          defaultOpen={false}
-        >
-          <MapPickerGrid
-            options={selectOptions}
-            value={mapField}
-            onChange={setMapField}
-            loading={mapsLoading}
-            maxHeight={280}
-            showDescriptions={false}
-          />
-        </CreateAccordion>
-
-        <CreateAccordion
-          title="Round & movement"
-          summary={defaultsLocked ? 'Default time & movement' : 'Custom time & movement'}
-          defaultOpen={false}
-        >
-          <LobbyGameSettings
-            defaultsLocked={defaultsLocked}
-            onToggleDefaults={onToggleDefaults}
-            sliderVal={sliderVal}
-            setSliderVal={setSliderVal}
-            canMove={canMove}
-            canPan={canPan}
-            canZoom={canZoom}
-            setCanMove={setCanMove}
-            setCanPan={setCanPan}
-            setCanZoom={setCanZoom}
-            visualRestrictions={visualRestrictions}
-            setVisualRestrictions={setVisualRestrictions}
-            hideVisualRestrictions
-          />
-        </CreateAccordion>
-
-        <CreateAccordion
-          title="Wacky filters"
-          summary={fxCount > 0 ? `${fxCount} filter${fxCount === 1 ? '' : 's'} on` : 'None'}
-          defaultOpen={fxCount > 0}
-        >
-          <VisualRestrictionsPanel
-            value={visualRestrictions}
-            onChange={setVisualRestrictions}
-            listMaxHeight={220}
-          />
-        </CreateAccordion>
+            <CreateAccordion
+              title="Wacky filters"
+              summary={fxCount > 0 ? `${fxCount} filter${fxCount === 1 ? '' : 's'} on` : 'None'}
+              defaultOpen={fxCount > 0}
+            >
+              <VisualRestrictionsPanel
+                value={visualRestrictions}
+                onChange={setVisualRestrictions}
+                listMaxHeight={220}
+              />
+            </CreateAccordion>
+          </CreateWideMain>
+        </CreateWideLayout>
 
         <CreateStickyActions>
           <Button

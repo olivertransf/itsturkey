@@ -3,8 +3,8 @@ import styled from 'styled-components'
 import { PageBackLink } from '@components/PageBackLink'
 import { GamifiedCenterStage, GamifiedFormCard } from '@styles/GamifiedHubShell.Styled'
 
-export const CreateLobbyCard = styled(GamifiedFormCard)`
-  max-width: min(640px, 100%);
+export const CreateLobbyCard = styled(GamifiedFormCard)<{ $wide?: boolean }>`
+  max-width: ${({ $wide }) => ($wide ? 'min(var(--mainMaxWidth), 100%)' : 'min(640px, 100%)')};
   padding: 18px 18px 20px;
   display: flex;
   flex-direction: column;
@@ -218,6 +218,50 @@ export const CreateChoiceChip = styled.button<{ $active?: boolean }>`
   cursor: pointer;
 `
 
+export const CreateWideLayout = styled.div`
+  display: grid;
+  gap: 14px;
+  width: 100%;
+  min-width: 0;
+
+  @media (min-width: 960px) {
+    grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.95fr);
+    grid-template-areas: 'aside main';
+    align-items: start;
+  }
+`
+
+export const CreateWideAside = styled.div`
+  min-width: 0;
+  display: none;
+
+  @media (min-width: 960px) {
+    display: block;
+    grid-area: aside;
+    position: sticky;
+    top: 12px;
+  }
+`
+
+export const CreateWideMain = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+
+  @media (min-width: 960px) {
+    grid-area: main;
+  }
+`
+
+export const CreateOnlyNarrow = styled.div`
+  display: block;
+
+  @media (min-width: 960px) {
+    display: none;
+  }
+`
+
 type AccordionProps = {
   title: string
   summary: string
@@ -256,13 +300,15 @@ type ShellProps = {
   glyph: ReactNode
   children: ReactNode
   metaTitle?: string
+  /** Site content width + optional two-column layout (create duel). */
+  wide?: boolean
 }
 
-/** Shared create-lobby chrome: narrow card, back link, hero. */
-export const CreateLobbyShell: FC<ShellProps> = ({ title, tag, glyph, children }) => {
+/** Shared create-lobby chrome: back link, hero, optional wide card. */
+export const CreateLobbyShell: FC<ShellProps> = ({ title, tag, glyph, children, wide = false }) => {
   return (
-    <GamifiedCenterStage style={{ justifyContent: 'flex-start' }}>
-      <CreateLobbyCard>
+    <GamifiedCenterStage style={{ justifyContent: 'flex-start', alignItems: wide ? 'stretch' : 'center' }}>
+      <CreateLobbyCard $wide={wide}>
         <div>
           <PageBackLink href="/" label="Home" />
         </div>
