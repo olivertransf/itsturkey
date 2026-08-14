@@ -55,7 +55,7 @@ const MapPlayInline: FC<Props> = ({ mapDetails, gameMode }) => {
     <StyledMapPlayInline>
       <div className="play-col play-col-main">
         {gameMode !== 'streak' ? (
-          <>
+          <section className="play-card">
             <h2 className="play-heading">Rounds</h2>
             <StyledGameSettingsModal className="lobby-game-settings-inner">
               <div className="mainContent">
@@ -91,25 +91,27 @@ const MapPlayInline: FC<Props> = ({ mapDetails, gameMode }) => {
                 </div>
               </div>
             </StyledGameSettingsModal>
-          </>
+          </section>
         ) : null}
 
-        <h2 className="play-heading">Time & movement</h2>
-        <LobbyGameSettings
-          defaultsLocked={defaultsLocked}
-          onToggleDefaults={handleCheck}
-          sliderVal={sliderVal}
-          setSliderVal={setSliderVal}
-          canMove={canMove}
-          canPan={canPan}
-          canZoom={canZoom}
-          setCanMove={setCanMove}
-          setCanPan={setCanPan}
-          setCanZoom={setCanZoom}
-          visualRestrictions={visualRestrictions}
-          setVisualRestrictions={setVisualRestrictions}
-          hideVisualRestrictions
-        />
+        <section className="play-card">
+          <h2 className="play-heading">Time & movement</h2>
+          <LobbyGameSettings
+            defaultsLocked={defaultsLocked}
+            onToggleDefaults={handleCheck}
+            sliderVal={sliderVal}
+            setSliderVal={setSliderVal}
+            canMove={canMove}
+            canPan={canPan}
+            canZoom={canZoom}
+            setCanMove={setCanMove}
+            setCanPan={setCanPan}
+            setCanZoom={setCanZoom}
+            visualRestrictions={visualRestrictions}
+            setVisualRestrictions={setVisualRestrictions}
+            hideVisualRestrictions
+          />
+        </section>
 
         <div className="play-start">
           {equitableCountryIso && gameMode !== 'streak' ? (
@@ -132,20 +134,20 @@ const MapPlayInline: FC<Props> = ({ mapDetails, gameMode }) => {
       </div>
 
       <div className="play-col play-col-filters">
-        <div className="play-heading-row">
-          <h2 className="play-heading">Filters</h2>
-          <button
-            type="button"
-            className="play-clear"
-            disabled={!anyFilterOn}
-            onClick={() => setVisualRestrictions({})}
-          >
-            Clear all
-          </button>
-        </div>
-        <div className="play-filters-scroll">
+        <section className="play-card play-card-filters">
+          <div className="play-heading-row">
+            <h2 className="play-heading">Filters</h2>
+            <button
+              type="button"
+              className="play-clear"
+              disabled={!anyFilterOn}
+              onClick={() => setVisualRestrictions({})}
+            >
+              Clear all
+            </button>
+          </div>
           <VisualRestrictionsPanel value={visualRestrictions} onChange={setVisualRestrictions} embedded />
-        </div>
+        </section>
       </div>
     </StyledMapPlayInline>
   )

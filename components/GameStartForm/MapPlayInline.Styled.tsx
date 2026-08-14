@@ -22,6 +22,10 @@ export const StyledMapPlayInline = styled.div`
       width: calc((100% - var(--play-gap)) / 2);
       overflow: hidden;
     }
+
+    .play-card-filters {
+      height: 100%;
+    }
   }
 
   .play-col {
@@ -29,6 +33,23 @@ export const StyledMapPlayInline = styled.div`
     flex-direction: column;
     gap: var(--play-gap);
     min-width: 0;
+  }
+
+  .play-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--play-gap);
+    min-width: 0;
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    border: var(--border-default);
+    background-color: var(--bg-elevated);
+    box-sizing: border-box;
+  }
+
+  .play-card-filters {
+    min-height: 0;
+    overflow: hidden;
   }
 
   .play-heading-row {
@@ -73,27 +94,41 @@ export const StyledMapPlayInline = styled.div`
     gap: var(--play-gap);
   }
 
-  .play-filters-scroll {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    padding-right: var(--space-2);
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+  .play-filter-grid-scroll {
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
+    scrollbar-width: auto;
+    scrollbar-color: rgba(255, 255, 255, 0.45) rgba(255, 255, 255, 0.08);
+
+    @media (max-width: 899px) {
+      max-height: min(420px, 50vh);
+    }
   }
 
-  .play-filters-scroll > section {
-    gap: var(--play-gap);
+  .play-filter-grid-scroll::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 10px;
   }
 
-  .play-col-main .lobby-game-settings-inner,
-  .play-col-main .lobby-game-settings-inner .mainContent,
-  .play-col-main .lobby-game-settings-inner .settingsWrapper,
-  .play-col-main .lobby-game-settings-inner .detailedSettings,
-  .play-col-main .lobby-game-settings-inner .checkboxWrapper,
-  .play-col-main .lobby-game-settings-inner .setting-options,
-  .play-col-main .roundsSection {
+  .play-filter-grid-scroll::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-pill);
+  }
+
+  .play-filter-grid-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.38);
+    border-radius: var(--radius-pill);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  .play-card .lobby-game-settings-inner,
+  .play-card .lobby-game-settings-inner .mainContent,
+  .play-card .lobby-game-settings-inner .settingsWrapper,
+  .play-card .lobby-game-settings-inner .detailedSettings,
+  .play-card .lobby-game-settings-inner .checkboxWrapper,
+  .play-card .lobby-game-settings-inner .setting-options,
+  .play-card .roundsSection {
     display: contents;
   }
 

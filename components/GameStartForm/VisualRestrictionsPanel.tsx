@@ -24,10 +24,35 @@ type Props = {
   embedded?: boolean
 }
 
-const Root = styled.section`
+const Root = styled.section<{ $fill?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  min-width: 0;
+  ${({ $fill }) =>
+    $fill
+      ? `
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  `
+      : ''}
+`
+
+const GridScroll = styled.div<{ $scroll?: boolean }>`
+  ${({ $scroll }) =>
+    $scroll
+      ? `
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    flex: 1;
+    min-height: 0;
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
+    padding-right: var(--space-1);
+  `
+      : ''}
 `
 
 const TitleRow = styled.div`
@@ -65,6 +90,7 @@ const IntensityRow = styled.div`
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  flex-shrink: 0;
 
   .intensity-label {
     display: flex;
@@ -186,7 +212,7 @@ const VisualRestrictionsPanel: FC<Props> = ({ value, onChange, disabled, listMax
   }
 
   return (
-    <Root aria-label="Visual restrictions">
+    <Root aria-label="Visual restrictions" $fill={embedded}>
       {embedded ? null : (
         <TitleRow>
           <Title>Filters</Title>
@@ -219,52 +245,54 @@ const VisualRestrictionsPanel: FC<Props> = ({ value, onChange, disabled, listMax
         </p>
       </IntensityRow>
 
-      <Grid $maxHeight={listMaxHeight}>
-        {VISUAL_RESTRICTION_CATALOG.map(({ key, label, blurb }) => {
-          const on = Boolean(normalized[key])
-          return (
-            <Chip
-              key={key}
-              type="button"
-              $on={on}
-              $disabled={disabled}
-              aria-pressed={on}
-              disabled={disabled}
-              onClick={() => toggle(key)}
-            >
-              <span className="chip-label">{label}</span>
-              <span className="chip-blurb">{blurb}</span>
-            </Chip>
-          )
-        })}
-      </Grid>
+      <GridScroll $scroll={embedded} className={embedded ? 'play-filter-grid-scroll' : undefined}>
+        <Grid $maxHeight={embedded ? undefined : listMaxHeight}>
+          {VISUAL_RESTRICTION_CATALOG.map(({ key, label, blurb }) => {
+            const on = Boolean(normalized[key])
+            return (
+              <Chip
+                key={key}
+                type="button"
+                $on={on}
+                $disabled={disabled}
+                aria-pressed={on}
+                disabled={disabled}
+                onClick={() => toggle(key)}
+              >
+                <span className="chip-label">{label}</span>
+                <span className="chip-blurb">{blurb}</span>
+              </Chip>
+            )
+          })}
+        </Grid>
 
-      {normalized.pixelate ? (
-        <PixelRow>
-          <div className="pixel-label">
-            <span>Pixel size</span>
-            <span className="pixel-val">
-              {clampPixelateLevel(normalized.pixelateLevel ?? DEFAULT_PIXELATE_LEVEL)}
-            </span>
-          </div>
-          <Slider
-            value={clampPixelateLevel(normalized.pixelateLevel ?? DEFAULT_PIXELATE_LEVEL)}
-            min={2}
-            max={16}
-            onChange={(n) =>
-              onChange(
-                normalizeVisualRestrictions({
-                  ...normalized,
-                  pixelate: true,
-                  pixelateLevel: n,
-                  intensity,
-                })
-              )
-            }
-            disabled={disabled}
-          />
-        </PixelRow>
-      ) : null}
+        {normalized.pixelate ? (
+          <PixelRow>
+            <div className="pixel-label">
+              <span>Pixel size</span>
+              <span className="pixel-val">
+                {clampPixelateLevel(normalized.pixelateLevel ?? DEFAULT_PIXELATE_LEVEL)}
+              </span>
+            </div>
+            <Slider
+              value={clampPixelateLevel(normalized.pixelateLevel ?? DEFAULT_PIXELATE_LEVEL)}
+              min={2}
+              max={16}
+              onChange={(n) =>
+                onChange(
+                  normalizeVisualRestrictions({
+                    ...normalized,
+                    pixelate: true,
+                    pixelateLevel: n,
+                    intensity,
+                  })
+                )
+              }
+              disabled={disabled}
+            />
+          </PixelRow>
+        ) : null}
+      </GridScroll>
     </Root>
   )
 }
