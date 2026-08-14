@@ -20,10 +20,10 @@ const StyledHomeUserStats = styled.div`
 
   .stats-title {
     margin: 0;
-    font-size: var(--font-label);
+    font-size: 1.125rem;
     font-weight: 700;
-    letter-spacing: var(--tracking-label);
-    text-transform: uppercase;
+    letter-spacing: var(--tracking-title);
+    text-transform: none;
     color: var(--text-primary);
   }
 
@@ -72,7 +72,7 @@ const StyledHomeUserStats = styled.div`
   }
 
   .stats-value {
-    font-size: var(--font-section);
+    font-size: 1.5rem;
     font-weight: 700;
     letter-spacing: var(--tracking-title);
     line-height: 1.2;

@@ -117,12 +117,12 @@ export const GamifiedDuelCreatePanel = styled.section`
   box-sizing: border-box;
 
   .panel-title {
-    margin: 0 0 4px;
-    font-size: 11px;
+    margin: 0 0 var(--space-2);
+    font-size: 1.0625rem;
     font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--text-muted);
+    letter-spacing: var(--tracking-title);
+    text-transform: none;
+    color: var(--text-primary);
   }
 
   .panel-body {

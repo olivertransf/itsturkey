@@ -1,18 +1,21 @@
 import { useSession } from 'next-auth/react'
 import type { NextPage } from 'next'
 import Link from 'next/link'
-import { CountryStreakCard } from '@components/CountryStreakCard'
+import { useMemo } from 'react'
+import { GlobeAltIcon, LightningBoltIcon, ViewGridIcon } from '@heroicons/react/outline'
 import HomeEquitableContinentGrid from '@components/HomeEquitableContinentGrid'
 import HomeEquitableCountryGrid from '@components/HomeEquitableCountryGrid'
 import { HomeFriendsCard } from '@components/HomeFriendsCard'
+import { HomeModeTile } from '@components/HomeModeTile'
+import { HomeOngoingCard } from '@components/HomeOngoingCard'
+import { HomeProfileCard } from '@components/HomeProfileCard'
 import { HomeUserStats } from '@components/HomeUserStats'
-import { HomeWorldCard } from '@components/HomeWorldCard'
+import { MapPreviewCard } from '@components/MapPreviewCard'
 import { Meta } from '@components/Meta'
-import { DuelGuessrCard } from '@components/DuelGuessrCard'
-import { MultiGuessrCard } from '@components/MultiGuessrCard'
-import { Avatar, Button } from '@components/system'
+import { Button } from '@components/system'
 import StyledHomePage from '@styles/HomePage.Styled'
 import type { MapType } from '@types'
+import { OFFICIAL_WORLD_ID } from '@utils/constants/random'
 import { GEOHUB_UPSTREAM_REPO_URL, SITE_NAME } from '@utils/constants/site'
 
 const parseHomeMapCards = (): Pick<MapType, '_id' | 'name' | 'description' | 'previewImg'>[] | null => {
@@ -62,64 +65,108 @@ const Home: NextPage = () => {
   const homeMaps = getHomeMaps()
   const showFriendsRail = Boolean(session?.user?.id)
 
+  const featured = useMemo(() => {
+    const official = homeMaps.find((m) => String(m._id) === OFFICIAL_WORLD_ID)
+    return official ?? homeMaps[0] ?? null
+  }, [homeMaps])
+
+  const otherMaps = useMemo(
+    () => homeMaps.filter((m) => !featured || String(m._id) !== String(featured._id)),
+    [homeMaps, featured]
+  )
+
   return (
     <StyledHomePage>
       <Meta title={SITE_NAME} />
 
       <div className="main-content">
         <div className={`home-shell${showFriendsRail ? ' home-shell--with-friends' : ''}`}>
-          <div className="home-auth-row">
-            {session?.user?.id ? (
-              <Link href={`/user/${session.user.id}`}>
-                <a className="home-auth-profile">
-                  {session.user.name ? <span>{session.user.name}</span> : <span>Profile</span>}
-                  {session.user.avatar && (
-                    <Avatar type="user" src={session.user.avatar.emoji} backgroundColor={session.user.avatar.color} />
-                  )}
+          <header className="home-topbar">
+            <Link href="/" className="home-wordmark">
+              {SITE_NAME}
+            </Link>
+            <div className="home-topbar-end">
+              {showFriendsRail ? (
+                <a className="home-online-jump" href="#home-friends">
+                  Friends
                 </a>
-              </Link>
-            ) : (
-              <>
-                <Link href="/login">
-                  <a>
+              ) : null}
+              {!session?.user?.id ? (
+                <>
+                  <Link href="/login">
                     <Button variant="solidGray" size="sm">
                       Log In
                     </Button>
-                  </a>
-                </Link>
-                <Link href="/register">
-                  <a>
+                  </Link>
+                  <Link href="/register">
                     <Button variant="primary" size="sm">
                       Sign Up
                     </Button>
-                  </a>
-                </Link>
-              </>
-            )}
-          </div>
-
-          <header className="home-hero">
-            <h1 className="site-title">{SITE_NAME}</h1>
+                  </Link>
+                </>
+              ) : null}
+            </div>
           </header>
 
           <div className="home-body">
             <div className="home-main">
+              {showFriendsRail ? <HomeOngoingCard /> : null}
+
               <section className="home-section">
-                <h2 className="section-title">Gamemodes</h2>
-                <div className="card-grid">
-                  <CountryStreakCard />
-                  <MultiGuessrCard />
-                  <DuelGuessrCard />
+                <h2 className="section-title">Play</h2>
+                <div className="mode-grid">
+                  <HomeModeTile
+                    accent="streak"
+                    title="Country Streak"
+                    description="Keep naming countries until you miss."
+                    icon={<GlobeAltIcon />}
+                  >
+                    <Link href="/streak" className="mode-play">
+                      Play
+                    </Link>
+                  </HomeModeTile>
+                  <HomeModeTile
+                    accent="multi"
+                    title="MultiGuessr"
+                    description="Several Street Views at once. One map guess each."
+                    icon={<ViewGridIcon />}
+                  >
+                    <Link href="/multi" className="mode-play">
+                      Play
+                    </Link>
+                  </HomeModeTile>
+                  <HomeModeTile
+                    accent="duel"
+                    title="Duels"
+                    description="1v1 on the same locations. Invite a friend or join a code."
+                    icon={<LightningBoltIcon />}
+                  >
+                    <Link href="/duel" className="mode-play">
+                      Create
+                    </Link>
+                    <Link href="/duel/join" className="mode-secondary">
+                      Join
+                    </Link>
+                  </HomeModeTile>
                 </div>
               </section>
 
               <section className="home-section">
                 <h2 className="section-title">Maps</h2>
-                <div className="card-grid">
-                  {homeMaps.map((map) => (
-                    <HomeWorldCard key={String(map._id)} mapId={String(map._id)} name={map.name} />
-                  ))}
-                </div>
+                {featured ? (
+                  <div className="home-featured-map">
+                    <MapPreviewCard map={featured} showDescription type="large" />
+                  </div>
+                ) : (
+                  <p className="home-empty-quiet">No featured maps yet. Browse by country below.</p>
+                )}
+                {otherMaps.length > 0 ? (
+                  <div className="card-grid">
+                    {otherMaps.map((map) => (
+                      <MapPreviewCard key={String(map._id)} map={map} type="large" />
+                    ))}
+                  </div>
+                ) : null}
               </section>
 
               <section className="home-section" id="equitable-by-country">
@@ -133,18 +180,10 @@ const Home: NextPage = () => {
               </section>
 
               <div className="home-geo-cta-row">
-                <Link href="/maps">
-                  <a className="home-geo-cta">Browse all maps</a>
+                <Link href="/maps" className="home-geo-cta">
+                  Browse all maps
                 </Link>
               </div>
-
-              {homeMaps.length === 0 && (
-                <div className="home-empty">
-                  No homepage maps configured. Set <code>NEXT_PUBLIC_HOME_MAP_CARDS</code> to a JSON array of maps (one
-                  entry per card). Example after{' '}
-                  <code>npm run maps:split-equitable</code>: paste the printed JSON into <code>.env</code>.
-                </div>
-              )}
 
               <footer className="home-footer">
                 <p className="home-footer-note">
@@ -158,7 +197,8 @@ const Home: NextPage = () => {
             </div>
 
             {showFriendsRail ? (
-              <aside className="home-friends-rail" aria-label="Friends and stats">
+              <aside className="home-friends-rail" id="home-friends" aria-label="Profile, friends, and stats">
+                <HomeProfileCard />
                 <HomeFriendsCard />
                 <HomeUserStats />
               </aside>

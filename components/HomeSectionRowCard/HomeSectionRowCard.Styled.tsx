@@ -9,14 +9,19 @@ const StyledHomeSectionRowCard = styled.div<{ $hasDescription: boolean }>`
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: var(--space-3);
-    padding: var(--pad-row-card);
-    min-height: ${({ $hasDescription }) => ($hasDescription ? '64px' : '56px')};
+    gap: var(--space-4);
+    padding: 16px 18px;
+    min-height: ${({ $hasDescription }) => ($hasDescription ? '76px' : '68px')};
     box-sizing: border-box;
     border-radius: var(--radius-lg);
     background-color: var(--bg-card);
     border: var(--border-default);
-    box-shadow: var(--shadow-card);
+    transition: border-color var(--duration-fast) var(--ease), background-color var(--duration-fast) var(--ease);
+
+    &:hover {
+      border-color: var(--border-strong);
+      background-color: var(--bg-elevated);
+    }
   }
 
   .home-row-text {
@@ -36,7 +41,7 @@ const StyledHomeSectionRowCard = styled.div<{ $hasDescription: boolean }>`
   }
 
   .home-row-flag {
-    font-size: 22px;
+    font-size: 26px;
     line-height: 1;
     flex-shrink: 0;
     user-select: none;
@@ -44,8 +49,8 @@ const StyledHomeSectionRowCard = styled.div<{ $hasDescription: boolean }>`
 
   .home-row-title {
     margin: 0;
-    font-size: var(--font-section);
-    font-weight: 600;
+    font-size: 1.0625rem;
+    font-weight: 700;
     letter-spacing: var(--tracking-title);
     line-height: 1.28;
     color: var(--text-primary);
@@ -58,7 +63,7 @@ const StyledHomeSectionRowCard = styled.div<{ $hasDescription: boolean }>`
 
   .home-row-desc {
     margin: 0;
-    font-size: var(--font-compact);
+    font-size: var(--font-meta);
     font-weight: 500;
     line-height: 1.4;
     color: var(--text-muted);
@@ -83,11 +88,11 @@ const StyledHomeSectionRowCard = styled.div<{ $hasDescription: boolean }>`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: var(--control-height-sm);
+    height: var(--control-height-md);
     padding: 0 var(--space-4);
-    border-radius: var(--radius-sm);
-    font-size: var(--font-meta);
-    font-weight: 600;
+    border-radius: var(--radius-md);
+    font-size: var(--font-body);
+    font-weight: 700;
     white-space: nowrap;
     box-sizing: border-box;
     border: none;
@@ -111,11 +116,11 @@ const StyledHomeSectionRowCard = styled.div<{ $hasDescription: boolean }>`
   }
 
   .home-play-btn--icon {
-    width: var(--control-height-sm);
-    height: var(--control-height-sm);
-    min-width: var(--control-height-sm);
+    width: var(--control-height-md);
+    height: var(--control-height-md);
+    min-width: var(--control-height-md);
     padding: 0;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
   }
 
   .home-play-btn--icon svg {
@@ -124,12 +129,12 @@ const StyledHomeSectionRowCard = styled.div<{ $hasDescription: boolean }>`
   }
 
   .home-play-btn--secondary {
-    background-color: transparent;
+    background-color: var(--control-fill);
     color: var(--text-primary);
-    border: 1px solid var(--border-strong);
+    border: 1px solid var(--border-subtle);
 
     &:hover {
-      background-color: var(--control-fill);
+      background-color: var(--control-fill-hover);
     }
   }
 `

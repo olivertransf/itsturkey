@@ -33,10 +33,10 @@ const StyledHomeFriendsCard = styled.div`
 
   .friends-card-title {
     margin: 0;
-    font-size: var(--font-label);
+    font-size: 1.125rem;
     font-weight: 700;
-    letter-spacing: var(--tracking-label);
-    text-transform: uppercase;
+    letter-spacing: var(--tracking-title);
+    text-transform: none;
     color: var(--text-primary);
   }
 

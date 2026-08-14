@@ -52,8 +52,8 @@ const MapPreviewCard: FC<Props> = ({
             {showDescription && <div className="mapDescription">{map.description}</div>}
             <div className="playWrapper">
               {!isForDisplayOnly ? (
-                <Link href={playHref}>
-                  <a className="mapPlayBtn">Play</a>
+                <Link href={playHref} className="mapPlayBtn">
+                  Play
                 </Link>
               ) : (
                 <div className="mapPlayBtn">Play</div>
@@ -67,29 +67,25 @@ const MapPreviewCard: FC<Props> = ({
         <div className="small-card-wrapper">
           <div className="preview-image">
             <Image src={previewSrc} alt="" layout="fill" objectFit="cover" sizes="384px" />
+          </div>
+          <div className="contentWrapper">
             <div className="mapNameWrapper">
               <div className="mapName">{map.name}</div>
             </div>
-          </div>
-
-          <div className="playWrapper">
-            <Link href={`/create-map/${map._id}`}>
-              <a className="mapPlayBtn">Customize</a>
-            </Link>
-            <Link href={`/map/${map._id}`}>
-              <a className="mapEditBtn">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-                  <path
-                    fillRule="evenodd"
-                    d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </a>
-            </Link>
-            <button className="mapDeleteBtn" onClick={openDeleteModal}>
-              <TrashIcon />
-            </button>
+            <div className="playWrapper">
+              {!isForDisplayOnly ? (
+                <Link href={playHref} className="mapPlayBtn">
+                  Play
+                </Link>
+              ) : (
+                <div className="mapPlayBtn">Play</div>
+              )}
+              {openDeleteModal ? (
+                <button className="mapDeleteBtn" onClick={openDeleteModal} type="button">
+                  <TrashIcon />
+                </button>
+              ) : null}
+            </div>
           </div>
         </div>
       )}

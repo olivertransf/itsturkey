@@ -9,278 +9,176 @@ const StyledMapPreviewCard = styled.div<StyledProps>`
   min-width: 0;
   box-sizing: border-box;
 
-  .large-card-wrapper {
-    border-radius: var(--radius-lg);
+  .large-card-wrapper,
+  .small-card-wrapper {
+    border-radius: var(--radius-xl);
     background-color: var(--bg-card);
-    border: 1px solid var(--border-subtle);
+    border: var(--border-default);
     box-shadow: var(--shadow-card);
-    display: grid;
+    display: flex;
+    flex-direction: column;
     width: 100%;
     min-width: 0;
+    overflow: hidden;
     box-sizing: border-box;
-    gap: 1rem;
+    height: 100%;
+  }
 
-    ${({ isForDisplayOnly }) =>
-      isForDisplayOnly &&
-      `
-      width: 100%;
-    `}
+  .map-avatar,
+  .preview-image {
+    height: 168px;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
 
-    .map-avatar {
-      height: 125px;
-      width: 100%;
-      overflow: hidden;
-      border-radius: calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0 0;
-      position: relative;
-
-      span img {
-        border-radius: calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0 0;
-      }
-
-      .image-gradient {
-        z-index: 1;
-        position: absolute;
-        height: 100%;
-        width: 100%;
-        background-color: rgba(8, 10, 15, 0.55);
-      }
+    img {
+      object-fit: cover;
     }
+  }
 
-    .contentWrapper {
+  .map-avatar .image-gradient,
+  .preview-image::after {
+    display: none;
+  }
+
+  .preview-image img {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    width: 100%;
+    opacity: 1;
+    border-radius: 0;
+  }
+
+  .contentWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-4) var(--space-4);
+    flex: 1;
+  }
+
+  .mapNameWrapper {
+    display: flex;
+    justify-content: flex-start;
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    box-sizing: border-box;
+
+    .mapNameRow {
       display: flex;
+      flex-direction: row;
       align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 18px;
-    margin-top: 0;
-    }
-
-    .mapNameWrapper {
-      display: flex;
-      justify-content: center;
+      justify-content: flex-start;
       width: 100%;
       min-width: 0;
-      padding: 0 1.7rem;
-      box-sizing: border-box;
-
-      .mapNameRow {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        min-width: 0;
-        gap: 5px;
-      }
-
-      .map-flag {
-        font-size: 26px;
-        line-height: 1;
-        user-select: none;
-      }
-
-      .mapName {
-        font-size: 20px;
-        font-weight: 600;
-        padding: 0;
-        z-index: 1;
-        width: 100%;
-        max-width: 100%;
-        min-width: 0;
-        text-align: center;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
+      gap: var(--space-2);
     }
 
-    .mapDescription {
-      color: var(--text-muted);
-      font-weight: 400;
-      line-height: 25px;
-      text-align: center;
-      padding: 0 1.7rem;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      overflow: hidden;
-      -webkit-box-orient: vertical;
-      word-break: break-word;
-      height: auto;
-      min-height: 0;
-      font-size: inherit;
+    .map-flag {
+      font-size: 22px;
+      line-height: 1;
+      user-select: none;
     }
 
-    .playWrapper {
+    .mapName {
+      font-size: 1.125rem;
+      font-weight: 700;
+      letter-spacing: var(--tracking-title);
+      padding: 0;
+      z-index: 1;
       width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
-      padding: 1rem 1rem 2rem 1rem;
+      max-width: 100%;
+      min-width: 0;
+      text-align: left;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text-primary);
+    }
+  }
+
+  .small-card-wrapper .playWrapper {
+    padding: 0;
+  }
+
+  .mapDescription {
+    color: var(--text-muted);
+    font-weight: 500;
+    line-height: 1.45;
+    text-align: left;
+    padding: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    word-break: break-word;
+    font-size: var(--font-meta);
+  }
+
+  .playWrapper {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: stretch;
+    gap: var(--space-2);
+    padding: 0;
+    margin-top: auto;
+  }
+
+
+  .mapEditBtn,
+  .mapDeleteBtn,
+  .mapPlayBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    height: var(--control-height-md);
+    padding: 0 var(--space-4);
+    font-size: var(--font-body);
+    font-weight: 700;
+    user-select: none;
+    width: 100%;
+  }
+
+  .mapEditBtn,
+  .mapDeleteBtn {
+    width: auto;
+    background-color: var(--control-fill);
+    color: var(--text-primary);
+
+    svg {
+      height: var(--icon-md);
+      color: var(--text-primary);
     }
 
-    .mapEditBtn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: var(--radius-md);
-      height: var(--control-height-md);
-      padding: 0 var(--space-5);
-      font-size: var(--font-body);
-      font-weight: 600;
-      user-select: none;
-      width: clamp(120px, 70%, 300px);
-      background-color: var(--control-fill);
-      color: var(--text-muted);
+    &:hover {
+      background-color: var(--control-fill-hover);
 
-      &:hover {
-        background-color: var(--control-fill-hover);
-      }
-    }
-
-    .mapPlayBtn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: var(--radius-md);
-      height: var(--control-height-md);
-      padding: 0 var(--space-5);
-      font-size: var(--font-body);
-      font-weight: 600;
-      user-select: none;
-      width: clamp(120px, 70%, 300px);
-      background-color: var(--accent-primary);
-      color: #fff;
-
-      ${({ isForDisplayOnly }) =>
-        isForDisplayOnly &&
-        `
-         background-color: var(--control-fill);
-         color: var(--text-subtle);
-      `}
-
-      :hover {
-        background-color: ${({ isForDisplayOnly }) => !isForDisplayOnly && 'var(--accent-primary-hover)'};
+      &.mapDeleteBtn {
+        background-color: var(--danger-fill-hover);
       }
     }
   }
 
-  .small-card-wrapper {
-    border-radius: var(--radius-lg);
-    background-color: var(--bg-card);
-    border: 1px solid var(--border-subtle);
-    box-shadow: var(--shadow-card);
-    position: relative;
+  .mapPlayBtn {
+    background-color: var(--accent-primary);
+    color: var(--white);
 
-    .preview-image {
-      position: relative;
-      height: 120px;
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
+    ${({ isForDisplayOnly }) =>
+      isForDisplayOnly &&
+      `
+         background-color: var(--control-fill);
+         color: var(--text-subtle);
+      `}
 
-      &::after {
-        content: '';
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(8, 10, 15, 0.5);
-      }
-
-      img {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        object-fit: cover;
-        height: 100%;
-        width: 100%;
-        opacity: 0.4;
-        border-radius: calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0 0;
-      }
-    }
-
-    .mapNameWrapper {
-      display: flex;
-      justify-content: center;
-      width: 100%;
-      padding: 0 1rem;
-      box-sizing: border-box;
-
-      .mapName {
-        font-size: 20px;
-        font-weight: 600;
-        padding: 0;
-        position: relative;
-        z-index: 1;
-        margin-bottom: 4px;
-        width: 100%;
-        max-width: 100%;
-        text-align: center;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-    }
-
-    .playWrapper {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      gap: 10px;
-      padding: 20px;
-    }
-
-    .mapEditBtn,
-    .mapDeleteBtn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: var(--radius-md);
-      padding: 10px;
-      font-size: 1rem;
-      font-weight: 500;
-      user-select: none;
-      background-color: var(--control-fill);
-      color: var(--text-muted);
-
-      svg {
-        height: 20px;
-        color: #fff;
-      }
-
-      &:hover {
-        background-color: var(--control-fill-hover);
-
-        &.mapDeleteBtn {
-          background-color: var(--danger-fill-hover);
-        }
-      }
-    }
-
-    .mapPlayBtn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: var(--radius-md);
-      height: var(--control-height-md);
-      padding: 0 var(--space-5);
-      font-size: var(--font-body);
-      font-weight: 600;
-      user-select: none;
-      background-color: var(--accent-primary);
-      color: #fff;
-      width: 100%;
-
-      :hover {
-        background-color: var(--accent-primary-hover);
-      }
+    :hover {
+      background-color: ${({ isForDisplayOnly }) => !isForDisplayOnly && 'var(--accent-primary-hover)'};
     }
   }
 `

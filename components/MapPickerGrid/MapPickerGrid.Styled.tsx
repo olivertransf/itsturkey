@@ -41,8 +41,8 @@ export const MapRow = styled.button<{ $selected: boolean; $compact?: boolean }>`
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
-  padding: ${(p) => (p.$compact ? '7px 10px 7px 8px' : '9px 11px 9px 9px')};
-  min-height: ${(p) => (p.$compact ? 44 : 48)}px;
+  padding: ${(p) => (p.$compact ? '10px 12px' : '12px 14px')};
+  min-height: ${(p) => (p.$compact ? 56 : 64)}px;
   margin: 0;
   border-radius: var(--radius-md);
   cursor: pointer;
@@ -79,8 +79,8 @@ export const MapRow = styled.button<{ $selected: boolean; $compact?: boolean }>`
 
 export const LeadMedia = styled.span<{ $placeholder?: boolean }>`
   flex-shrink: 0;
-  width: 44px;
-  height: 44px;
+  width: 56px;
+  height: 56px;
   border-radius: var(--radius-sm);
   overflow: hidden;
   position: relative;
@@ -122,8 +122,8 @@ export const TextCol = styled.span`
 `
 
 export const RowTitle = styled.span`
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--font-body);
+  font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.25;
   color: var(--text-primary);
@@ -133,7 +133,7 @@ export const RowTitle = styled.span`
 `
 
 export const RowDesc = styled.span`
-  font-size: 11px;
+  font-size: var(--font-meta);
   font-weight: 400;
   line-height: 1.35;
   color: var(--text-muted);

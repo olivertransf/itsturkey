@@ -62,13 +62,13 @@
     'Open Sans', 'Helvetica Neue', sans-serif;
   --font-mono: 'SF Mono', SFMono-Regular, ui-monospace, 'DejaVu Sans Mono', Menlo, Consolas, monospace;
 
-  --font-display: clamp(1.5rem, 2vw, 1.75rem);
-  --font-title: clamp(1.25rem, 2.8vw, 1.5rem);
-  --font-section: 0.9375rem;
-  --font-body: 0.9375rem;
-  --font-label: 0.72rem;
-  --font-meta: 0.8125rem;
-  --font-compact: 0.75rem;
+  --font-display: clamp(2rem, 4.2vw, 2.75rem);
+  --font-title: clamp(1.5rem, 3vw, 2rem);
+  --font-section: 1.25rem;
+  --font-body: 1rem;
+  --font-label: 0.6875rem;
+  --font-meta: 0.875rem;
+  --font-compact: 0.8125rem;
   --tracking-display: -0.04em;
   --tracking-title: -0.025em;
   --tracking-label: 0.14em;
@@ -82,9 +82,9 @@
   --space-7: 40px;
   --space-8: 48px;
 
-  --control-height-sm: 32px;
-  --control-height-md: 40px;
-  --control-height-lg: 48px;
+  --control-height-sm: 36px;
+  --control-height-md: 44px;
+  --control-height-lg: 52px;
   --icon-sm: 16px;
   --icon-md: 20px;
   --icon-lg: 24px;
@@ -195,10 +195,10 @@
   --pink-900: #831843;
 
   --palette-accent: #2f7fff;
-  --palette-surface: #1a1e26;
-  --palette-surface-deep: #14181f;
-  --palette-bg-raised: #0f1218;
-  --palette-bg-root: #080a0f;
+  --palette-surface: #222833;
+  --palette-surface-deep: #171c24;
+  --palette-bg-raised: #10141b;
+  --palette-bg-root: #07090d;
 
   --accent-primary: var(--palette-accent);
   --accent-primary-hover: #2566e6;
@@ -209,11 +209,11 @@
   --bg-surface: var(--palette-bg-raised);
   --bg-card: var(--palette-surface);
   --text-primary: #fafafa;
-  --text-muted: #8b9099;
+  --text-muted: #9aa0aa;
   --text-subtle: #6b7078;
-  --border-subtle: rgba(255, 255, 255, 0.05);
-  --border-strong: rgba(255, 255, 255, 0.1);
-  --divider-line: rgba(255, 255, 255, 0.045);
+  --border-subtle: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --divider-line: rgba(255, 255, 255, 0.08);
   --overlay-scrim: rgba(0, 0, 0, 0.72);
   --hud-surface: rgba(8, 10, 15, 0.72);
   --hud-surface-hover: rgba(8, 10, 15, 0.88);
@@ -236,8 +236,8 @@
   --borderLight: 1px solid var(--border-strong);
   --modalPadding: var(--space-6) var(--space-4);
   --sidebarWidth: 220px;
-  --navbarHeight: 52px;
-  --mobileNavHeight: 52px;
+  --navbarHeight: 64px;
+  --mobileNavHeight: 64px;
   --mainMaxWidth: 1362px;
 
   --mainPadding: var(--space-8);
@@ -278,8 +278,8 @@
   --stack-gap-lg: var(--space-5);
   --grid-gap-cards: var(--space-4);
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.28);
-  --shadow-card: 0 16px 44px rgba(0, 0, 0, 0.38);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-card: 0 18px 40px rgba(0, 0, 0, 0.45);
   --backdrop-nav: rgba(16, 16, 18, 0.85);
 
   --label-upper-size: var(--font-label);
@@ -288,9 +288,9 @@
   --pad-page-y: clamp(1.5rem, 4.5vw, 2.75rem);
   --pad-page-y-lg: clamp(2rem, 10vh, 5.5rem);
   --pad-page-y-bottom: clamp(2.5rem, 8vh, 5rem);
-  --pad-card: var(--space-5);
-  --pad-card-sm: var(--space-4);
-  --pad-row-card: 14px 16px;
+  --pad-card: 28px;
+  --pad-card-sm: 20px;
+  --pad-row-card: 18px 20px;
   --border-default: 1px solid var(--border-subtle);
 }
 

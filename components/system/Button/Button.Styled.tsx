@@ -31,7 +31,7 @@ const StyledButton = styled.button<StyledProps>`
   width: ${({ width }) => width ?? 'fit-content'};
   padding: 0 var(--space-4);
   font-size: var(--font-body);
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -0.01em;
   user-select: none;
   position: relative;

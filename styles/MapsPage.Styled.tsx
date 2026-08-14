@@ -19,20 +19,21 @@ const StyledMapsPage = styled.div`
     padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
 
     .section-title {
-      font-size: var(--label-upper-size);
-      font-weight: 600;
-      letter-spacing: var(--label-upper-tracking);
-      text-transform: uppercase;
-      color: var(--text-muted);
+      font-size: var(--font-title);
+      font-weight: 700;
+      letter-spacing: var(--tracking-title);
+      text-transform: none;
+      color: var(--text-primary);
       text-align: left;
       margin: 0;
-      padding: 0 0 var(--stack-gap-sm);
+      padding: 0;
+      line-height: 1.15;
     }
 
     .section-subtext {
-      margin: -6px 0 14px;
-      font-size: 13px;
-      line-height: 1.45;
+      margin: 0 0 var(--space-4);
+      font-size: var(--font-body);
+      line-height: 1.5;
       color: var(--text-muted);
       max-width: 52rem;
     }
@@ -40,14 +41,14 @@ const StyledMapsPage = styled.div`
     .maps-wrapper {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-      gap: 16px;
+      gap: var(--space-4);
       align-items: stretch;
       width: 100%;
     }
 
     .maps-wrapper.equitable-countries-grid {
       grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-      gap: 16px;
+      gap: var(--space-4);
       align-items: stretch;
     }
 

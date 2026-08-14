@@ -1,11 +1,10 @@
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { PageBackLink } from '@components/PageBackLink'
-import { WidthController } from '@components/layout'
+import { PageHeader, WidthController } from '@components/layout'
 import EquitableContinentRowCard from '@components/EquitableContinentRowCard'
 import EquitableCountryRowCard from '@components/EquitableCountryRowCard'
-import { HomeWorldCard } from '@components/HomeWorldCard'
-import MapPreviewCard from '@components/MapPreviewCard/MapPreviewCard'
+import { MapPreviewCard } from '@components/MapPreviewCard'
 import { Meta } from '@components/Meta'
 import { SkeletonCards } from '@components/skeletons'
 import { Tab, Tabs } from '@components/system'
@@ -188,6 +187,7 @@ const MapsPage: FC = () => {
         <div className="page-back-toolbar">
           <PageBackLink href="/" label="Back to home" compact />
         </div>
+        <PageHeader>Maps</PageHeader>
 
         <div className="browse-tabs-row">
           <Tabs>
@@ -213,7 +213,7 @@ const MapsPage: FC = () => {
               ) : (
                 <div className="maps-wrapper equitable-countries-grid">
                   {homeMaps.map((map) => (
-                    <HomeWorldCard key={String(map._id)} mapId={String(map._id)} name={map.name} />
+                    <MapPreviewCard key={String(map._id)} map={map} showDescription type="large" />
                   ))}
                 </div>
               )}
@@ -272,9 +272,9 @@ const MapsPage: FC = () => {
               ) : likedMaps.length === 0 ? (
                 <p className="section-subtext">Like a map from its page to see it here.</p>
               ) : (
-                <div className="maps-wrapper">
+                <div className="maps-wrapper equitable-countries-grid">
                   {likedMaps.map((map) => (
-                    <MapPreviewCard key={String(map._id)} map={map} />
+                    <MapPreviewCard key={String(map._id)} map={map} type="large" />
                   ))}
                 </div>
               )}
@@ -290,9 +290,9 @@ const MapsPage: FC = () => {
               ) : recentMaps.length === 0 ? (
                 <p className="section-subtext">Open a map page to build your recent list.</p>
               ) : (
-                <div className="maps-wrapper">
+                <div className="maps-wrapper equitable-countries-grid">
                   {recentMaps.map((map) => (
-                    <MapPreviewCard key={String(map._id)} map={map} />
+                    <MapPreviewCard key={String(map._id)} map={map} type="large" />
                   ))}
                 </div>
               )}

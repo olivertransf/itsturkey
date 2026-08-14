@@ -25,33 +25,35 @@ const StyledHomePage = styled.div`
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: clamp(1.35rem, 3vw, 2rem);
+    gap: clamp(2rem, 4vw, 3rem);
   }
 
   .home-topbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 12px;
+    gap: var(--space-4);
     width: 100%;
+    min-height: 52px;
   }
 
   .home-wordmark {
-    font-size: var(--font-section);
+    font-size: var(--font-display);
     font-weight: 800;
     letter-spacing: var(--tracking-display);
     color: var(--text-primary);
     text-decoration: none;
+    line-height: 1;
 
     &:hover {
-      color: var(--palette-accent);
+      color: var(--accent-primary);
     }
   }
 
   .home-topbar-end {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: var(--space-3);
     flex-wrap: wrap;
     justify-content: flex-end;
   }
@@ -71,12 +73,12 @@ const StyledHomePage = styled.div`
     width: 100%;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: clamp(1.25rem, 2.5vw, 1.75rem);
+    gap: clamp(1.75rem, 3vw, 2.5rem);
     align-items: start;
   }
 
   .home-shell--with-friends .home-body {
-    grid-template-columns: minmax(0, 1fr) minmax(260px, 300px);
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
 
     @media (max-width: 960px) {
       grid-template-columns: 1fr;
@@ -88,18 +90,18 @@ const StyledHomePage = styled.div`
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: clamp(1.5rem, 3.2vw, 2.15rem);
+    gap: clamp(2.25rem, 4vw, 3.25rem);
   }
 
   .home-friends-rail {
     min-width: 0;
     position: sticky;
-    top: var(--space-4);
+    top: var(--space-5);
     align-self: start;
     max-height: calc(100vh - var(--space-8));
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: var(--space-4);
     overflow-y: auto;
     overscroll-behavior: contain;
     scrollbar-width: thin;
@@ -118,36 +120,44 @@ const StyledHomePage = styled.div`
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: var(--stack-gap-sm);
+    gap: var(--space-4);
   }
 
   .mode-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-4);
+
+    @media (max-width: 960px) {
+      grid-template-columns: 1fr;
+    }
   }
 
   .home-featured-map {
-    margin-bottom: var(--space-2);
+    margin-bottom: 0;
+
+    .map-avatar {
+      height: 240px;
+    }
   }
 
   .home-empty-quiet {
     margin: 0;
-    font-size: var(--font-meta);
+    font-size: var(--font-body);
     color: var(--text-muted);
   }
 
   .home-equitable-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-3);
     width: 100%;
     align-items: stretch;
   }
 
   .home-equitable-status {
     margin: 0;
-    font-size: var(--font-compact);
+    font-size: var(--font-meta);
     line-height: 1.45;
     color: var(--text-muted);
 
@@ -158,31 +168,25 @@ const StyledHomePage = styled.div`
 
   .section-title {
     margin: 0;
-    font-size: var(--label-upper-size);
+    font-size: var(--font-title);
     font-weight: 700;
-    letter-spacing: var(--label-upper-tracking);
-    text-transform: uppercase;
-    color: var(--palette-accent);
+    letter-spacing: var(--tracking-title);
+    text-transform: none;
+    color: var(--text-primary);
     text-align: left;
     width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    line-height: 1.15;
 
     &::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--divider-line);
-      min-width: 24px;
+      content: none;
     }
   }
 
   .card-grid {
     width: 100%;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+    gap: var(--space-3);
     align-items: stretch;
     justify-items: stretch;
   }
@@ -190,20 +194,20 @@ const StyledHomePage = styled.div`
   .home-geo-cta-row {
     width: 100%;
     display: flex;
-    justify-content: center;
-    margin-top: var(--space-3);
+    justify-content: flex-start;
+    margin-top: 0;
   }
 
   .home-geo-cta {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: var(--control-height-md);
+    height: var(--control-height-lg);
     padding: 0 var(--space-6);
     border-radius: var(--radius-md);
-    font-size: var(--font-body);
-    font-weight: 600;
-    letter-spacing: -0.01em;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
     text-decoration: none;
     color: var(--white);
     background: var(--accent-primary);
@@ -215,21 +219,21 @@ const StyledHomePage = styled.div`
 
   .home-footer {
     width: 100%;
-    max-width: 520px;
-    margin-inline: auto;
-    margin-top: var(--stack-gap-sm);
-    padding-top: clamp(1.5rem, 3.5vw, 2rem);
+    max-width: none;
+    margin-inline: 0;
+    margin-top: var(--space-4);
+    padding-top: var(--space-6);
     border-top: 1px solid var(--border-subtle);
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     gap: var(--stack-gap-md);
-    text-align: center;
+    text-align: left;
   }
 
   .home-footer-note {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: var(--font-meta);
     line-height: 1.55;
     color: var(--text-muted);
 

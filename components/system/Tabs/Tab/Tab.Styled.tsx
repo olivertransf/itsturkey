@@ -8,13 +8,13 @@ const StyledTab = styled.div<StyledProps>`
   cursor: pointer;
   line-height: 1.4;
   margin: 0;
-  padding: var(--space-1) 0;
+  padding: var(--space-2) 0;
   position: relative;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: var(--font-body);
-  font-weight: 600;
+  font-size: 1.0625rem;
+  font-weight: 700;
   color: ${({ isActive }) => (isActive ? 'var(--text-primary)' : 'var(--text-muted)')};
   border-bottom: 2px solid ${({ isActive }) => (isActive ? 'var(--accent-primary)' : 'transparent')};
   transition: color var(--duration-fast) var(--ease), border-color var(--duration-fast) var(--ease);

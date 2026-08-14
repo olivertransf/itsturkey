@@ -17,8 +17,8 @@ const StyledNavbar = styled.div`
   flex-shrink: 0 !important;
 
   .appTitle {
-    font-size: var(--font-section);
-    font-weight: 600;
+    font-size: 1.25rem;
+    font-weight: 800;
     letter-spacing: var(--tracking-title);
   }
 

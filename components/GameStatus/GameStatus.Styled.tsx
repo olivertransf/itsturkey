@@ -16,7 +16,7 @@ const StyledGameStatus = styled.div`
   box-shadow: var(--shadow-sm);
 
   .infoSection {
-    padding: var(--space-3) var(--space-5);
+    padding: var(--space-4) var(--space-5);
 
     &.mapName {
       @media (max-width: 960px) {
@@ -31,7 +31,7 @@ const StyledGameStatus = styled.div`
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    font-size: var(--font-section);
+    font-size: 1.375rem;
 
     svg {
       height: var(--icon-lg);
@@ -53,7 +53,7 @@ const StyledGameStatus = styled.div`
 
     &.time {
       font-family: var(--font-mono);
-      font-size: var(--font-section);
+      font-size: 1.375rem;
       margin-top: 0;
     }
   }
