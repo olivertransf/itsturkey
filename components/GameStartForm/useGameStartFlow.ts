@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '@redux/hook'
-import { resetGameSettings, updateGameSettings, updateStartTime } from '@redux/slices'
+import { resetGameSettings, updateGameSettings, updateMapsAPIKey, updateStartTime } from '@redux/slices'
 import { GameSettingsType, GameType, MapType } from '@types'
 import { DEFAULT_TOTAL_ROUNDS } from '@utils/constants/gameModes'
 import {
@@ -156,7 +156,20 @@ export function useGameStartFlow({
       return
     }
 
-    if (!user.mapsAPIKey) {
+    let mapsKey = user.mapsAPIKey || ''
+    if (!mapsKey) {
+      const settings = await mailman('users/settings')
+      const fromDb =
+        settings && typeof settings === 'object' && !Array.isArray(settings) && typeof settings.mapsAPIKey === 'string'
+          ? settings.mapsAPIKey
+          : ''
+      if (fromDb) {
+        mapsKey = fromDb
+        dispatch(updateMapsAPIKey(fromDb))
+      }
+    }
+
+    if (!mapsKey) {
       showToast('error', 'Add a Google Maps API key in Account settings to play')
       await router.push('/account')
       return

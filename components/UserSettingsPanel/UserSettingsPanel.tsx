@@ -1,4 +1,4 @@
-import { signOut } from 'next-auth/react'
+import { signOut, useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { ArrowRightIcon } from '@heroicons/react/outline'
@@ -49,6 +49,7 @@ const UserSettingsPanel: FC<Props> = ({ embedded }) => {
   const [friendIdentifier, setFriendIdentifier] = useState('')
   const [friendBusy, setFriendBusy] = useState(false)
   const dispatch = useAppDispatch()
+  const { update: updateSession } = useSession()
 
   const normalizedKey = useMemo(() => normalizeGoogleMapsApiKey(mapsAPIKey), [mapsAPIKey])
   const keyAlreadySaved =
@@ -127,7 +128,7 @@ const UserSettingsPanel: FC<Props> = ({ embedded }) => {
     const key = normalizeGoogleMapsApiKey(mapsAPIKey)
     setKeyCheckStatus('ok')
     setVerifiedKey(key)
-    setKeyCheckMessage('Key works with Maps JavaScript API.')
+    setKeyCheckMessage('Key works with Maps JavaScript API and Street View.')
     showToast('success', 'API key looks good')
   }
 
@@ -189,11 +190,12 @@ const UserSettingsPanel: FC<Props> = ({ embedded }) => {
       }
       setKeyCheckStatus('ok')
       setVerifiedKey(normalizedKey)
-      setKeyCheckMessage('Key works with Maps JavaScript API.')
+      setKeyCheckMessage('Key works with Maps JavaScript API and Street View.')
       clientVerified = true
     }
 
     setSaving(true)
+    const previousKey = normalizeGoogleMapsApiKey(initialSettings?.mapsAPIKey)
     const newSettings = { distanceUnit, mapsAPIKey: normalizedKey } as SettingsType
 
     const res = await mailman(
@@ -213,7 +215,12 @@ const UserSettingsPanel: FC<Props> = ({ embedded }) => {
     setInitialSettings(newSettings)
     dispatch(updateDistanceUnit(distanceUnit))
     dispatch(updateMapsAPIKey(normalizedKey))
+    await updateSession({ mapsAPIKey: normalizedKey, distanceUnit })
     showToast('success', 'Successfully updated user settings')
+
+    if (normalizedKey !== previousKey && typeof window !== 'undefined' && window.google?.maps) {
+      window.location.reload()
+    }
   }
 
   const handleLogout = () => {
@@ -359,7 +366,7 @@ const UserSettingsPanel: FC<Props> = ({ embedded }) => {
           ) : (
             <div className="custom-key-success-message">
               <div>Thank you for using your own maps key. People like you are helping keep this site free.</div>
-              <div>For your key to take effect, you must refresh the page.</div>
+              <div>This key is used for Street View in games. Enable Maps JavaScript API and billing.</div>
 
               <Button onClick={handleResetKey} style={{ padding: '0 12px', marginTop: '12px' }}>
                 Reset Key

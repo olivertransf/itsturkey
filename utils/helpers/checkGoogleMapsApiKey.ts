@@ -6,6 +6,13 @@ type MapsKeyWindow = Window & {
   [key: string]: unknown
 }
 
+type StreetViewServiceCtor = new () => {
+  getPanorama: (
+    request: { location: { lat: number; lng: number }; radius: number },
+    callback: (data: unknown, status: string) => void
+  ) => void
+}
+
 export const normalizeGoogleMapsApiKey = (raw: unknown): string => {
   if (typeof raw !== 'string') return ''
   return raw.trim()
@@ -21,10 +28,18 @@ export type MapsKeyCheckResult =
   | { ok: true }
   | { ok: false; message: string }
 
+const TIMES_SQUARE = { lat: 40.758, lng: -73.9855 }
+
+const getStreetViewService = (): StreetViewServiceCtor | undefined => {
+  const maps = (window as unknown as { google?: { maps?: { StreetViewService?: StreetViewServiceCtor } } }).google
+    ?.maps
+  return maps?.StreetViewService
+}
+
 /**
- * Loads the Maps JavaScript API with the given key in the browser.
- * Matches how GeoHub uses keys (Street View / maps), including
- * HTTP-referrer-restricted keys that fail server-side Geocoding checks.
+ * Loads the Maps JavaScript API with the given key in the browser, then
+ * probes Street View (what a real game uses). Referrer-restricted keys
+ * fail server-side Geocoding checks, so this must stay client-side.
  */
 export const checkGoogleMapsApiKeyInBrowser = (rawKey: string): Promise<MapsKeyCheckResult> => {
   const key = normalizeGoogleMapsApiKey(rawKey)
@@ -45,7 +60,7 @@ export const checkGoogleMapsApiKeyInBrowser = (rawKey: string): Promise<MapsKeyC
 
   return new Promise((resolve) => {
     const win = window as unknown as MapsKeyWindow
-    const timeoutMs = 12000
+    const timeoutMs = 15000
     let settled = false
     const scriptId = `maps-key-check-${Date.now()}`
     const callbackName = `__geohubMapsKeyOk_${Date.now()}`
@@ -78,6 +93,37 @@ export const checkGoogleMapsApiKeyInBrowser = (rawKey: string): Promise<MapsKeyC
       resolve(result)
     }
 
+    const probeStreetView = () => {
+      const StreetViewService = getStreetViewService()
+      if (!StreetViewService) {
+        finish({
+          ok: false,
+          message: 'Maps JavaScript API loaded but Street View is unavailable on this key.',
+        })
+        return
+      }
+
+      const svc = new StreetViewService()
+      svc.getPanorama({ location: TIMES_SQUARE, radius: 100 }, (_data, status) => {
+        if (status === 'OK' || status === 'ZERO_RESULTS') {
+          finish({ ok: true })
+          return
+        }
+        if (status === 'REQUEST_DENIED') {
+          finish({
+            ok: false,
+            message:
+              'Maps JS loaded, but Street View was denied. Enable billing and Maps JavaScript API on this key.',
+          })
+          return
+        }
+        finish({
+          ok: false,
+          message: `Street View check failed (${status}). Enable billing, then try again.`,
+        })
+      })
+    }
+
     win.gm_authFailure = () => {
       finish({
         ok: false,
@@ -86,16 +132,21 @@ export const checkGoogleMapsApiKeyInBrowser = (rawKey: string): Promise<MapsKeyC
       })
     }
 
-    win[callbackName] = () => {
-      finish({ ok: true })
-    }
-
     const timer = window.setTimeout(() => {
       finish({
         ok: false,
         message: 'Timed out checking the key. Check your network, then try again.',
       })
     }, timeoutMs)
+
+    if (getStreetViewService()) {
+      probeStreetView()
+      return
+    }
+
+    win[callbackName] = () => {
+      probeStreetView()
+    }
 
     const script = document.createElement('script')
     script.id = scriptId

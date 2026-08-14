@@ -30,7 +30,16 @@ export default function googleMapLoaderAsync(
   bootstrapURLKeys: BootstrapKeys | undefined,
   heatmapLibrary?: boolean
 ): Promise<typeof google.maps> {
+  if (typeof window !== 'undefined' && window.google?.maps) {
+    return Promise.resolve(window.google.maps)
+  }
+
   if (!bootstrapURLKeys) {
+    return unresolvedBoot
+  }
+
+  const apiKey = bootstrapURLKeys.key ?? ''
+  if (!apiKey) {
     return unresolvedBoot
   }
 
@@ -55,7 +64,6 @@ export default function googleMapLoaderAsync(
     }
   }
 
-  const apiKey = bootstrapURLKeys.key ?? ''
   const loader = new LoaderWithAsync({
     apiKey,
     ...omitLoaderExtras(bootstrapURLKeys),

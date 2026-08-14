@@ -30,7 +30,9 @@ export const userSlice = createSlice({
       ;(state.avatar = action.payload.avatar || ''),
         (state.gameSettings = action.payload.gameSettings || initialState.gameSettings)
       state.distanceUnit = action.payload.distanceUnit
-      state.mapsAPIKey = action.payload.mapsAPIKey
+      if (action.payload.mapsAPIKey) {
+        state.mapsAPIKey = action.payload.mapsAPIKey
+      }
     },
     updateAvatar: (state, action) => {
       state.avatar = action.payload
