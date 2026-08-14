@@ -854,6 +854,8 @@ const DuelPlaySurface: FC<Props> = ({
   const [forfeitOpen, setForfeitOpen] = useState(false)
   const [forfeitSubmitting, setForfeitSubmitting] = useState(false)
   const [chatOpen, setChatOpen] = useState(false)
+  const specSeenResultRef = useRef<number | null>(null)
+  const [specRecapAck, setSpecRecapAck] = useState(-1)
 
   const followSide = useMemo((): 'host' | 'guest' => {
     if (!spectating) return 'host'
@@ -877,11 +879,34 @@ const DuelPlaySurface: FC<Props> = ({
   const revealActual = payload.lastRoundActualLocation
   const recapAck = payload.recapAckRoundIndex ?? -1
 
+  useEffect(() => {
+    if (!spectating) {
+      specSeenResultRef.current = null
+      return
+    }
+    if (lr == null) return
+
+    const idx = lr.roundIndex
+    const serverAck = payload.recapAckRoundIndex ?? -1
+
+    if (specSeenResultRef.current === null) {
+      specSeenResultRef.current = idx
+      setSpecRecapAck(idx > serverAck ? serverAck : idx)
+      return
+    }
+
+    if (idx > specSeenResultRef.current) {
+      specSeenResultRef.current = idx
+      setSpecRecapAck(idx - 1)
+    }
+  }, [spectating, lr, payload.recapAckRoundIndex])
+
   const showRoundReveal =
     lr != null &&
     revealActual != null &&
     (finalDamageMode ||
-      (payload.status === 'in_progress' && lr.roundIndex > recapAck))
+      (payload.status === 'in_progress' &&
+        lr.roundIndex > (spectating ? specRecapAck : recapAck)))
 
   useEffect(() => {
     const noDeadline = payload.roundDeadlineAt == null || payload.roundDeadlineAt === ''
@@ -1172,18 +1197,20 @@ const DuelPlaySurface: FC<Props> = ({
             result={lr}
             hostMaxHp={payload.startingHpHost}
             guestMaxHp={payload.startingHpGuest}
-            viewerRole={spectating ? null : role}
+            viewerRole={spectating ? 'spectator' : role}
             sessionMapId={payload.mapId}
             plonkMapLabel={payload.mapDetails?.name}
             hostPlayerName={payload.playerNames.host}
             guestPlayerName={payload.playerNames.guest}
             playerAvatars={payload.playerAvatars}
-            continueLabel={finalDamageMode ? 'See match summary' : 'Next round'}
+            continueLabel={
+              finalDamageMode ? 'See match summary' : spectating ? 'Continue watching' : 'Next round'
+            }
             onContinue={
               finalDamageMode
                 ? onSeeMatchSummary
                 : spectating
-                  ? undefined
+                  ? () => setSpecRecapAck(lr.roundIndex)
                   : () => void dismissRecap()
             }
           />

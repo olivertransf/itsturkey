@@ -25,6 +25,7 @@ const GamePage: PageType = () => {
   const [fatal, setFatal] = useState<string | null>(null)
   const [prevGameId, setPrevGameId] = useState('')
   const prevGuessCountRef = useRef(0)
+  const spectateHydratedRef = useRef(false)
   const router = useRouter()
   const gameId = typeof router.query.id === 'string' ? router.query.id : ''
   const spectateMode = router.isReady && router.query.spectate === '1'
@@ -95,9 +96,10 @@ const GamePage: PageType = () => {
     if (asSpectator) {
       if (next.state === 'finished') {
         setView(next.mode === 'streak' ? 'Result' : 'FinalResults')
-      } else if (guessCount > prevGuessCountRef.current && prevGuessCountRef.current > 0) {
+      } else if (spectateHydratedRef.current && guessCount > prevGuessCountRef.current) {
         setView('Result')
       }
+      spectateHydratedRef.current = true
     } else if (next.state === 'finished') {
       setView('Result')
     }
@@ -127,6 +129,7 @@ const GamePage: PageType = () => {
     if (gameId !== prevGameId) {
       setView('Game')
       prevGuessCountRef.current = 0
+      spectateHydratedRef.current = false
       setIsSpectator(false)
       setWatchers([])
       setFatal(null)

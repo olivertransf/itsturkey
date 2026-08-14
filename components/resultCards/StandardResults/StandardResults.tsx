@@ -23,6 +23,7 @@ type Props = {
   plonkitCountryIso?: string | null
   plonkitMapLabel?: string
   nextLabel?: string
+  isSpectator?: boolean
 }
 
 const StandardResults: FC<Props> = ({
@@ -38,6 +39,7 @@ const StandardResults: FC<Props> = ({
   plonkitCountryIso,
   plonkitMapLabel,
   nextLabel: nextLabelProp,
+  isSpectator = false,
 }) => {
   const dispatch = useAppDispatch()
   const user = useAppSelector((state) => state.user)
@@ -102,10 +104,12 @@ const StandardResults: FC<Props> = ({
 
       <div>
         {noGuess ? (
-          <span className="noGuessMessage">You did not make a guess this round.</span>
+          <span className="noGuessMessage">
+            {isSpectator ? 'No guess this round.' : 'You did not make a guess this round.'}
+          </span>
         ) : (
           <span className="distanceMessage">
-            Your guess was
+            {isSpectator ? 'The guess was' : 'Your guess was'}
             <span className="emphasisText"> {formatDistance(distance, user.distanceUnit)} </span>
             from the correct location
           </span>

@@ -108,6 +108,7 @@ const StandardGameView: FC<Props> = ({
               plonkitCountryIso={plonkLastRoundIso}
               plonkitMapLabel={gameData.mapDetails?.name}
               nextLabel={isSpectator ? 'Continue watching' : undefined}
+              isSpectator={isSpectator}
             />
           )}
 
