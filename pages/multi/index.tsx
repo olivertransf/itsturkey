@@ -2,19 +2,22 @@ import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ViewGridIcon } from '@heroicons/react/outline'
+import {
+  CreateAccordion,
+  CreateChoiceChip,
+  CreateChipRow,
+  CreateFieldLabel,
+  CreateLobbyShell,
+  CreateSection,
+  CreateSectionStatic,
+  CreateStickyActions,
+} from '@components/CreateLobby'
+import { VisualRestrictionsPanel } from '@components/GameStartForm'
 import { LobbyGameSettings } from '@components/LobbyGameSettings'
 import { MapPickerGrid } from '@components/MapPickerGrid'
 import { Meta } from '@components/Meta'
-import { PageBackLink } from '@components/PageBackLink'
 import { Button } from '@components/system'
 import StyledMultiGamePage from '@styles/MultiGamePage.Styled'
-import {
-  GamifiedCenterStage,
-  GamifiedDuelGrid,
-  GamifiedDuelMapColumn,
-  GamifiedDuelSettingsColumn,
-  GamifiedFormCardWide,
-} from '@styles/GamifiedHubShell.Styled'
 import { isMapExcludedFromPicker } from '@utils/constants/mapPicker'
 import {
   ALLOWED_MULTI_PANEL_COUNTS,
@@ -31,79 +34,11 @@ import type { MapPickerRow } from '@utils/loadMapPickerOptions'
 import { mailman, showToast } from '@utils/helpers'
 import {
   EMPTY_VISUAL_RESTRICTIONS,
+  VISUAL_RESTRICTION_CATALOG,
   hasAnyVisualRestriction,
   normalizeVisualRestrictions,
 } from '@utils/constants/visualRestrictions'
 import type { VisualRestrictions } from '@utils/constants/visualRestrictions'
-import styled from 'styled-components'
-
-const CardHero = styled.div`
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  margin-bottom: 16px;
-
-  .glyph {
-    width: 48px;
-    height: 48px;
-    flex-shrink: 0;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(47, 127, 255, 0.12);
-    border: 1px solid rgba(47, 127, 255, 0.35);
-    color: var(--accent-primary);
-
-    svg {
-      width: 26px;
-      height: 26px;
-    }
-  }
-
-  h1 {
-    margin: 0;
-    font-size: clamp(1.35rem, 4vw, 1.65rem);
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1.15;
-    color: var(--text-primary);
-  }
-`
-
-const FieldLabel = styled.label`
-  display: block;
-  margin: 14px 0 7px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-`
-
-const PanelCountRow = styled.div`
-  display: flex;
-  gap: 8px;
-`
-
-const PanelCountBtn = styled.button<{ $active?: boolean }>`
-  flex: 1;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid
-    ${({ $active }) => ($active ? 'rgba(47, 127, 255, 0.55)' : 'rgba(255, 255, 255, 0.12)')};
-  background: ${({ $active }) => ($active ? 'rgba(47, 127, 255, 0.16)' : 'rgba(255, 255, 255, 0.04)')};
-  color: ${({ $active }) => ($active ? 'var(--text-primary)' : 'var(--text-muted)')};
-  font-size: 14px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
-
-  &:hover {
-    border-color: rgba(47, 127, 255, 0.4);
-  }
-`
 
 const MultiLobbyPage: NextPage = () => {
   const router = useRouter()
@@ -159,6 +94,11 @@ const MultiLobbyPage: NextPage = () => {
   const mapNameForField = useMemo(
     () => selectOptions.find((m) => m._id === mapField)?.name,
     [selectOptions, mapField]
+  )
+
+  const fxCount = useMemo(
+    () => VISUAL_RESTRICTION_CATALOG.filter(({ key }) => Boolean(visualRestrictions[key])).length,
+    [visualRestrictions]
   )
 
   const onToggleDefaults = useCallback(() => {
@@ -221,74 +161,89 @@ const MultiLobbyPage: NextPage = () => {
     <StyledMultiGamePage>
       <Meta title="MultiGuessr" />
 
-      <GamifiedCenterStage>
-        <GamifiedFormCardWide>
-          <div style={{ marginBottom: 18 }}>
-            <PageBackLink href="/" label="Back to home" />
-          </div>
+      <CreateLobbyShell
+        title="MultiGuessr"
+        tag="Several Street Views at once. Pick panels, then open map or filters only if you need them."
+        glyph={<ViewGridIcon />}
+      >
+        <CreateSection>
+          <CreateSectionStatic>
+            <CreateFieldLabel as="div">Panels at once</CreateFieldLabel>
+            <CreateChipRow>
+              {ALLOWED_MULTI_PANEL_COUNTS.map((n) => (
+                <CreateChoiceChip
+                  key={n}
+                  type="button"
+                  $active={panelCount === n}
+                  onClick={() => setPanelCount(n)}
+                >
+                  {n}
+                </CreateChoiceChip>
+              ))}
+            </CreateChipRow>
+          </CreateSectionStatic>
+        </CreateSection>
 
-          <CardHero>
-            <div className="glyph">
-              <ViewGridIcon />
-            </div>
-            <div>
-              <h1>MultiGuessr</h1>
-            </div>
-          </CardHero>
+        <CreateAccordion
+          title="Map"
+          summary={mapNameForField || (mapsLoading ? 'Loading…' : 'Choose a map')}
+          defaultOpen={false}
+        >
+          <MapPickerGrid
+            options={selectOptions}
+            value={mapField}
+            onChange={setMapField}
+            loading={mapsLoading}
+            maxHeight={280}
+            showDescriptions={false}
+          />
+        </CreateAccordion>
 
-          <GamifiedDuelGrid>
-            <GamifiedDuelMapColumn>
-              <FieldLabel>Map</FieldLabel>
-              <MapPickerGrid
-                options={selectOptions}
-                value={mapField}
-                onChange={setMapField}
-                loading={mapsLoading}
-                maxHeight={440}
-                showDescriptions={false}
-              />
-            </GamifiedDuelMapColumn>
+        <CreateAccordion
+          title="Round & movement"
+          summary={defaultsLocked ? 'Default time & movement' : 'Custom time & movement'}
+          defaultOpen={false}
+        >
+          <LobbyGameSettings
+            defaultsLocked={defaultsLocked}
+            onToggleDefaults={onToggleDefaults}
+            sliderVal={sliderVal}
+            setSliderVal={setSliderVal}
+            canMove={canMove}
+            canPan={canPan}
+            canZoom={canZoom}
+            setCanMove={setCanMove}
+            setCanPan={setCanPan}
+            setCanZoom={setCanZoom}
+            visualRestrictions={visualRestrictions}
+            setVisualRestrictions={setVisualRestrictions}
+            hideVisualRestrictions
+          />
+        </CreateAccordion>
 
-            <GamifiedDuelSettingsColumn>
-              <LobbyGameSettings
-                defaultsLocked={defaultsLocked}
-                onToggleDefaults={onToggleDefaults}
-                sliderVal={sliderVal}
-                setSliderVal={setSliderVal}
-                canMove={canMove}
-                canPan={canPan}
-                canZoom={canZoom}
-                setCanMove={setCanMove}
-                setCanPan={setCanPan}
-                setCanZoom={setCanZoom}
-                visualRestrictions={visualRestrictions}
-                setVisualRestrictions={setVisualRestrictions}
-              />
-              <FieldLabel>Panels at once</FieldLabel>
-              <PanelCountRow>
-                {ALLOWED_MULTI_PANEL_COUNTS.map((n) => (
-                  <PanelCountBtn
-                    key={n}
-                    type="button"
-                    $active={panelCount === n}
-                    onClick={() => setPanelCount(n)}
-                  >
-                    {n}
-                  </PanelCountBtn>
-                ))}
-              </PanelCountRow>
-              <Button
-                variant="primary"
-                style={{ marginTop: 16, width: '100%' }}
-                disabled={submitting || mapsLoading}
-                onClick={() => void start()}
-              >
-                {submitting ? 'Starting…' : 'Start'}
-              </Button>
-            </GamifiedDuelSettingsColumn>
-          </GamifiedDuelGrid>
-        </GamifiedFormCardWide>
-      </GamifiedCenterStage>
+        <CreateAccordion
+          title="Wacky filters"
+          summary={fxCount > 0 ? `${fxCount} filter${fxCount === 1 ? '' : 's'} on` : 'None'}
+          defaultOpen={fxCount > 0}
+        >
+          <VisualRestrictionsPanel
+            value={visualRestrictions}
+            onChange={setVisualRestrictions}
+            listMaxHeight={220}
+          />
+        </CreateAccordion>
+
+        <CreateStickyActions>
+          <Button
+            variant="primary"
+            style={{ width: '100%' }}
+            disabled={submitting || mapsLoading}
+            onClick={() => void start()}
+          >
+            {submitting ? 'Starting…' : 'Start'}
+          </Button>
+        </CreateStickyActions>
+      </CreateLobbyShell>
     </StyledMultiGamePage>
   )
 }

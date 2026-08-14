@@ -5,14 +5,21 @@ import type { VisualRestrictions, VisualRestrictionKey } from '@utils/constants/
 import {
   VISUAL_RESTRICTION_CATALOG,
   clampPixelateLevel,
+  clampVisualIntensity,
   DEFAULT_PIXELATE_LEVEL,
+  DEFAULT_VISUAL_INTENSITY,
+  MAX_VISUAL_INTENSITY,
+  MIN_VISUAL_INTENSITY,
   normalizeVisualRestrictions,
+  visualIntensityLabel,
 } from '@utils/constants/visualRestrictions'
 
 type Props = {
   value: VisualRestrictions
   onChange: (next: VisualRestrictions) => void
   disabled?: boolean
+  /** Constrain chip list height so create lobbies stay compact. */
+  listMaxHeight?: number
 }
 
 const Root = styled.section`
@@ -52,10 +59,49 @@ const ClearBtn = styled.button`
   }
 `
 
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+const IntensityRow = styled.div`
+  display: flex;
+  flex-direction: column;
   gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.03);
+
+  .intensity-label {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #c8c8d0;
+  }
+
+  .intensity-val {
+    font-variant-numeric: tabular-nums;
+    color: #f4f4f5;
+  }
+
+  .intensity-hint {
+    margin: 0;
+    font-size: 11px;
+    line-height: 1.35;
+    color: var(--text-muted);
+  }
+`
+
+const Grid = styled.div<{ $maxHeight?: number }>`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 8px;
+  ${({ $maxHeight }) =>
+    $maxHeight
+      ? `
+    max-height: ${$maxHeight}px;
+    overflow: auto;
+    padding-right: 2px;
+  `
+      : ''}
 `
 
 const Chip = styled.button<{ $on: boolean; $disabled?: boolean }>`
@@ -113,13 +159,29 @@ const PixelRow = styled.div`
   }
 `
 
-const VisualRestrictionsPanel: FC<Props> = ({ value, onChange, disabled }) => {
+const VisualRestrictionsPanel: FC<Props> = ({ value, onChange, disabled, listMaxHeight }) => {
   const normalized = useMemo(() => normalizeVisualRestrictions(value), [value])
   const anyOn = VISUAL_RESTRICTION_CATALOG.some(({ key }) => Boolean(normalized[key]))
+  const intensity = clampVisualIntensity(
+    normalized.intensity ?? value.intensity ?? DEFAULT_VISUAL_INTENSITY
+  )
+
+  const setIntensity = (n: number) => {
+    if (disabled) return
+    const nextIntensity = clampVisualIntensity(n)
+    if (!anyOn) {
+      onChange({ ...value, intensity: nextIntensity })
+      return
+    }
+    onChange(normalizeVisualRestrictions({ ...normalized, intensity: nextIntensity }))
+  }
 
   const toggle = (key: VisualRestrictionKey) => {
     if (disabled) return
-    const next = { ...normalized, [key]: !normalized[key] }
+    const intensitySeed = clampVisualIntensity(
+      normalized.intensity ?? value.intensity ?? DEFAULT_VISUAL_INTENSITY
+    )
+    const next = { ...normalized, intensity: intensitySeed, [key]: !normalized[key] }
     if (key === 'pixelate' && next.pixelate && next.pixelateLevel == null) {
       next.pixelateLevel = DEFAULT_PIXELATE_LEVEL
     }
@@ -142,7 +204,26 @@ const VisualRestrictionsPanel: FC<Props> = ({ value, onChange, disabled }) => {
         </ClearBtn>
       </TitleRow>
 
-      <Grid>
+      <IntensityRow>
+        <div className="intensity-label">
+          <span>Effect intensity</span>
+          <span className="intensity-val">
+            {intensity} · {visualIntensityLabel(intensity)}
+          </span>
+        </div>
+        <Slider
+          value={intensity}
+          min={MIN_VISUAL_INTENSITY}
+          max={MAX_VISUAL_INTENSITY}
+          onChange={setIntensity}
+          disabled={disabled}
+        />
+        <p className="intensity-hint">
+          1 is the normal look. Drag up toward Impossible for extreme distortion.
+        </p>
+      </IntensityRow>
+
+      <Grid $maxHeight={listMaxHeight}>
         {VISUAL_RESTRICTION_CATALOG.map(({ key, label, blurb }) => {
           const on = Boolean(normalized[key])
           return (
@@ -180,6 +261,7 @@ const VisualRestrictionsPanel: FC<Props> = ({ value, onChange, disabled }) => {
                   ...normalized,
                   pixelate: true,
                   pixelateLevel: n,
+                  intensity,
                 })
               )
             }

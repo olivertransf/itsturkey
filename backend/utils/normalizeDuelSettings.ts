@@ -12,6 +12,7 @@ const visualRestrictionsSchema = z
     blink: z.boolean().optional(),
     pixelate: z.boolean().optional(),
     pixelateLevel: z.number().min(2).max(16).optional(),
+    intensity: z.number().min(1).max(10).optional(),
     upsideDown: z.boolean().optional(),
     spin: z.boolean().optional(),
     wander: z.boolean().optional(),

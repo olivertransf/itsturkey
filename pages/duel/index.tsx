@@ -3,20 +3,25 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { HeartIcon, LightningBoltIcon, SparklesIcon } from '@heroicons/react/outline'
+import {
+  CreateAccordion,
+  CreateFieldGrow,
+  CreateFieldInput,
+  CreateFieldLabel,
+  CreateLobbyShell,
+  CreateModeStrip,
+  CreateRow,
+  CreateSection,
+  CreateSectionStatic,
+  CreateStickyActions,
+} from '@components/CreateLobby'
+import { VisualRestrictionsPanel } from '@components/GameStartForm'
 import { LobbyGameSettings } from '@components/LobbyGameSettings'
 import { MapPickerGrid } from '@components/MapPickerGrid'
 import { Meta } from '@components/Meta'
-import { PageBackLink } from '@components/PageBackLink'
 import { Button } from '@components/system'
 import ToggleSwitch from '@components/system/ToggleSwitch/ToggleSwitch'
 import StyledMultiGamePage from '@styles/MultiGamePage.Styled'
-import {
-  GamifiedCenterStage,
-  GamifiedDuelCreateGrid,
-  GamifiedDuelCreatePanel,
-  GamifiedDuelMapColumn,
-  GamifiedFormCardWide,
-} from '@styles/GamifiedHubShell.Styled'
 import { isMapExcludedFromPicker } from '@utils/constants/mapPicker'
 import { EQUITABLE_COUNTRY_STREAK_DETAILS, EQUITABLE_COUNTRY_STREAK_ID } from '@utils/constants/random'
 import { DEFAULT_TOTAL_ROUNDS, MAX_TOTAL_ROUNDS } from '@utils/constants/gameModes'
@@ -26,160 +31,13 @@ import type { MapPickerRow } from '@utils/loadMapPickerOptions'
 import { mailman, showToast } from '@utils/helpers'
 import {
   EMPTY_VISUAL_RESTRICTIONS,
+  VISUAL_RESTRICTION_CATALOG,
   hasAnyVisualRestriction,
   normalizeVisualRestrictions,
 } from '@utils/constants/visualRestrictions'
 import type { VisualRestrictions } from '@utils/constants/visualRestrictions'
-import styled from 'styled-components'
 
-const PageHead = styled.div`
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  margin-bottom: 20px;
-`
-
-const CardHero = styled.div`
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  min-width: 0;
-  flex: 1;
-
-  .glyph {
-    width: 48px;
-    height: 48px;
-    flex-shrink: 0;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(110, 178, 232, 0.14);
-    border: 1px solid rgba(157, 200, 240, 0.4);
-    color: #9dc8f0;
-
-    svg {
-      width: 26px;
-      height: 26px;
-    }
-  }
-
-  h1 {
-    margin: 0;
-    font-size: clamp(1.4rem, 3.2vw, 1.85rem);
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1.15;
-    color: #fafafa;
-  }
-
-  .tag {
-    margin: 6px 0 0;
-    font-size: 13px;
-    line-height: 1.45;
-    color: var(--text-muted);
-    max-width: 52ch;
-  }
-`
-
-const FieldLabel = styled.label`
-  display: block;
-  margin: 12px 0 7px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #94a3b8;
-
-  &:first-child {
-    margin-top: 0;
-  }
-`
-
-const FieldInput = styled.input`
-  width: 100%;
-  padding: 11px 13px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(0, 0, 0, 0.35);
-  color: #f4f4f5;
-  font-size: 14px;
-  box-sizing: border-box;
-
-  &:focus {
-    border-color: rgba(157, 200, 240, 0.55);
-    outline: none;
-  }
-`
-
-const ModeStrip = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 2px;
-  padding: 12px 14px;
-  border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border-subtle);
-
-  span.mode-copy {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    line-height: 1.35;
-    color: var(--text-primary);
-
-    svg {
-      width: 18px;
-      height: 18px;
-      flex-shrink: 0;
-      margin-top: 1px;
-      opacity: 0.9;
-    }
-  }
-`
-
-const Row = styled.div`
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  align-items: flex-end;
-`
-
-const FieldGrow = styled.div`
-  flex: 1;
-  min-width: 120px;
-`
-
-const MapPanel = styled(GamifiedDuelMapColumn)`
-  padding: 14px 14px 16px;
-  border-radius: var(--radius-lg);
-  background-color: var(--bg-surface);
-  border: var(--border-default);
-  min-height: 0;
-
-  @media (min-width: 900px) {
-    position: sticky;
-    top: 12px;
-    max-height: calc(100dvh - 48px);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-`
-
-const MapPickerWrap = styled.div`
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-`
-
-/** Same pool duels already draw rounds from (`DUEL_ROUND_LOCATION_POOL_ID`); default scoring/UI map matches. */
+/** Same pool duels already draw rounds from; default scoring/UI map matches. */
 const EQUITABLE_STREAK_PICKER_ROW: MapPickerRow = {
   _id: EQUITABLE_COUNTRY_STREAK_DETAILS._id,
   name: EQUITABLE_COUNTRY_STREAK_DETAILS.name,
@@ -251,6 +109,11 @@ const DuelLobbyPage: NextPage = () => {
   const [canZoom, setCanZoom] = useState(true)
   const [visualRestrictions, setVisualRestrictions] = useState<VisualRestrictions>({})
 
+  const fxCount = useMemo(
+    () => VISUAL_RESTRICTION_CATALOG.filter(({ key }) => Boolean(visualRestrictions[key])).length,
+    [visualRestrictions]
+  )
+
   const onToggleDefaults = useCallback(() => {
     setDefaultsLocked((prev) => {
       if (prev) return false
@@ -311,163 +174,161 @@ const DuelLobbyPage: NextPage = () => {
     <StyledMultiGamePage>
       <Meta title="Create Duel" />
 
-      <GamifiedCenterStage style={{ alignItems: 'stretch', justifyContent: 'flex-start' }}>
-        <GamifiedFormCardWide>
-          <PageHead>
-            <PageBackLink href="/" label="Home" />
-          </PageHead>
+      <CreateLobbyShell
+        title="Create duel"
+        tag="1v1 invite — share the link or code. Basics stay up top; map and filters fold away."
+        glyph={<SparklesIcon />}
+      >
+        <CreateSection>
+          <CreateSectionStatic>
+            {status !== 'authenticated' && status !== 'loading' ? (
+              <div>
+                <CreateFieldLabel htmlFor="hostNick">Your name (guests)</CreateFieldLabel>
+                <CreateFieldInput
+                  id="hostNick"
+                  type="text"
+                  maxLength={32}
+                  placeholder="Optional — lobby display"
+                  value={hostNickname}
+                  onChange={(e) => setHostNickname(e.target.value)}
+                />
+              </div>
+            ) : null}
 
-          <CardHero>
-            <div className="glyph">
-              <SparklesIcon />
-            </div>
             <div>
-              <h1>Create duel room</h1>
-              <p className="tag">
-                1v1 invite — share the link or code. Sign in for your name on profile and friends.
-              </p>
+              <CreateFieldLabel as="div">Mode</CreateFieldLabel>
+              <CreateModeStrip>
+                <ToggleSwitch isActive={mode === 'points'} setIsActive={(on) => setMode(on ? 'points' : 'hp')} />
+                <span className="mode-copy">
+                  {mode === 'hp' ? (
+                    <>
+                      <HeartIcon /> HP · until KO
+                    </>
+                  ) : (
+                    <>
+                      <LightningBoltIcon /> Points · {rounds} rounds
+                    </>
+                  )}
+                </span>
+              </CreateModeStrip>
             </div>
-          </CardHero>
 
-          <GamifiedDuelCreateGrid>
-            <MapPanel className="duel-create-map">
-              <FieldLabel as="div" style={{ marginTop: 0 }}>
-                Map
-              </FieldLabel>
-              <MapPickerWrap>
-                <MapPickerGrid
-                  options={selectOptions}
-                  value={mapField}
-                  onChange={setMapField}
-                  loading={mapsLoading}
-                  maxHeight={560}
-                  showDescriptions={false}
+            {mode === 'points' ? (
+              <div>
+                <CreateFieldLabel htmlFor="rounds">Rounds</CreateFieldLabel>
+                <CreateFieldInput
+                  id="rounds"
+                  type="number"
+                  min={1}
+                  max={MAX_TOTAL_ROUNDS}
+                  value={rounds}
+                  onChange={(e) => setRounds(Number(e.target.value))}
                 />
-              </MapPickerWrap>
-            </MapPanel>
+              </div>
+            ) : null}
 
-            <GamifiedDuelCreatePanel className="duel-create-match" aria-label="Match settings">
-              <h2 className="panel-title">Match</h2>
-              <div className="panel-body">
-                {status !== 'authenticated' && status !== 'loading' && (
-                  <>
-                    <FieldLabel htmlFor="hostNick">Your name (guests)</FieldLabel>
-                    <FieldInput
-                      id="hostNick"
-                      type="text"
-                      maxLength={32}
-                      placeholder="Optional — lobby display"
-                      value={hostNickname}
-                      onChange={(e) => setHostNickname(e.target.value)}
-                    />
-                  </>
-                )}
+            <CreateRow>
+              <CreateFieldGrow>
+                <CreateFieldLabel htmlFor="hpHost">Your HP</CreateFieldLabel>
+                <CreateFieldInput
+                  id="hpHost"
+                  type="number"
+                  min={100}
+                  value={startingHpHost}
+                  onChange={(e) => setStartingHpHost(Number(e.target.value))}
+                />
+              </CreateFieldGrow>
+              <CreateFieldGrow>
+                <CreateFieldLabel htmlFor="hpGuest">Opponent HP</CreateFieldLabel>
+                <CreateFieldInput
+                  id="hpGuest"
+                  type="number"
+                  min={100}
+                  value={startingHpGuest}
+                  onChange={(e) => setStartingHpGuest(Number(e.target.value))}
+                />
+              </CreateFieldGrow>
+            </CreateRow>
 
-                <FieldLabel>Mode</FieldLabel>
-                <ModeStrip>
-                  <ToggleSwitch isActive={mode === 'points'} setIsActive={(on) => setMode(on ? 'points' : 'hp')} />
+            {mode === 'hp' ? (
+              <div>
+                <CreateFieldLabel as="div">Damage multiplier</CreateFieldLabel>
+                <CreateModeStrip>
+                  <ToggleSwitch
+                    isActive={multiplierMode === 'win_streak'}
+                    setIsActive={(on) => setMultiplierMode(on ? 'win_streak' : 'round_ramp')}
+                  />
                   <span className="mode-copy">
-                    {mode === 'hp' ? (
-                      <>
-                        <HeartIcon /> HP · until KO
-                      </>
-                    ) : (
-                      <>
-                        <LightningBoltIcon /> Points · {rounds} rounds
-                      </>
-                    )}
+                    {multiplierMode === 'round_ramp'
+                      ? 'Round ramp — climbs each round'
+                      : 'Win streak — +0.5× per round won'}
                   </span>
-                </ModeStrip>
-
-                {mode === 'points' && (
-                  <>
-                    <FieldLabel htmlFor="rounds">Rounds</FieldLabel>
-                    <FieldInput
-                      id="rounds"
-                      type="number"
-                      min={1}
-                      max={MAX_TOTAL_ROUNDS}
-                      value={rounds}
-                      onChange={(e) => setRounds(Number(e.target.value))}
-                    />
-                  </>
-                )}
-
-                <Row>
-                  <FieldGrow>
-                    <FieldLabel htmlFor="hpHost">Your HP</FieldLabel>
-                    <FieldInput
-                      id="hpHost"
-                      type="number"
-                      min={100}
-                      value={startingHpHost}
-                      onChange={(e) => setStartingHpHost(Number(e.target.value))}
-                    />
-                  </FieldGrow>
-                  <FieldGrow>
-                    <FieldLabel htmlFor="hpGuest">Opponent HP</FieldLabel>
-                    <FieldInput
-                      id="hpGuest"
-                      type="number"
-                      min={100}
-                      value={startingHpGuest}
-                      onChange={(e) => setStartingHpGuest(Number(e.target.value))}
-                    />
-                  </FieldGrow>
-                </Row>
-
-                {mode === 'hp' && (
-                  <>
-                    <FieldLabel>Damage multiplier</FieldLabel>
-                    <ModeStrip>
-                      <ToggleSwitch
-                        isActive={multiplierMode === 'win_streak'}
-                        setIsActive={(on) => setMultiplierMode(on ? 'win_streak' : 'round_ramp')}
-                      />
-                      <span className="mode-copy">
-                        {multiplierMode === 'round_ramp'
-                          ? 'Round ramp — 1× early, then climbs each round'
-                          : 'Win streak — winner’s mult +0.5× each round won'}
-                      </span>
-                    </ModeStrip>
-                  </>
-                )}
+                </CreateModeStrip>
               </div>
+            ) : null}
+          </CreateSectionStatic>
+        </CreateSection>
 
-              <div className="panel-footer">
-                <Button
-                  variant="primary"
-                  style={{ width: '100%' }}
-                  disabled={submitting || status === 'loading'}
-                  onClick={() => void create()}
-                >
-                  {submitting ? 'Creating…' : 'Create room'}
-                </Button>
-              </div>
-            </GamifiedDuelCreatePanel>
+        <CreateAccordion
+          title="Map"
+          summary={mapNameForField || (mapsLoading ? 'Loading…' : 'Choose a map')}
+          defaultOpen={false}
+        >
+          <MapPickerGrid
+            options={selectOptions}
+            value={mapField}
+            onChange={setMapField}
+            loading={mapsLoading}
+            maxHeight={280}
+            showDescriptions={false}
+          />
+        </CreateAccordion>
 
-            <GamifiedDuelCreatePanel className="duel-create-filters" aria-label="Round and visual settings">
-              <h2 className="panel-title">Round & filters</h2>
-              <div className="panel-body">
-                <LobbyGameSettings
-                  defaultsLocked={defaultsLocked}
-                  onToggleDefaults={onToggleDefaults}
-                  sliderVal={sliderVal}
-                  setSliderVal={setSliderVal}
-                  canMove={canMove}
-                  canPan={canPan}
-                  canZoom={canZoom}
-                  setCanMove={setCanMove}
-                  setCanPan={setCanPan}
-                  setCanZoom={setCanZoom}
-                  visualRestrictions={visualRestrictions}
-                  setVisualRestrictions={setVisualRestrictions}
-                />
-              </div>
-            </GamifiedDuelCreatePanel>
-          </GamifiedDuelCreateGrid>
-        </GamifiedFormCardWide>
-      </GamifiedCenterStage>
+        <CreateAccordion
+          title="Round & movement"
+          summary={defaultsLocked ? 'Default time & movement' : 'Custom time & movement'}
+          defaultOpen={false}
+        >
+          <LobbyGameSettings
+            defaultsLocked={defaultsLocked}
+            onToggleDefaults={onToggleDefaults}
+            sliderVal={sliderVal}
+            setSliderVal={setSliderVal}
+            canMove={canMove}
+            canPan={canPan}
+            canZoom={canZoom}
+            setCanMove={setCanMove}
+            setCanPan={setCanPan}
+            setCanZoom={setCanZoom}
+            visualRestrictions={visualRestrictions}
+            setVisualRestrictions={setVisualRestrictions}
+            hideVisualRestrictions
+          />
+        </CreateAccordion>
+
+        <CreateAccordion
+          title="Wacky filters"
+          summary={fxCount > 0 ? `${fxCount} filter${fxCount === 1 ? '' : 's'} on` : 'None'}
+          defaultOpen={fxCount > 0}
+        >
+          <VisualRestrictionsPanel
+            value={visualRestrictions}
+            onChange={setVisualRestrictions}
+            listMaxHeight={220}
+          />
+        </CreateAccordion>
+
+        <CreateStickyActions>
+          <Button
+            variant="primary"
+            style={{ width: '100%' }}
+            disabled={submitting || status === 'loading'}
+            onClick={() => void create()}
+          >
+            {submitting ? 'Creating…' : 'Create room'}
+          </Button>
+        </CreateStickyActions>
+      </CreateLobbyShell>
     </StyledMultiGamePage>
   )
 }

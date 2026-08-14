@@ -2,21 +2,19 @@ import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { GlobeAltIcon } from '@heroicons/react/outline'
+import {
+  CreateAccordion,
+  CreateLobbyShell,
+  CreateStickyActions,
+} from '@components/CreateLobby'
+import { VisualRestrictionsPanel } from '@components/GameStartForm'
 import { LobbyGameSettings } from '@components/LobbyGameSettings'
 import { MapPickerGrid } from '@components/MapPickerGrid'
 import { Meta } from '@components/Meta'
-import { PageBackLink } from '@components/PageBackLink'
 import { Button } from '@components/system'
 import { useAppDispatch } from '@redux/hook'
 import { updateGameSettings, updateStartTime } from '@redux/slices'
 import StyledMultiGamePage from '@styles/MultiGamePage.Styled'
-import {
-  GamifiedCenterStage,
-  GamifiedDuelGrid,
-  GamifiedDuelMapColumn,
-  GamifiedDuelSettingsColumn,
-  GamifiedFormCardWide,
-} from '@styles/GamifiedHubShell.Styled'
 import {
   COUNTRY_STREAK_DETAILS,
   COUNTRY_STREAKS_ID,
@@ -27,11 +25,11 @@ import { mailman, showToast } from '@utils/helpers'
 import type { MapPickerRow } from '@utils/loadMapPickerOptions'
 import {
   EMPTY_VISUAL_RESTRICTIONS,
+  VISUAL_RESTRICTION_CATALOG,
   hasAnyVisualRestriction,
   normalizeVisualRestrictions,
 } from '@utils/constants/visualRestrictions'
 import type { VisualRestrictions } from '@utils/constants/visualRestrictions'
-import styled from 'styled-components'
 
 const ALLOWED_STREAK_MAP_IDS = new Set([EQUITABLE_COUNTRY_STREAK_ID, COUNTRY_STREAKS_ID])
 
@@ -49,50 +47,6 @@ const STREAK_MAP_OPTIONS: MapPickerRow[] = [
     previewImg: COUNTRY_STREAK_DETAILS.previewImg,
   },
 ]
-
-const CardHero = styled.div`
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  margin-bottom: 16px;
-
-  .glyph {
-    width: 48px;
-    height: 48px;
-    flex-shrink: 0;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(47, 127, 255, 0.12);
-    border: 1px solid rgba(47, 127, 255, 0.35);
-    color: var(--accent-primary);
-
-    svg {
-      width: 26px;
-      height: 26px;
-    }
-  }
-
-  h1 {
-    margin: 0;
-    font-size: clamp(1.35rem, 4vw, 1.65rem);
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1.15;
-    color: var(--text-primary);
-  }
-`
-
-const FieldLabel = styled.label`
-  display: block;
-  margin: 14px 0 7px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-`
 
 const StreakLobbyPage: NextPage = () => {
   const router = useRouter()
@@ -126,6 +80,11 @@ const StreakLobbyPage: NextPage = () => {
   const mapNameForField = useMemo(
     () => selectOptions.find((m) => m._id === mapField)?.name,
     [selectOptions, mapField]
+  )
+
+  const fxCount = useMemo(
+    () => VISUAL_RESTRICTION_CATALOG.filter(({ key }) => Boolean(visualRestrictions[key])).length,
+    [visualRestrictions]
   )
 
   const onToggleDefaults = useCallback(() => {
@@ -203,61 +162,67 @@ const StreakLobbyPage: NextPage = () => {
     <StyledMultiGamePage>
       <Meta title="Country streak" />
 
-      <GamifiedCenterStage>
-        <GamifiedFormCardWide>
-          <div style={{ marginBottom: 18 }}>
-            <PageBackLink href="/" label="Back to home" />
-          </div>
+      <CreateLobbyShell
+        title="Country streak"
+        tag="Keep guessing countries until you miss. Map choice and filters stay out of the way."
+        glyph={<GlobeAltIcon />}
+      >
+        <CreateAccordion title="Map" summary={mapNameForField || 'Choose a map'} defaultOpen>
+          <MapPickerGrid
+            options={selectOptions}
+            value={mapField}
+            onChange={setMapField}
+            loading={false}
+            maxHeight={280}
+            showDescriptions={false}
+          />
+        </CreateAccordion>
 
-          <CardHero>
-            <div className="glyph">
-              <GlobeAltIcon />
-            </div>
-            <div>
-              <h1>Country streak</h1>
-            </div>
-          </CardHero>
+        <CreateAccordion
+          title="Round & movement"
+          summary={defaultsLocked ? 'Default time & movement' : 'Custom time & movement'}
+          defaultOpen={false}
+        >
+          <LobbyGameSettings
+            defaultsLocked={defaultsLocked}
+            onToggleDefaults={onToggleDefaults}
+            sliderVal={sliderVal}
+            setSliderVal={setSliderVal}
+            canMove={canMove}
+            canPan={canPan}
+            canZoom={canZoom}
+            setCanMove={setCanMove}
+            setCanPan={setCanPan}
+            setCanZoom={setCanZoom}
+            visualRestrictions={visualRestrictions}
+            setVisualRestrictions={setVisualRestrictions}
+            hideVisualRestrictions
+          />
+        </CreateAccordion>
 
-          <GamifiedDuelGrid>
-            <GamifiedDuelMapColumn>
-              <FieldLabel>Map</FieldLabel>
-              <MapPickerGrid
-                options={selectOptions}
-                value={mapField}
-                onChange={setMapField}
-                loading={false}
-                maxHeight={440}
-                showDescriptions={false}
-              />
-            </GamifiedDuelMapColumn>
+        <CreateAccordion
+          title="Wacky filters"
+          summary={fxCount > 0 ? `${fxCount} filter${fxCount === 1 ? '' : 's'} on` : 'None'}
+          defaultOpen={fxCount > 0}
+        >
+          <VisualRestrictionsPanel
+            value={visualRestrictions}
+            onChange={setVisualRestrictions}
+            listMaxHeight={220}
+          />
+        </CreateAccordion>
 
-            <GamifiedDuelSettingsColumn>
-              <LobbyGameSettings
-                defaultsLocked={defaultsLocked}
-                onToggleDefaults={onToggleDefaults}
-                sliderVal={sliderVal}
-                setSliderVal={setSliderVal}
-                canMove={canMove}
-                canPan={canPan}
-                canZoom={canZoom}
-                setCanMove={setCanMove}
-                setCanPan={setCanPan}
-                setCanZoom={setCanZoom}
-                visualRestrictions={visualRestrictions}
-                setVisualRestrictions={setVisualRestrictions}
-              />
-              <Button
-                variant="primary"
-                style={{ marginTop: 16, width: '100%' }}
-                disabled={submitting}
-                onClick={() => void start()}
-              >
-                {submitting ? 'Starting…' : 'Start'}
-              </Button>
-            </GamifiedDuelSettingsColumn>
-          </GamifiedDuelGrid>
-        </GamifiedFormCardWide>
-      </GamifiedCenterStage>
+        <CreateStickyActions>
+          <Button
+            variant="primary"
+            style={{ width: '100%' }}
+            disabled={submitting}
+            onClick={() => void start()}
+          >
+            {submitting ? 'Starting…' : 'Start'}
+          </Button>
+        </CreateStickyActions>
+      </CreateLobbyShell>
     </StyledMultiGamePage>
   )
 }

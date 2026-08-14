@@ -48,8 +48,8 @@ const postDuelChat = async (req: NextApiRequest, res: NextApiResponse) => {
     createdAt: createdAt.toISOString(),
   }
 
-  void notifyDuelChat(duelId, message)
-  void notifyDuelUpdated(duelId, 'chat')
+  void notifyDuelChat(duelId, message, duel)
+  void notifyDuelUpdated(duelId, 'chat', duel)
 
   const mapDetails = await getMapFromGame({ mapId: duel.mapId } as unknown as Game)
   await replyWithDuelPayload(res, duel, role, mapDetails)

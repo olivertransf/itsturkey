@@ -8,6 +8,7 @@ import { duelParticipantRole } from '@backend/utils/duelParticipant'
 import { findDuelSessionByInvite } from '@backend/utils/resolveDuelInvite'
 import { notifyUserDuelInviteCreated } from '@backend/utils/pusherNotify'
 import { DUEL_FRIEND_INVITE_TTL_MS } from '@backend/utils/duelConstants'
+import { normalizeDuelInviteCode } from '@backend/utils/duelShortCode'
 
 const postDuelInviteFriend = async (req: NextApiRequest, res: NextApiResponse) => {
   const duelSegment = req.query.id as string
@@ -50,6 +51,9 @@ const postDuelInviteFriend = async (req: NextApiRequest, res: NextApiResponse) =
 
   const now = new Date()
   const expiresAt = new Date(now.getTime() + DUEL_FRIEND_INVITE_TTL_MS)
+  const inviteSegment =
+    normalizeDuelInviteCode(duel.shortCode) ??
+    (typeof duel.shortCode === 'string' && duel.shortCode.trim() ? duel.shortCode.trim() : duelSegment)
 
   await collections.duelFriendInvites?.deleteMany({
     duelObjectId: duel._id,
@@ -58,7 +62,7 @@ const postDuelInviteFriend = async (req: NextApiRequest, res: NextApiResponse) =
   })
 
   const inserted = await collections.duelFriendInvites?.insertOne({
-    inviteSegment: duelSegment,
+    inviteSegment,
     duelObjectId: duel._id,
     hostUserId: new ObjectId(userId),
     recipientUserId: new ObjectId(peerHex),
@@ -74,7 +78,7 @@ const postDuelInviteFriend = async (req: NextApiRequest, res: NextApiResponse) =
     void notifyUserDuelInviteCreated(peerHex, {
       id: inviteRowId,
       hostName: hostDisplayName,
-      inviteSegment: duelSegment,
+      inviteSegment,
       createdAt: now.toISOString(),
       expiresAt: expiresAt.toISOString(),
     })

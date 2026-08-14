@@ -1110,14 +1110,21 @@ export const DuelLobbyHostWaitingPanel: FC<{
           <UserGroupIcon className="tile" />
           <div>
             <LobbyTitle>Waiting for opponent</LobbyTitle>
-            <Subtle style={{ marginTop: 4 }}>Share the code or invite a friend. Chat is open on the right.</Subtle>
+            <Subtle style={{ marginTop: 4 }}>
+              Share the code or invite a friend. This page updates automatically when they join.
+            </Subtle>
           </div>
         </LobbyHead>
+
+        <OpponentJoinedBadge style={{ opacity: 0.85 }}>
+          <UserGroupIcon style={{ width: 16, height: 16, flexShrink: 0 }} />
+          Listening for join…
+        </OpponentJoinedBadge>
 
         <DuelLobbyMatchSummary match={match} />
         <DuelRoomCodeCard
           shortCode={shortCode}
-          hint="Friends can join from the invite notification, or enter this code on Join duel."
+          hint="Friends can join from the invite banner, or enter this code on Join duel."
         />
         <DuelLobbyFriendsInvite
           friends={friends}

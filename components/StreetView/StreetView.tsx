@@ -143,7 +143,9 @@ const Streetview: FC<Props> = ({
     [gameData.gameSettings.visualRestrictions]
   )
   const liveViewPublishTimerRef = useRef<number | null>(null)
-  const lastAppliedFollowKeyRef = useRef('')
+  const followTargetRef = useRef<StreetViewLiveView | null>(null)
+  const followPanoKeyRef = useRef('')
+  const followRafRef = useRef<number | null>(null)
   const onLiveViewChangeRef = useRef(onLiveViewChange)
   onLiveViewChangeRef.current = onLiveViewChange
 
@@ -261,37 +263,72 @@ const Streetview: FC<Props> = ({
     }
   }, [isSpectator, onLiveViewChange, googleMapsConfig, view, gameData.round])
 
-  // Spectator: force-follow the player's camera.
+  // Spectator: smooth-follow the player's camera (lerp POV; jump on pano change).
   useEffect(() => {
-    if (!isSpectator || !followLiveView || !panoramaRef.current) return
-    const pano = panoramaRef.current
-    const key = [
-      followLiveView.heading,
-      followLiveView.pitch,
-      followLiveView.zoom,
-      followLiveView.panoId ?? '',
-      followLiveView.lat ?? '',
-      followLiveView.lng ?? '',
-      followLiveView.updatedAt ?? '',
-    ].join('|')
-    if (key === lastAppliedFollowKeyRef.current) return
-    lastAppliedFollowKeyRef.current = key
+    if (!isSpectator || !followLiveView) {
+      followTargetRef.current = null
+      return
+    }
+    followTargetRef.current = followLiveView
 
-    if (followLiveView.panoId && pano.getPano() !== followLiveView.panoId) {
-      pano.setPano(followLiveView.panoId)
-    } else if (
-      followLiveView.lat != null &&
-      followLiveView.lng != null &&
-      Number.isFinite(followLiveView.lat) &&
-      Number.isFinite(followLiveView.lng)
-    ) {
-      pano.setPosition({ lat: followLiveView.lat, lng: followLiveView.lng })
+    const pano = panoramaRef.current
+    if (!pano) return
+
+    const placeKey = `${followLiveView.panoId ?? ''}|${followLiveView.lat ?? ''}|${followLiveView.lng ?? ''}`
+    if (placeKey !== followPanoKeyRef.current) {
+      followPanoKeyRef.current = placeKey
+      if (followLiveView.panoId && pano.getPano() !== followLiveView.panoId) {
+        pano.setPano(followLiveView.panoId)
+      } else if (
+        followLiveView.lat != null &&
+        followLiveView.lng != null &&
+        Number.isFinite(followLiveView.lat) &&
+        Number.isFinite(followLiveView.lng)
+      ) {
+        pano.setPosition({ lat: followLiveView.lat, lng: followLiveView.lng })
+      }
+    }
+  }, [isSpectator, followLiveView])
+
+  useEffect(() => {
+    if (!isSpectator || !googleMapsConfig) {
+      if (followRafRef.current != null) {
+        cancelAnimationFrame(followRafRef.current)
+        followRafRef.current = null
+      }
+      return
     }
 
-    pano.setPov({ heading: followLiveView.heading, pitch: followLiveView.pitch })
-    pano.setZoom(followLiveView.zoom)
-    lockPoseTo(followLiveView.heading, followLiveView.pitch, followLiveView.zoom)
-  }, [isSpectator, followLiveView, lockPoseTo, googleMapsConfig])
+    const lerp = (a: number, b: number, t: number) => a + (b - a) * t
+    const lerpAngle = (from: number, to: number, t: number) => {
+      let delta = ((((to - from) % 360) + 540) % 360) - 180
+      return from + delta * t
+    }
+
+    const tick = () => {
+      const pano = panoramaRef.current
+      const target = followTargetRef.current
+      if (pano && target) {
+        const pov = pano.getPov()
+        const zoom = pano.getZoom() ?? 0
+        const heading = lerpAngle(pov?.heading ?? target.heading, target.heading, 0.22)
+        const pitch = lerp(pov?.pitch ?? target.pitch, target.pitch, 0.22)
+        const nextZoom = lerp(zoom, target.zoom, 0.22)
+        pano.setPov({ heading, pitch })
+        pano.setZoom(nextZoom)
+        lockPoseTo(heading, pitch, nextZoom)
+      }
+      followRafRef.current = requestAnimationFrame(tick)
+    }
+
+    followRafRef.current = requestAnimationFrame(tick)
+    return () => {
+      if (followRafRef.current != null) {
+        cancelAnimationFrame(followRafRef.current)
+        followRafRef.current = null
+      }
+    }
+  }, [isSpectator, googleMapsConfig, lockPoseTo])
 
   // Loads all subsequent panos
   useEffect(() => {
@@ -650,7 +687,10 @@ const Streetview: FC<Props> = ({
 
   const pixelFilterId = `${panoElementId}-pixelate`
   const pixelCell = visualFx.pixelate
-    ? pixelateFilterCellSize(visualFx.pixelateLevel ?? DEFAULT_PIXELATE_LEVEL)
+    ? pixelateFilterCellSize(
+        visualFx.pixelateLevel ?? DEFAULT_PIXELATE_LEVEL,
+        visualFx.intensity
+      )
     : 0
 
   return (

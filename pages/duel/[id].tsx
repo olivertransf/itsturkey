@@ -1,6 +1,6 @@
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import DuelPlaySurface from '@components/duel/DuelPlaySurface'
 import DuelSpectateSurface from '@components/duel/DuelSpectateSurface'
 import DuelRoundOverview from '@components/duel/DuelRoundOverview'
@@ -31,7 +31,7 @@ import {
   DUEL_POLL_PUSH_CONNECTED_MS,
   duelPollTier,
 } from '@utils/duelPollTier'
-import { duelPrivateChannel } from '@utils/pusherChannels'
+import { duelPrivateChannel, userPrivateChannel } from '@utils/pusherChannels'
 import { usePusherRealtimeHealthy } from '@utils/usePusherRealtimeHealthy'
 import { usePusherSubscription } from '@utils/usePusherSubscription'
 import { useVisibleInterval } from '@utils/useVisibleInterval'
@@ -43,7 +43,7 @@ type FriendRow = { id: string; name: string; friendCode?: string }
 
 const DuelRoomPage: PageType = () => {
   const router = useRouter()
-  const { status } = useSession()
+  const { status, data: session } = useSession()
   const duelId =
     router.isReady && typeof router.query.id === 'string' ? router.query.id.trim() : ''
   const spectateMode = router.isReady && router.query.spectate === '1'
@@ -119,6 +119,20 @@ const DuelRoomPage: PageType = () => {
     return duelPrivateChannel(duelId)
   }, [duelId, payload?.viewerRole])
 
+  /** Also listen on short-code channel when the URL used the ObjectId (or vice versa). */
+  const duelAltPushChannel = useMemo(() => {
+    if (!duelPushChannel || !payload?.shortCode) return null
+    const code = payload.shortCode.trim()
+    if (!code || code === duelId) return null
+    return duelPrivateChannel(code)
+  }, [duelPushChannel, payload?.shortCode, duelId])
+
+  const hostUserChannel = useMemo(() => {
+    if (!isAuthenticated || payload?.viewerRole !== 'host') return null
+    const uid = typeof session?.user?.id === 'string' ? session.user.id : ''
+    return uid ? userPrivateChannel(uid) : null
+  }, [isAuthenticated, payload?.viewerRole, session?.user?.id])
+
   const pushHealthy = usePusherRealtimeHealthy()
   const pushConfigured = !!process.env.NEXT_PUBLIC_PUSHER_KEY
 
@@ -128,14 +142,69 @@ const DuelRoomPage: PageType = () => {
       return 500
     }
     if (pushConfigured && pushHealthy && pollTier === 'finished') return null
+    // Host waiting for join: poll aggressively so accept never depends on a single push.
+    if (
+      pollTier === 'lobby' &&
+      payload?.viewerRole === 'host' &&
+      payload.status === 'waiting' &&
+      !payload.guestJoined
+    ) {
+      return 1500
+    }
     if (pollTier === 'lobby' && payload?.viewerRole === 'host' && payload.status === 'waiting') {
       return 2500
     }
     if (!pushConfigured || !pushHealthy) return DUEL_POLL_MS[pollTier]
     return DUEL_POLL_PUSH_CONNECTED_MS[pollTier]
-  }, [pollTier, pushHealthy, pushConfigured, payload?.viewerRole, payload?.status])
+  }, [
+    pollTier,
+    pushHealthy,
+    pushConfigured,
+    payload?.viewerRole,
+    payload?.status,
+    payload?.guestJoined,
+  ])
 
   usePusherSubscription(duelPushChannel, 'duel.updated', () => void refresh(), !!duelPushChannel)
+  usePusherSubscription(duelAltPushChannel, 'duel.updated', () => void refresh(), !!duelAltPushChannel)
+
+  usePusherSubscription(
+    hostUserChannel,
+    'duel.opponent_joined',
+    (data) => {
+      const row = data as { inviteSegment?: string; duelObjectId?: string; guestName?: string }
+      const seg = typeof row?.inviteSegment === 'string' ? row.inviteSegment.trim() : ''
+      const oid = typeof row?.duelObjectId === 'string' ? row.duelObjectId.trim() : ''
+      const matches =
+        (seg && (seg === duelId || seg === payload?.shortCode)) ||
+        (oid && (oid === duelId || oid === payload?.shortCode))
+      if (!matches) return
+      void refresh()
+    },
+    !!hostUserChannel && payload?.status === 'waiting' && !payload?.guestJoined
+  )
+
+  const prevGuestJoined = useRef<boolean | null>(null)
+  useEffect(() => {
+    if (payload?.viewerRole !== 'host' || payload.status !== 'waiting') {
+      prevGuestJoined.current = payload?.guestJoined ?? null
+      return
+    }
+    const joined = Boolean(payload.guestJoined)
+    if (prevGuestJoined.current === false && joined) {
+      const name =
+        payload.playerNames?.guest && payload.playerNames.guest !== 'Waiting'
+          ? payload.playerNames.guest
+          : 'Opponent'
+      showToast('success', `${name} joined — start the duel`)
+    }
+    prevGuestJoined.current = joined
+  }, [
+    payload?.viewerRole,
+    payload?.status,
+    payload?.guestJoined,
+    payload?.playerNames?.guest,
+  ])
 
   useVisibleInterval(
     refresh,

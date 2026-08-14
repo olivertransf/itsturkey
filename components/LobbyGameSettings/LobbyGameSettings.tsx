@@ -22,6 +22,8 @@ type Props = LobbyGameSettingsState & {
   setCanZoom: (v: boolean) => void
   setVisualRestrictions: (v: VisualRestrictions) => void
   className?: string
+  /** When true, only round time + movement (FX rendered separately). */
+  hideVisualRestrictions?: boolean
 }
 
 const DEFAULT_SETTINGS_LABEL = 'Use default round time and movement'
@@ -40,6 +42,7 @@ const LobbyGameSettings: FC<Props> = ({
   visualRestrictions,
   setVisualRestrictions,
   className,
+  hideVisualRestrictions = false,
 }) => {
   return (
     <StyledGameSettingsModal className={['lobby-game-settings-inner', className].filter(Boolean).join(' ')}>
@@ -79,11 +82,13 @@ const LobbyGameSettings: FC<Props> = ({
           </div>
         </section>
 
-        <section className="settingsWrapper" aria-label="Visual restrictions" style={{ marginTop: 14 }}>
-          <div className="controlCard detailedSettings">
-            <VisualRestrictionsPanel value={visualRestrictions} onChange={setVisualRestrictions} />
-          </div>
-        </section>
+        {!hideVisualRestrictions ? (
+          <section className="settingsWrapper" aria-label="Visual restrictions" style={{ marginTop: 14 }}>
+            <div className="controlCard detailedSettings">
+              <VisualRestrictionsPanel value={visualRestrictions} onChange={setVisualRestrictions} />
+            </div>
+          </section>
+        ) : null}
       </div>
     </StyledGameSettingsModal>
   )

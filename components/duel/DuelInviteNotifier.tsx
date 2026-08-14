@@ -1,14 +1,14 @@
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { UserGroupIcon, XIcon } from '@heroicons/react/outline'
 import { Button } from '@components/system'
-import { mailman } from '@utils/helpers'
+import { mailman, showToast } from '@utils/helpers'
 import { userPrivateChannel } from '@utils/pusherChannels'
 import { usePusherRealtimeHealthy } from '@utils/usePusherRealtimeHealthy'
 import { usePusherSubscription } from '@utils/usePusherSubscription'
 import { useVisibleInterval } from '@utils/useVisibleInterval'
-import styled from 'styled-components'
+import styled, { keyframes } from 'styled-components'
 
 type DuelInviteRow = {
   id: string
@@ -18,7 +18,14 @@ type DuelInviteRow = {
   expiresAt?: string
 }
 
-const POLL_MS_FAST = 12_000
+/** Safety poll even when Pusher looks healthy — invite banners must not depend on a single push. */
+const POLL_MS_BACKUP = 15_000
+const POLL_MS_FAST = 8_000
+
+const pulse = keyframes`
+  0%, 100% { box-shadow: 0 0 0 0 rgba(167, 139, 250, 0.35); }
+  50% { box-shadow: 0 0 0 8px rgba(167, 139, 250, 0); }
+`
 
 const Anchor = styled.div`
   position: fixed;
@@ -29,62 +36,65 @@ const Anchor = styled.div`
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-width: min(360px, calc(100vw - 32px));
+  max-width: min(400px, calc(100vw - 32px));
+  width: min(400px, calc(100vw - 32px));
   pointer-events: none;
 
   @media (max-width: 640px) {
     top: 12px;
     max-width: calc(100vw - 24px);
+    width: calc(100vw - 24px);
   }
 `
 
 const Card = styled.div`
   pointer-events: auto;
-  padding: var(--pad-card-sm) var(--pad-card-sm) 12px;
+  padding: 14px 14px 12px;
   border-radius: var(--radius-lg);
-  background-color: var(--bg-elevated);
-  border: var(--border-default);
-  box-shadow: var(--shadow-card);
+  background: linear-gradient(165deg, rgba(36, 28, 58, 0.98), var(--bg-elevated));
+  border: 1px solid rgba(167, 139, 250, 0.55);
+  box-shadow: var(--shadow-card), 0 12px 40px rgba(0, 0, 0, 0.45);
   color: var(--text-primary);
+  animation: ${pulse} 2s ease-in-out 3;
 `
 
 const CardHead = styled.div`
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 `
 
 const Tile = styled.div`
   flex-shrink: 0;
-  width: 38px;
-  height: 38px;
-  border-radius: 11px;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(97, 63, 231, 0.2);
-  border: 1px solid rgba(167, 139, 250, 0.35);
-  color: #d8b4fe;
+  background: rgba(97, 63, 231, 0.28);
+  border: 1px solid rgba(167, 139, 250, 0.5);
+  color: #e9d5ff;
 
   svg {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
   }
 `
 
 const Title = styled.div`
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1.25;
 `
 
 const Sub = styled.div`
-  font-size: 12px;
-  margin-top: 2px;
-  color: #a1a1aa;
-  line-height: 1.35;
+  font-size: 13px;
+  margin-top: 3px;
+  color: #c4c4cc;
+  line-height: 1.4;
 `
 
 const BtnRow = styled.div`
@@ -125,6 +135,8 @@ const DuelInviteNotifier = () => {
   const [invites, setInvites] = useState<DuelInviteRow[]>([])
   const pushHealthy = usePusherRealtimeHealthy()
   const pushConfigured = !!process.env.NEXT_PUBLIC_PUSHER_KEY
+  const toastedIds = useRef<Set<string>>(new Set())
+  const invitesHydrated = useRef(false)
 
   const userChannel =
     status === 'authenticated' && session?.user?.id ? userPrivateChannel(session.user.id) : null
@@ -132,6 +144,7 @@ const DuelInviteNotifier = () => {
   const fetchInvites = useCallback(async () => {
     if (status !== 'authenticated') {
       setInvites([])
+      invitesHydrated.current = false
       return
     }
     const res = await mailman('users/duel-invites')
@@ -140,16 +153,41 @@ const DuelInviteNotifier = () => {
     if (!('invites' in res)) return
     const list = (res as { invites?: unknown }).invites
     if (!Array.isArray(list)) return
-    setInvites(list as DuelInviteRow[])
+    const next = list as DuelInviteRow[]
+    setInvites((prev) => {
+      const announce = invitesHydrated.current
+      for (const row of next) {
+        if (!row?.id) continue
+        const wasKnown = prev.some((i) => i.id === row.id) || toastedIds.current.has(row.id)
+        if (!wasKnown) {
+          toastedIds.current.add(row.id)
+          if (announce) {
+            showToast('success', `${row.hostName || 'Friend'} invited you to a duel`)
+          }
+        }
+      }
+      return next
+    })
+    invitesHydrated.current = true
   }, [status])
+
+  const addInvite = useCallback((row: DuelInviteRow, announce: boolean) => {
+    if (!row?.id || !row.inviteSegment) return
+    setInvites((prev) => {
+      if (prev.some((i) => i.id === row.id)) return prev
+      return [row, ...prev]
+    })
+    if (announce && !toastedIds.current.has(row.id)) {
+      toastedIds.current.add(row.id)
+      showToast('success', `${row.hostName || 'Friend'} invited you to a duel`)
+    }
+  }, [])
 
   usePusherSubscription(
     userChannel,
     'duel_invite.created',
     (data) => {
-      const row = data as DuelInviteRow
-      if (!row?.id || !row.inviteSegment) return
-      setInvites((prev) => (prev.some((i) => i.id === row.id) ? prev : [row, ...prev]))
+      addInvite(data as DuelInviteRow, true)
     },
     !!userChannel
   )
@@ -167,7 +205,7 @@ const DuelInviteNotifier = () => {
 
   const invitePollMs = useMemo(() => {
     if (status !== 'authenticated') return null
-    if (pushConfigured && pushHealthy) return null
+    if (pushConfigured && pushHealthy) return POLL_MS_BACKUP
     return POLL_MS_FAST
   }, [status, pushConfigured, pushHealthy])
 
@@ -205,7 +243,7 @@ const DuelInviteNotifier = () => {
   if (status !== 'authenticated' || invites.length === 0) return null
 
   return (
-    <Anchor aria-live="polite">
+    <Anchor aria-live="assertive" role="status">
       {invites.map((invite) => (
         <Card key={invite.id}>
           <CardHead>
@@ -215,7 +253,8 @@ const DuelInviteNotifier = () => {
             <div style={{ flex: 1, minWidth: 0, paddingRight: 4 }}>
               <Title>Duel invite</Title>
               <Sub>
-                <strong style={{ color: '#e4e4e7' }}>{invite.hostName}</strong> invited you to a duel.
+                <strong style={{ color: '#f4f4f5' }}>{invite.hostName}</strong> challenged you. Join to enter the
+                room.
               </Sub>
             </div>
             <IconBtn type="button" aria-label="Dismiss invite" onClick={() => void onDismiss(invite)}>
@@ -223,11 +262,11 @@ const DuelInviteNotifier = () => {
             </IconBtn>
           </CardHead>
           <BtnRow>
-            <Button variant="primary" size="sm" onClick={() => onJoin(invite)}>
-              Join
+            <Button variant="primary" size="md" onClick={() => onJoin(invite)} style={{ flex: 1, minWidth: 120 }}>
+              Join duel
             </Button>
-            <Button variant="solidGray" size="sm" onClick={() => void onDismiss(invite)}>
-              Dismiss
+            <Button variant="solidGray" size="md" onClick={() => void onDismiss(invite)}>
+              Not now
             </Button>
           </BtnRow>
         </Card>

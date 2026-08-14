@@ -11,7 +11,9 @@ import {
 import {
   notifyDuelUpdated,
   notifyUserDuelInviteRemoved,
+  notifyUserDuelOpponentJoined,
 } from '@backend/utils/pusherNotify'
+import { normalizeDuelInviteCode } from '@backend/utils/duelShortCode'
 import getMapFromGame from '@backend/queries/getMapFromGame'
 import { duelParticipantRole } from '@backend/utils/duelParticipant'
 import { fetchUserDisplayName, sanitizeDuelDisplayName } from '@backend/utils/resolveDuelPlayerNames'
@@ -81,7 +83,19 @@ const joinDuel = async (req: NextApiRequest, res: NextApiResponse) => {
     }
   }
 
-  void notifyDuelUpdated(duelId, 'join')
+  void notifyDuelUpdated(duelId, 'join', duel)
+
+  const hostUserId = duel.host?.userId?.toHexString?.()
+  const duelObjectId = duel._id?.toHexString?.()
+  const inviteSegment =
+    normalizeDuelInviteCode(duel.shortCode) ?? (typeof duel.shortCode === 'string' ? duel.shortCode : duelId)
+  if (hostUserId && duelObjectId) {
+    void notifyUserDuelOpponentJoined(hostUserId, {
+      inviteSegment,
+      duelObjectId,
+      guestName: (guestDisplayName && guestDisplayName.trim()) || 'Opponent',
+    })
+  }
 
   const mapDetails = await getMapFromGame({ mapId: duel.mapId } as unknown as Game)
   const role = duelParticipantRole(duel, userId, undefined)

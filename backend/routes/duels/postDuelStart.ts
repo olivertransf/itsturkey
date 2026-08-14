@@ -47,7 +47,7 @@ const postDuelStart = async (req: NextApiRequest, res: NextApiResponse) => {
     await collections.duelSessions?.replaceOne({ _id: duel._id }, duel)
   }
 
-  void notifyDuelUpdated(duelId, 'start')
+  void notifyDuelUpdated(duelId, 'start', duel)
 
   const mapDetails = await getMapFromGame({ mapId: duel.mapId } as unknown as Game)
 

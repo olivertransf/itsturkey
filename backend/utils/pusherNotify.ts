@@ -1,4 +1,5 @@
 import type { Game } from '@backend/models'
+import type { ObjectId } from 'mongodb'
 import {
   leaderboardStorageKey,
   resolveStandardLeaderboardKey,
@@ -15,6 +16,8 @@ import {
   OFFICIAL_WORLD_ID,
 } from '@utils/constants/random'
 import { WORLD_STANDARD_LEADERBOARD_KEY } from '@utils/constants/standardLeaderboard'
+import { normalizeDuelInviteCode } from './duelShortCode'
+import { findDuelSessionByInvite } from './resolveDuelInvite'
 import { triggerSafe } from './pusherServer'
 
 export type DuelPusherReason =
@@ -33,12 +36,71 @@ export type DuelChatPusherMessage = {
   createdAt: string
 }
 
-export async function notifyDuelUpdated(segment: string, reason: DuelPusherReason): Promise<void> {
-  await triggerSafe(duelPrivateChannel(segment), 'duel.updated', { inviteSegment: segment, reason })
+type DuelChannelRef = {
+  _id?: ObjectId | string
+  shortCode?: string
 }
 
-export async function notifyDuelChat(segment: string, message: DuelChatPusherMessage): Promise<void> {
-  await triggerSafe(duelPrivateChannel(segment), 'duel.chat', { inviteSegment: segment, message })
+/** All URL segments clients may subscribe on for one duel (code + ObjectId + request path). */
+export function collectDuelChannelSegments(
+  requestSegment: string,
+  duel?: DuelChannelRef | null
+): string[] {
+  const segs = new Set<string>()
+  const add = (raw?: string | null) => {
+    const s = typeof raw === 'string' ? raw.trim() : ''
+    if (s) segs.add(s)
+  }
+
+  add(requestSegment)
+  if (duel?.shortCode) {
+    add(normalizeDuelInviteCode(duel.shortCode) ?? duel.shortCode.trim().toUpperCase())
+  }
+  if (duel?._id) {
+    add(typeof duel._id === 'string' ? duel._id : duel._id.toHexString())
+  }
+  return Array.from(segs)
+}
+
+async function resolveDuelChannelRef(
+  segment: string,
+  duel?: DuelChannelRef | null
+): Promise<DuelChannelRef | null> {
+  if (duel?._id && duel.shortCode) return duel
+  const found = await findDuelSessionByInvite(segment)
+  if (!found) return duel ?? null
+  return {
+    _id: found._id,
+    shortCode: found.shortCode,
+  }
+}
+
+export async function notifyDuelUpdated(
+  segment: string,
+  reason: DuelPusherReason,
+  duel?: DuelChannelRef | null
+): Promise<void> {
+  const ref = await resolveDuelChannelRef(segment, duel)
+  const segments = collectDuelChannelSegments(segment, ref)
+  await Promise.all(
+    segments.map((s) =>
+      triggerSafe(duelPrivateChannel(s), 'duel.updated', { inviteSegment: s, reason })
+    )
+  )
+}
+
+export async function notifyDuelChat(
+  segment: string,
+  message: DuelChatPusherMessage,
+  duel?: DuelChannelRef | null
+): Promise<void> {
+  const ref = await resolveDuelChannelRef(segment, duel)
+  const segments = collectDuelChannelSegments(segment, ref)
+  await Promise.all(
+    segments.map((s) =>
+      triggerSafe(duelPrivateChannel(s), 'duel.chat', { inviteSegment: s, message })
+    )
+  )
 }
 
 export async function notifyUserDuelInviteCreated(
@@ -56,6 +118,17 @@ export async function notifyUserDuelInviteRemoved(
   inviteRowId: string
 ): Promise<void> {
   await triggerSafe(userPrivateChannel(recipientUserIdHex), 'duel_invite.removed', { id: inviteRowId })
+}
+
+/** Host user channel — opponent accepted / joined the waiting room. */
+export async function notifyUserDuelOpponentJoined(
+  hostUserIdHex: string,
+  row: { inviteSegment: string; guestName: string; duelObjectId: string }
+): Promise<void> {
+  await triggerSafe(userPrivateChannel(hostUserIdHex), 'duel.opponent_joined', row as unknown as Record<
+    string,
+    unknown
+  >)
 }
 
 async function notifyMapScoresKeys(keys: string[]): Promise<void> {
