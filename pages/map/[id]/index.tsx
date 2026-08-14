@@ -139,8 +139,8 @@ const MapPage: FC = () => {
         {mapDetails ? (
           <>
             <section className="mapPlayCard">
-              <PageBackLink href="/" label="Back" compact />
               <header className="mapPlayHead">
+                <PageBackLink href="/" label="Back" compact />
                 <h1 className="mapPlayTitle">{mapDetails.name}</h1>
               </header>
               <MapPlayInline mapDetails={mapDetails} gameMode="standard" />

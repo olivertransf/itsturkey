@@ -4,18 +4,28 @@ const StyledMapPage = styled.div`
   .mapPlayCard {
     width: 100%;
     box-sizing: border-box;
-    padding: var(--space-4) var(--space-5) var(--space-5);
+    padding: var(--space-4);
     border-radius: var(--radius-xl);
     border: var(--border-default);
     background-color: var(--bg-card);
   }
 
   .mapPlayHead {
-    margin: var(--space-2) 0 var(--space-4);
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    column-gap: var(--space-3);
+    margin: 0 0 var(--space-4);
+  }
+
+  .mapPlayHead > *:first-child {
+    justify-self: start;
   }
 
   .mapPlayTitle {
+    grid-column: 2;
     margin: 0;
+    text-align: center;
     font-size: var(--font-title);
     font-weight: 700;
     letter-spacing: var(--tracking-title);
@@ -24,7 +34,7 @@ const StyledMapPage = styled.div`
   }
 
   .mapLeaderboardSection {
-    margin-top: var(--space-7);
+    margin-top: var(--space-6);
   }
 
   .mapLeaderboardBucketTabs {
@@ -34,7 +44,7 @@ const StyledMapPage = styled.div`
   .mapLeaderboardGrid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--space-6);
+    gap: var(--space-4);
 
     @media (max-width: 900px) {
       grid-template-columns: 1fr;
