@@ -23,7 +23,7 @@ const StyledHomeOngoingCard = styled.div`
 
   .ongoing-title {
     margin: 0;
-    font-size: 1.25rem;
+    font-size: var(--font-body);
     font-weight: 700;
     letter-spacing: var(--tracking-title);
     color: var(--text-primary);

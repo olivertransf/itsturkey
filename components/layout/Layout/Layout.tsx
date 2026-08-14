@@ -1,5 +1,6 @@
 import { useRouter } from 'next/router'
 import { FC, ReactNode, useEffect, useState } from 'react'
+import { Navbar } from '../Navbar'
 import { StyledLayout } from './'
 import { mailman } from '@utils/helpers'
 import { BanType } from '@types'
@@ -43,6 +44,7 @@ const Layout: FC<Props> = ({ children }) => {
   return (
     <StyledLayout>
       <div className="app-layout">
+        <Navbar />
         <div className="appBody">
           <main id="main">{children}</main>
         </div>

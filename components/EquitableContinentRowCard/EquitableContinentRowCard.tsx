@@ -4,6 +4,7 @@ import HomeSectionRowCard from '@components/HomeSectionRowCard'
 import HomePlayGlyph from '@components/HomeSectionRowCard/HomePlayGlyph'
 import { MapType } from '@types'
 import { parseEquitableContinentMapKey } from '@utils/helpers/equitableContinentMapId'
+import { mapNameInitials } from '@utils/helpers/mapPreviewSrc'
 
 type Props = {
   map: Pick<MapType, '_id' | 'name'>
@@ -18,12 +19,17 @@ const EquitableContinentRowCard: FC<Props> = ({ map, isForDisplayOnly }) => {
   const href = `/map/${encodeURIComponent(String(map._id))}`
 
   return (
-    <HomeSectionRowCard title={title}>
+    <HomeSectionRowCard
+      title={title}
+      titleLeading={
+        <span className="home-row-letter" aria-hidden>
+          {mapNameInitials(title)}
+        </span>
+      }
+    >
       {!isForDisplayOnly ? (
-        <Link href={href}>
-          <a className="home-play-btn home-play-btn--icon" aria-label={`Play ${title}`}>
-            <HomePlayGlyph />
-          </a>
+        <Link href={href} className="home-play-btn home-play-btn--icon" aria-label={`Play ${title}`}>
+          <HomePlayGlyph />
         </Link>
       ) : (
         <span className="home-play-btn home-play-btn--icon" aria-hidden>

@@ -37,6 +37,16 @@ export function isGenericMapPreview(previewImg: string | undefined | null): bool
   return PLACEHOLDER_PREVIEW_FILES.has(base)
 }
 
+/** Two-letter tile when a map has no flag and no real preview photo. */
+export function mapNameInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  if (parts.length >= 2) {
+    return `${parts[0][0] ?? ''}${parts[1][0] ?? ''}`.toUpperCase()
+  }
+  const compact = (parts[0] ?? '?').replace(/[^A-Za-z0-9]/g, '')
+  return (compact.slice(0, 2) || '?').toUpperCase()
+}
+
 /**
  * Resolves stored `previewImg` to a URL usable in `next/image` or CSS `url()`.
  * - Empty → default stylized map SVG

@@ -5,7 +5,7 @@ import { TrashIcon } from '@heroicons/react/outline'
 import { MapType } from '@types'
 import { flagEmojiFromIsoAlpha2 } from '@utils/helpers/flagEmoji'
 import { parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
-import { resolveMapImageSrc } from '@utils/helpers/mapPreviewSrc'
+import { isGenericMapPreview, mapNameInitials, resolveMapImageSrc } from '@utils/helpers/mapPreviewSrc'
 import { StyledMapPreviewCard } from './'
 
 type Props = {
@@ -26,29 +26,40 @@ const MapPreviewCard: FC<Props> = ({
   const countryCode = typeof map._id === 'string' ? parseEquitableCountryMapKey(map._id) : null
   const flag = countryCode ? flagEmojiFromIsoAlpha2(countryCode) : ''
   const playHref = `/map/${encodeURIComponent(String(map._id))}`
-  const previewSrc = resolveMapImageSrc(map.previewImg)
+  const showPhoto = !isGenericMapPreview(map.previewImg)
+  const previewSrc = showPhoto ? resolveMapImageSrc(map.previewImg) : ''
+
+  const identity = (
+    <div className="mapNameWrapper">
+      {countryCode && flag ? (
+        <div className="mapNameRow">
+          <span className="map-flag" title={map.name} aria-hidden>
+            {flag}
+          </span>
+          <div className="mapName">{map.name}</div>
+        </div>
+      ) : (
+        <div className="mapNameRow">
+          <span className="map-letter" aria-hidden>
+            {mapNameInitials(map.name)}
+          </span>
+          <div className="mapName">{map.name}</div>
+        </div>
+      )}
+    </div>
+  )
 
   return (
     <StyledMapPreviewCard isForDisplayOnly={isForDisplayOnly}>
       {type === 'large' && (
         <div className="large-card-wrapper">
-          <div className="map-avatar">
-            <Image src={previewSrc} alt="" layout="fill" objectFit="cover" sizes="384px" />
-            <div className="image-gradient"></div>
-          </div>
-          <div className="contentWrapper">
-            <div className="mapNameWrapper">
-              {countryCode && flag ? (
-                <div className="mapNameRow">
-                  <span className="map-flag" title={map.name} aria-hidden>
-                    {flag}
-                  </span>
-                  <div className="mapName">{map.name}</div>
-                </div>
-              ) : (
-                <div className="mapName">{map.name}</div>
-              )}
+          {showPhoto ? (
+            <div className="map-avatar">
+              <Image src={previewSrc} alt="" layout="fill" objectFit="cover" sizes="384px" />
             </div>
+          ) : null}
+          <div className="contentWrapper">
+            {identity}
             {showDescription && <div className="mapDescription">{map.description}</div>}
             <div className="playWrapper">
               {!isForDisplayOnly ? (
@@ -65,13 +76,13 @@ const MapPreviewCard: FC<Props> = ({
 
       {type === 'small' && (
         <div className="small-card-wrapper">
-          <div className="preview-image">
-            <Image src={previewSrc} alt="" layout="fill" objectFit="cover" sizes="384px" />
-          </div>
-          <div className="contentWrapper">
-            <div className="mapNameWrapper">
-              <div className="mapName">{map.name}</div>
+          {showPhoto ? (
+            <div className="preview-image">
+              <Image src={previewSrc} alt="" layout="fill" objectFit="cover" sizes="384px" />
             </div>
+          ) : null}
+          <div className="contentWrapper">
+            {identity}
             <div className="playWrapper">
               {!isForDisplayOnly ? (
                 <Link href={playHref} className="mapPlayBtn">

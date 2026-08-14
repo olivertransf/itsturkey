@@ -10,8 +10,8 @@ const StyledHomeSectionRowCard = styled.div<{ $hasDescription: boolean }>`
     flex-direction: row;
     align-items: center;
     gap: var(--space-4);
-    padding: 16px 18px;
-    min-height: ${({ $hasDescription }) => ($hasDescription ? '76px' : '68px')};
+    padding: 12px 14px;
+    min-height: ${({ $hasDescription }) => ($hasDescription ? '64px' : '56px')};
     box-sizing: border-box;
     border-radius: var(--radius-lg);
     background-color: var(--bg-card);
@@ -41,15 +41,31 @@ const StyledHomeSectionRowCard = styled.div<{ $hasDescription: boolean }>`
   }
 
   .home-row-flag {
-    font-size: 26px;
+    font-size: 22px;
     line-height: 1;
+    flex-shrink: 0;
+    user-select: none;
+  }
+
+  .home-row-letter {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--text-primary);
+    background: var(--control-fill);
     flex-shrink: 0;
     user-select: none;
   }
 
   .home-row-title {
     margin: 0;
-    font-size: 1.0625rem;
+    font-size: var(--font-body);
     font-weight: 700;
     letter-spacing: var(--tracking-title);
     line-height: 1.28;

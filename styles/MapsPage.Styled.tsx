@@ -39,16 +39,17 @@ const StyledMapsPage = styled.div`
     }
 
     .maps-wrapper {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-      gap: var(--space-4);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
       align-items: stretch;
       width: 100%;
     }
 
     .maps-wrapper.equitable-countries-grid {
-      grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-      gap: var(--space-4);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
       align-items: stretch;
     }
 

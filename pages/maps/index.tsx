@@ -1,10 +1,9 @@
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { PageBackLink } from '@components/PageBackLink'
 import { PageHeader, WidthController } from '@components/layout'
 import EquitableContinentRowCard from '@components/EquitableContinentRowCard'
 import EquitableCountryRowCard from '@components/EquitableCountryRowCard'
-import { MapPreviewCard } from '@components/MapPreviewCard'
+import { HomeWorldCard } from '@components/HomeWorldCard'
 import { Meta } from '@components/Meta'
 import { SkeletonCards } from '@components/skeletons'
 import { Tab, Tabs } from '@components/system'
@@ -184,9 +183,6 @@ const MapsPage: FC = () => {
     <StyledMapsPage>
       <WidthController>
         <Meta title="Browse Maps" />
-        <div className="page-back-toolbar">
-          <PageBackLink href="/" label="Back to home" compact />
-        </div>
         <PageHeader>Maps</PageHeader>
 
         <div className="browse-tabs-row">
@@ -206,14 +202,14 @@ const MapsPage: FC = () => {
             <div id="world-maps">
               <div className="section-title">World maps</div>
               <p className="section-subtext">
-                Same featured world maps as the home page. More regions live under Countries and Continents.
+                Featured world maps. Countries and continents have their own tabs.
               </p>
               {homeMaps.length === 0 ? (
                 <p className="section-subtext">No world maps configured — check home or pick a country below.</p>
               ) : (
                 <div className="maps-wrapper equitable-countries-grid">
                   {homeMaps.map((map) => (
-                    <MapPreviewCard key={String(map._id)} map={map} showDescription type="large" />
+                    <HomeWorldCard key={String(map._id)} mapId={String(map._id)} name={map.name} />
                   ))}
                 </div>
               )}
@@ -274,7 +270,7 @@ const MapsPage: FC = () => {
               ) : (
                 <div className="maps-wrapper equitable-countries-grid">
                   {likedMaps.map((map) => (
-                    <MapPreviewCard key={String(map._id)} map={map} type="large" />
+                    <HomeWorldCard key={String(map._id)} mapId={String(map._id)} name={map.name} />
                   ))}
                 </div>
               )}
@@ -292,7 +288,7 @@ const MapsPage: FC = () => {
               ) : (
                 <div className="maps-wrapper equitable-countries-grid">
                   {recentMaps.map((map) => (
-                    <MapPreviewCard key={String(map._id)} map={map} type="large" />
+                    <HomeWorldCard key={String(map._id)} mapId={String(map._id)} name={map.name} />
                   ))}
                 </div>
               )}

@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 
 const StyledHomePage = styled.div`
-  min-height: 100vh;
+  min-height: 100%;
   background-color: var(--bg-primary);
 
   .main-content {
@@ -11,10 +11,10 @@ const StyledHomePage = styled.div`
     box-sizing: border-box;
     display: flex;
     justify-content: stretch;
-    padding: var(--pad-page-y-lg) var(--page-gutter) var(--pad-page-y-bottom);
+    padding: var(--space-5) var(--page-gutter) var(--pad-page-y-bottom);
 
     @media (max-width: 600px) {
-      padding: clamp(1.25rem, 6vh, 3rem) var(--page-gutter) var(--pad-page-y-bottom);
+      padding: var(--space-4) var(--page-gutter) var(--pad-page-y-bottom);
     }
   }
 
@@ -25,55 +25,14 @@ const StyledHomePage = styled.div`
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: clamp(2rem, 4vw, 3rem);
-  }
-
-  .home-topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--space-4);
-    width: 100%;
-    min-height: 52px;
-  }
-
-  .home-wordmark {
-    font-size: var(--font-display);
-    font-weight: 800;
-    letter-spacing: var(--tracking-display);
-    color: var(--text-primary);
-    text-decoration: none;
-    line-height: 1;
-
-    &:hover {
-      color: var(--accent-primary);
-    }
-  }
-
-  .home-topbar-end {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    flex-wrap: wrap;
-    justify-content: flex-end;
-  }
-
-  .home-online-jump {
-    font-size: var(--font-meta);
-    font-weight: 600;
-    color: var(--text-muted);
-    text-decoration: none;
-
-    &:hover {
-      color: var(--text-primary);
-    }
+    gap: var(--space-6);
   }
 
   .home-body {
     width: 100%;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: clamp(1.75rem, 3vw, 2.5rem);
+    gap: var(--space-4);
     align-items: start;
   }
 
@@ -90,7 +49,7 @@ const StyledHomePage = styled.div`
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: clamp(2.25rem, 4vw, 3.25rem);
+    gap: var(--space-6);
   }
 
   .home-friends-rail {
@@ -120,25 +79,13 @@ const StyledHomePage = styled.div`
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: var(--space-4);
+    gap: var(--space-3);
   }
 
   .mode-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--space-4);
-
-    @media (max-width: 960px) {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  .home-featured-map {
-    margin-bottom: 0;
-
-    .map-avatar {
-      height: 240px;
-    }
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
   }
 
   .home-empty-quiet {
@@ -184,11 +131,9 @@ const StyledHomePage = styled.div`
 
   .card-grid {
     width: 100%;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-    gap: var(--space-3);
-    align-items: stretch;
-    justify-items: stretch;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
   }
 
   .home-geo-cta-row {
@@ -202,10 +147,10 @@ const StyledHomePage = styled.div`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: var(--control-height-lg);
-    padding: 0 var(--space-6);
+    height: var(--control-height-md);
+    padding: 0 var(--space-4);
     border-radius: var(--radius-md);
-    font-size: 1.0625rem;
+    font-size: var(--font-body);
     font-weight: 700;
     letter-spacing: -0.02em;
     text-decoration: none;

@@ -20,7 +20,7 @@ const StyledHomeProfileCard = styled.div`
 
   .profile-card-title {
     margin: 0;
-    font-size: 1.125rem;
+    font-size: var(--font-section);
     font-weight: 700;
     letter-spacing: var(--tracking-title);
     text-transform: none;
@@ -54,7 +54,7 @@ const StyledHomeProfileCard = styled.div`
   }
 
   .profile-card-name {
-    font-size: 1.25rem;
+    font-size: var(--font-body);
     font-weight: 700;
     letter-spacing: var(--tracking-title);
     color: var(--text-primary);

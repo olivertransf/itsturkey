@@ -2,6 +2,8 @@ import styled from 'styled-components'
 
 const StyledLayout = styled.div`
   .app-layout {
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
     height: 100vh;
     height: 100dvh;
@@ -10,6 +12,8 @@ const StyledLayout = styled.div`
 
   .appBody {
     display: flex;
+    flex: 1;
+    min-height: 0;
     width: 100%;
     overflow: hidden;
   }
@@ -38,8 +42,7 @@ const StyledLayout = styled.div`
 
   main {
     width: 100% !important;
-    height: 100vh;
-    height: 100dvh;
+    height: 100%;
     max-height: 100%;
     position: relative;
     overflow: hidden auto;
@@ -63,16 +66,23 @@ const StyledLayout = styled.div`
   @media (max-width: 1024px) {
     .app-layout {
       width: 100%;
-      height: unset;
+      height: auto;
+      min-height: 100vh;
+      min-height: 100dvh;
       overflow: unset;
       padding: 0;
       box-sizing: border-box;
     }
 
+    .appBody {
+      overflow: visible;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
     main {
       height: auto;
-      min-height: 100vh;
-      min-height: 100dvh;
+      min-height: 0;
       overflow: unset;
     }
   }

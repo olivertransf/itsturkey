@@ -62,13 +62,13 @@
     'Open Sans', 'Helvetica Neue', sans-serif;
   --font-mono: 'SF Mono', SFMono-Regular, ui-monospace, 'DejaVu Sans Mono', Menlo, Consolas, monospace;
 
-  --font-display: clamp(2rem, 4.2vw, 2.75rem);
-  --font-title: clamp(1.5rem, 3vw, 2rem);
-  --font-section: 1.25rem;
-  --font-body: 1rem;
+  --font-display: 1.5rem;
+  --font-title: 1.125rem;
+  --font-section: 1rem;
+  --font-body: 0.9375rem;
   --font-label: 0.6875rem;
-  --font-meta: 0.875rem;
-  --font-compact: 0.8125rem;
+  --font-meta: 0.8125rem;
+  --font-compact: 0.75rem;
   --tracking-display: -0.04em;
   --tracking-title: -0.025em;
   --tracking-label: 0.14em;
@@ -82,9 +82,9 @@
   --space-7: 40px;
   --space-8: 48px;
 
-  --control-height-sm: 36px;
-  --control-height-md: 44px;
-  --control-height-lg: 52px;
+  --control-height-sm: 32px;
+  --control-height-md: 40px;
+  --control-height-lg: 48px;
   --icon-sm: 16px;
   --icon-md: 20px;
   --icon-lg: 24px;
@@ -236,8 +236,8 @@
   --borderLight: 1px solid var(--border-strong);
   --modalPadding: var(--space-6) var(--space-4);
   --sidebarWidth: 220px;
-  --navbarHeight: 64px;
-  --mobileNavHeight: 64px;
+  --navbarHeight: 52px;
+  --mobileNavHeight: 52px;
   --mainMaxWidth: 1362px;
 
   --mainPadding: var(--space-8);
@@ -288,9 +288,9 @@
   --pad-page-y: clamp(1.5rem, 4.5vw, 2.75rem);
   --pad-page-y-lg: clamp(2rem, 10vh, 5.5rem);
   --pad-page-y-bottom: clamp(2.5rem, 8vh, 5rem);
-  --pad-card: 28px;
-  --pad-card-sm: 20px;
-  --pad-row-card: 18px 20px;
+  --pad-card: 20px;
+  --pad-card-sm: 16px;
+  --pad-row-card: 12px 14px;
   --border-default: 1px solid var(--border-subtle);
 }
 

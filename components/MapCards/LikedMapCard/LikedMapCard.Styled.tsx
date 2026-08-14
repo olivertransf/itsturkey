@@ -32,10 +32,27 @@ const StyledLikedMapCard = styled.div`
 
   .mapNameWrapper {
     display: flex;
+    align-items: center;
+    gap: var(--space-2);
     justify-content: flex-start;
 
+    .map-letter {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--text-primary);
+      background: var(--control-fill);
+      flex-shrink: 0;
+    }
+
     .mapName {
-      font-size: 1.125rem;
+      font-size: var(--font-body);
       font-weight: 700;
       letter-spacing: var(--tracking-title);
       padding: 0;

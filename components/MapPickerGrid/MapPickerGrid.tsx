@@ -2,7 +2,7 @@ import { SearchIcon } from '@heroicons/react/outline'
 import { CheckIcon } from '@heroicons/react/solid'
 import Image from 'next/image'
 import { FC, useMemo, useState } from 'react'
-import { resolveMapImageSrc, isGenericMapPreview } from '@utils/helpers/mapPreviewSrc'
+import { isGenericMapPreview, mapNameInitials, resolveMapImageSrc } from '@utils/helpers/mapPreviewSrc'
 import type { MapPickerRow } from '@utils/loadMapPickerOptions'
 import { parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
 import { flagEmojiFromIsoAlpha2 } from '@utils/helpers/flagEmoji'
@@ -10,6 +10,7 @@ import {
   CheckWrap,
   ColumnList,
   LeadFlag,
+  LeadInitials,
   LeadMedia,
   LoadingHint,
   MapRow,
@@ -121,14 +122,16 @@ const MapPickerGrid: FC<Props> = ({
                       <span aria-hidden>{flagEmojiFromIsoAlpha2(countryCode)}</span>
                     </LeadFlag>
                   ) : usePlaceholderArt ? (
-                    <LeadMedia $placeholder aria-hidden />
+                    <LeadInitials title={row.name}>
+                      <span aria-hidden>{mapNameInitials(row.name)}</span>
+                    </LeadInitials>
                   ) : (
                     <LeadMedia>
                       <Image
                         src={thumbSrc}
                         alt=""
-                        width={44}
-                        height={44}
+                        width={40}
+                        height={40}
                         style={{ objectFit: 'cover' }}
                       />
                     </LeadMedia>

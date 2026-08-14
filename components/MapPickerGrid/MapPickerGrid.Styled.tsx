@@ -79,8 +79,8 @@ export const MapRow = styled.button<{ $selected: boolean; $compact?: boolean }>`
 
 export const LeadMedia = styled.span<{ $placeholder?: boolean }>`
   flex-shrink: 0;
-  width: 56px;
-  height: 56px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-sm);
   overflow: hidden;
   position: relative;
@@ -111,6 +111,12 @@ export const LeadFlag = styled.span`
   background: var(--bg-elevated);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
   user-select: none;
+`
+
+export const LeadInitials = styled(LeadFlag)`
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 `
 
 export const TextCol = styled.span`

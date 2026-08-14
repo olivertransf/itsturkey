@@ -17,8 +17,8 @@ const StyledNavbar = styled.div`
   flex-shrink: 0 !important;
 
   .appTitle {
-    font-size: 1.25rem;
-    font-weight: 800;
+    font-size: var(--font-section);
+    font-weight: 700;
     letter-spacing: var(--tracking-title);
   }
 
@@ -61,6 +61,34 @@ const StyledNavbar = styled.div`
     justify-content: flex-end;
     flex-grow: 1;
     width: 100%;
+  }
+
+  .hubLinks {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: var(--space-3);
+    height: 100%;
+    flex-shrink: 0;
+  }
+
+  .hubLink {
+    font-size: var(--font-meta);
+    font-weight: 600;
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+
+    &:hover {
+      color: var(--text-primary);
+    }
+
+    &.is-active {
+      color: var(--text-primary);
+      background: var(--control-fill);
+    }
   }
 
   .navLinks {
