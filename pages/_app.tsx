@@ -1,5 +1,5 @@
 import '@styles/globals.css'
-import { Analytics } from '@vercel/analytics/react'
+import { Analytics } from '@vercel/analytics/next'
 import { SessionProvider } from 'next-auth/react'
 import { ReactElement } from 'react'
 import { Toaster } from 'react-hot-toast'

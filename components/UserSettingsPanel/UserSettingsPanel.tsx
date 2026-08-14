@@ -1,4 +1,4 @@
-import { signOut } from 'next-auth/react'
+import { signOut, useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { ArrowRightIcon } from '@heroicons/react/outline'
@@ -49,6 +49,7 @@ const UserSettingsPanel: FC<Props> = ({ embedded }) => {
   const [friendIdentifier, setFriendIdentifier] = useState('')
   const [friendBusy, setFriendBusy] = useState(false)
   const dispatch = useAppDispatch()
+  const { update: updateSession } = useSession()
 
   const normalizedKey = useMemo(() => normalizeGoogleMapsApiKey(mapsAPIKey), [mapsAPIKey])
   const keyAlreadySaved =
@@ -214,6 +215,7 @@ const UserSettingsPanel: FC<Props> = ({ embedded }) => {
     setInitialSettings(newSettings)
     dispatch(updateDistanceUnit(distanceUnit))
     dispatch(updateMapsAPIKey(normalizedKey))
+    await updateSession({ mapsAPIKey: normalizedKey, distanceUnit })
     showToast('success', 'Successfully updated user settings')
 
     if (normalizedKey !== previousKey && typeof window !== 'undefined' && window.google?.maps) {
