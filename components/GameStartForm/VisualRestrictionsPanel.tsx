@@ -27,14 +27,14 @@ type Props = {
 const Root = styled.section`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 `
 
-const TitleRow = styled.div<{ $embedded?: boolean }>`
+const TitleRow = styled.div`
   display: flex;
   align-items: baseline;
-  justify-content: ${({ $embedded }) => ($embedded ? 'flex-end' : 'space-between')};
-  gap: 12px;
+  justify-content: space-between;
+  gap: var(--space-3);
 `
 
 const Title = styled.h3`
@@ -64,7 +64,7 @@ const ClearBtn = styled.button`
 const IntensityRow = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-3);
 
   .intensity-label {
     display: flex;
@@ -91,7 +91,7 @@ const IntensityRow = styled.div`
 const Grid = styled.div<{ $maxHeight?: number }>`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
-  gap: 8px;
+  gap: var(--space-3);
   ${({ $maxHeight }) =>
     $maxHeight
       ? `
@@ -136,7 +136,7 @@ const Chip = styled.button<{ $on: boolean; $disabled?: boolean }>`
 const PixelRow = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-3);
 
   .pixel-label {
     display: flex;
@@ -187,16 +187,18 @@ const VisualRestrictionsPanel: FC<Props> = ({ value, onChange, disabled, listMax
 
   return (
     <Root aria-label="Visual restrictions">
-      <TitleRow $embedded={embedded}>
-        {embedded ? null : <Title>Filters</Title>}
-        <ClearBtn
-          type="button"
-          disabled={disabled || !anyOn}
-          onClick={() => onChange({})}
-        >
-          Clear all
-        </ClearBtn>
-      </TitleRow>
+      {embedded ? null : (
+        <TitleRow>
+          <Title>Filters</Title>
+          <ClearBtn
+            type="button"
+            disabled={disabled || !anyOn}
+            onClick={() => onChange({})}
+          >
+            Clear all
+          </ClearBtn>
+        </TitleRow>
+      )}
 
       <IntensityRow>
         <div className="intensity-label">

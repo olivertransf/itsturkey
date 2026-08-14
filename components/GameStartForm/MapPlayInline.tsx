@@ -9,6 +9,7 @@ import { StyledMapPlayInline } from './MapPlayInline.Styled'
 import type { GameType, MapType } from '@types'
 import { MAX_TOTAL_ROUNDS } from '@utils/constants/gameModes'
 import { parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
+import { VISUAL_RESTRICTION_CATALOG, normalizeVisualRestrictions } from '@utils/constants/visualRestrictions'
 
 type Props = {
   mapDetails: Pick<MapType, '_id' | 'name' | 'description' | 'previewImg'>
@@ -46,12 +47,15 @@ const MapPlayInline: FC<Props> = ({ mapDetails, gameMode }) => {
   )
 
   const defaultsLocked = !!showDetailedChecked
+  const anyFilterOn = VISUAL_RESTRICTION_CATALOG.some(
+    ({ key }) => Boolean(normalizeVisualRestrictions(visualRestrictions)[key])
+  )
 
   return (
     <StyledMapPlayInline>
       <div className="play-col play-col-main">
         {gameMode !== 'streak' ? (
-          <div className="play-block">
+          <>
             <h2 className="play-heading">Rounds</h2>
             <StyledGameSettingsModal className="lobby-game-settings-inner">
               <div className="mainContent">
@@ -87,27 +91,25 @@ const MapPlayInline: FC<Props> = ({ mapDetails, gameMode }) => {
                 </div>
               </div>
             </StyledGameSettingsModal>
-          </div>
+          </>
         ) : null}
 
-        <div className="play-block">
-          <h2 className="play-heading">Time & movement</h2>
-          <LobbyGameSettings
-            defaultsLocked={defaultsLocked}
-            onToggleDefaults={handleCheck}
-            sliderVal={sliderVal}
-            setSliderVal={setSliderVal}
-            canMove={canMove}
-            canPan={canPan}
-            canZoom={canZoom}
-            setCanMove={setCanMove}
-            setCanPan={setCanPan}
-            setCanZoom={setCanZoom}
-            visualRestrictions={visualRestrictions}
-            setVisualRestrictions={setVisualRestrictions}
-            hideVisualRestrictions
-          />
-        </div>
+        <h2 className="play-heading">Time & movement</h2>
+        <LobbyGameSettings
+          defaultsLocked={defaultsLocked}
+          onToggleDefaults={handleCheck}
+          sliderVal={sliderVal}
+          setSliderVal={setSliderVal}
+          canMove={canMove}
+          canPan={canPan}
+          canZoom={canZoom}
+          setCanMove={setCanMove}
+          setCanPan={setCanPan}
+          setCanZoom={setCanZoom}
+          visualRestrictions={visualRestrictions}
+          setVisualRestrictions={setVisualRestrictions}
+          hideVisualRestrictions
+        />
 
         <div className="play-start">
           {equitableCountryIso && gameMode !== 'streak' ? (
@@ -130,7 +132,17 @@ const MapPlayInline: FC<Props> = ({ mapDetails, gameMode }) => {
       </div>
 
       <div className="play-col play-col-filters">
-        <h2 className="play-heading">Filters</h2>
+        <div className="play-heading-row">
+          <h2 className="play-heading">Filters</h2>
+          <button
+            type="button"
+            className="play-clear"
+            disabled={!anyFilterOn}
+            onClick={() => setVisualRestrictions({})}
+          >
+            Clear all
+          </button>
+        </div>
         <div className="play-filters-scroll">
           <VisualRestrictionsPanel value={visualRestrictions} onChange={setVisualRestrictions} embedded />
         </div>
