@@ -77,15 +77,28 @@ export const MapRow = styled.button<{ $selected: boolean; $compact?: boolean }>`
   }
 `
 
-export const LeadMedia = styled.span`
+export const LeadMedia = styled.span<{ $placeholder?: boolean }>`
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-sm);
   overflow: hidden;
   position: relative;
-  background: ${({ theme }) => theme.color.gray[800]};
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  background: ${({ $placeholder, theme }) =>
+    $placeholder
+      ? 'linear-gradient(145deg, #1e3a5f 0%, #0f766e 48%, #14532d 100%)'
+      : theme.color.gray[800]};
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+
+  &::after {
+    content: ${({ $placeholder }) => ($placeholder ? "''" : 'none')};
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 68% 34%, rgba(251, 191, 36, 0.95) 0 3px, transparent 4px),
+      radial-gradient(ellipse 70% 45% at 42% 58%, rgba(255, 255, 255, 0.16), transparent 70%);
+    pointer-events: none;
+  }
 `
 
 export const LeadFlag = styled.span`

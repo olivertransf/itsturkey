@@ -24,8 +24,7 @@ export const GUESS_MAP_OPTIONS = {
 }
 
 export function isPanZoomEnabled(settings: Pick<GameSettingsType, 'canPan' | 'canZoom'>): boolean {
-  if (settings.canPan === settings.canZoom) return settings.canPan
-  return settings.canPan || settings.canZoom
+  return Boolean(settings.canPan || settings.canZoom)
 }
 
 export const getGuessMapOptions = (_gameSettings?: Pick<GameSettingsType, 'canPan' | 'canZoom'>) => {
@@ -75,22 +74,23 @@ export const PREVIEW_MAP_OPTIONS = {
 }
 
 export const getStreetviewOptions = (gameData: Game) => {
-  const panEnabled = isPanZoomEnabled(gameData.gameSettings)
+  const canPan = Boolean(gameData.gameSettings.canPan)
+  const canZoom = Boolean(gameData.gameSettings.canZoom)
 
   return {
-    addressControl: false, // hide address
-    panControl: panEnabled, // compass / look-around control
+    addressControl: false,
+    panControl: canPan,
     panControlOptions: {
       position: google.maps.ControlPosition.LEFT_BOTTOM,
-    }, // compass position
-    motionTracking: false, // mobile tracking
-    motionTrackingControl: false, // hide default UI elements
-    enableCloseButton: false, // hide default UI elements
-    zoomControl: false, // hide default UI elements
-    fullscreenControl: false, // hide default UI elements
-    showRoadLabels: false, // hide road labels
-    clickToGo: gameData.gameSettings.canMove, // move on click
-    scrollwheel: panEnabled, // pan toggle controls look-around + zoom
-    linksControl: gameData.gameSettings.canMove, // arrows to move
+    },
+    motionTracking: false,
+    motionTrackingControl: false,
+    enableCloseButton: false,
+    zoomControl: false,
+    fullscreenControl: false,
+    showRoadLabels: false,
+    clickToGo: gameData.gameSettings.canMove,
+    scrollwheel: canZoom,
+    linksControl: gameData.gameSettings.canMove,
   }
 }

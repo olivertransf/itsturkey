@@ -440,7 +440,6 @@ const buildSyntheticGame = (payload: DuelClientPayload, role: DuelViewerRole): G
       role === 'host' ? payload.host.totalPoints : role === 'guest' ? payload.guest.totalPoints : 0,
     gameSettings: {
       ...payload.gameSettings,
-      timeLimit: 0,
     },
     guesses: [],
     totalDistance: { metric: 0, imperial: 0 },
@@ -769,6 +768,9 @@ type Props = {
   payload: DuelClientPayload
   role: Exclude<DuelViewerRole, null>
   onRefresh: () => Promise<void>
+  /** Killing / finishing round: keep play chrome + HP drain, then hand off to match summary. */
+  finalDamageMode?: boolean
+  onSeeMatchSummary?: () => void
 }
 
 function frozenHudTotals(payload: DuelClientPayload, lr: DuelRoundResultClient | null, recapOpen: boolean) {
@@ -812,7 +814,14 @@ function frozenHudTotals(payload: DuelClientPayload, lr: DuelRoundResultClient |
   }
 }
 
-const DuelPlaySurface: FC<Props> = ({ duelId, payload, role, onRefresh }) => {
+const DuelPlaySurface: FC<Props> = ({
+  duelId,
+  payload,
+  role,
+  onRefresh,
+  finalDamageMode = false,
+  onSeeMatchSummary,
+}) => {
   const spectating = role === 'spectator'
   const hudRole: Exclude<DuelViewerRole, null | 'spectator'> = spectating ? 'host' : role
   const router = useRouter()
@@ -828,10 +837,10 @@ const DuelPlaySurface: FC<Props> = ({ duelId, payload, role, onRefresh }) => {
   const recapAck = payload.recapAckRoundIndex ?? -1
 
   const showRoundReveal =
-    payload.status === 'in_progress' &&
     lr != null &&
     revealActual != null &&
-    lr.roundIndex > recapAck
+    (finalDamageMode ||
+      (payload.status === 'in_progress' && lr.roundIndex > recapAck))
 
   useEffect(() => {
     const noDeadline = payload.roundDeadlineAt == null || payload.roundDeadlineAt === ''
@@ -1109,7 +1118,7 @@ const DuelPlaySurface: FC<Props> = ({ duelId, payload, role, onRefresh }) => {
           guestWinMultiplier={payload.guestWinMultiplier}
           onExit={handleDuelExit}
           onForfeit={() => setForfeitOpen(true)}
-          readOnly={spectating}
+          readOnly={spectating || finalDamageMode}
         />
         {showRoundReveal && lr && revealActual ? (
           <DuelRoundOverview
@@ -1128,9 +1137,16 @@ const DuelPlaySurface: FC<Props> = ({ duelId, payload, role, onRefresh }) => {
             hostPlayerName={payload.playerNames.host}
             guestPlayerName={payload.playerNames.guest}
             playerAvatars={payload.playerAvatars}
-            onContinue={spectating ? undefined : () => void dismissRecap()}
+            continueLabel={finalDamageMode ? 'See match summary' : 'Next round'}
+            onContinue={
+              finalDamageMode
+                ? onSeeMatchSummary
+                : spectating
+                  ? undefined
+                  : () => void dismissRecap()
+            }
           />
-        ) : (
+        ) : finalDamageMode ? null : (
           <DuelStreetSection
             duelId={duelId}
             completedRounds={payload.completedRounds}

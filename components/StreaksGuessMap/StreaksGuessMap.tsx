@@ -62,6 +62,7 @@ const StreaksGuessMap: FC<Props> = ({
   const mapExpanded = hovering || isPinned || Boolean(mobileMapOpen)
   const tabletTouch = chromeMode === 'tabletTouch'
   const showDesktopControls = mapExpanded && chromeMode !== 'phone'
+  const wrapperRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     handleSetupMap()
@@ -75,6 +76,21 @@ const StreaksGuessMap: FC<Props> = ({
     if (!googleMapsConfig?.map || !googleMapsConfig.mapsApi) return
     googleMapsConfig.mapsApi.event.trigger(googleMapsConfig.map, 'resize')
   }, [googleMapsConfig, mapWidth, mapHeight, mapExpanded, mobileMapOpen])
+
+  useEffect(() => {
+    if (!tabletTouch || !mapExpanded || mobileMapOpen) return
+
+    const onPointerDown = (e: PointerEvent) => {
+      const root = wrapperRef.current
+      if (!root) return
+      if (e.target instanceof Node && root.contains(e.target)) return
+      setIsPinned(false)
+      setHovering(false)
+    }
+
+    document.addEventListener('pointerdown', onPointerDown, true)
+    return () => document.removeEventListener('pointerdown', onPointerDown, true)
+  }, [tabletTouch, mapExpanded, mobileMapOpen, setHovering, setIsPinned])
 
   const handleSetupMap = async () => {
     if (!googleMapsConfig) return
@@ -152,6 +168,7 @@ const StreaksGuessMap: FC<Props> = ({
       mapExpanded={mapExpanded}
     >
       <div
+        ref={wrapperRef}
         className="guessMapWrapper"
         onMouseOver={tabletTouch ? undefined : handleMapHover}
         onMouseLeave={tabletTouch ? undefined : handleMapLeave}

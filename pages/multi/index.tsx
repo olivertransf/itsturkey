@@ -29,6 +29,12 @@ import { DEFAULT_MAP_PREVIEW_FILE } from '@utils/helpers/mapPreviewSrc'
 import { loadMapPickerOptions } from '@utils/loadMapPickerOptions'
 import type { MapPickerRow } from '@utils/loadMapPickerOptions'
 import { mailman, showToast } from '@utils/helpers'
+import {
+  EMPTY_VISUAL_RESTRICTIONS,
+  hasAnyVisualRestriction,
+  normalizeVisualRestrictions,
+} from '@utils/constants/visualRestrictions'
+import type { VisualRestrictions } from '@utils/constants/visualRestrictions'
 import styled from 'styled-components'
 
 const CardHero = styled.div`
@@ -111,6 +117,8 @@ const MultiLobbyPage: NextPage = () => {
   const [panelCount, setPanelCount] = useState<AllowedMultiPanelCount>(DEFAULT_MULTI_PANEL_COUNT)
   const [canMove, setCanMove] = useState(true)
   const [canPan, setCanPan] = useState(true)
+  const [canZoom, setCanZoom] = useState(true)
+  const [visualRestrictions, setVisualRestrictions] = useState<VisualRestrictions>({})
 
   useEffect(() => {
     let cancelled = false
@@ -158,7 +166,9 @@ const MultiLobbyPage: NextPage = () => {
       if (prev) return false
       setCanMove(true)
       setCanPan(true)
+      setCanZoom(true)
       setSliderVal(0)
+      setVisualRestrictions({ ...EMPTY_VISUAL_RESTRICTIONS })
       return true
     })
   }, [])
@@ -174,6 +184,7 @@ const MultiLobbyPage: NextPage = () => {
           Math.max(MIN_MULTI_PER_GUESS_SECONDS, sliderVal * 10)
         )
 
+    const fx = normalizeVisualRestrictions(visualRestrictions)
     const body = {
       mapId: useAll ? 'all' : mapField,
       ...(!useAll && mapNameForField ? { mapName: mapNameForField } : {}),
@@ -183,7 +194,8 @@ const MultiLobbyPage: NextPage = () => {
         timeLimit: perGuessSeconds,
         canMove: defaultsLocked ? true : canMove,
         canPan: defaultsLocked ? true : canPan,
-        canZoom: defaultsLocked ? true : canPan,
+        canZoom: defaultsLocked ? true : canZoom,
+        ...(hasAnyVisualRestriction(fx) ? { visualRestrictions: fx } : {}),
       },
     }
 
@@ -245,8 +257,12 @@ const MultiLobbyPage: NextPage = () => {
                 setSliderVal={setSliderVal}
                 canMove={canMove}
                 canPan={canPan}
+                canZoom={canZoom}
                 setCanMove={setCanMove}
                 setCanPan={setCanPan}
+                setCanZoom={setCanZoom}
+                visualRestrictions={visualRestrictions}
+                setVisualRestrictions={setVisualRestrictions}
               />
               <FieldLabel>Panels at once</FieldLabel>
               <PanelCountRow>

@@ -1,13 +1,17 @@
 import { FC } from 'react'
 import { Checkbox, Slider, ToggleSwitch } from '@components/system'
 import { StyledGameSettingsModal } from '@components/modals/GameSettingsModal'
+import VisualRestrictionsPanel from '@components/GameStartForm/VisualRestrictionsPanel'
 import { formatTimeLimit } from '@utils/helpers'
+import type { VisualRestrictions } from '@utils/constants/visualRestrictions'
 
 export type LobbyGameSettingsState = {
   defaultsLocked: boolean
   sliderVal: number
   canMove: boolean
   canPan: boolean
+  canZoom: boolean
+  visualRestrictions: VisualRestrictions
 }
 
 type Props = LobbyGameSettingsState & {
@@ -15,6 +19,8 @@ type Props = LobbyGameSettingsState & {
   setSliderVal: (n: number) => void
   setCanMove: (v: boolean) => void
   setCanPan: (v: boolean) => void
+  setCanZoom: (v: boolean) => void
+  setVisualRestrictions: (v: VisualRestrictions) => void
   className?: string
 }
 
@@ -27,8 +33,12 @@ const LobbyGameSettings: FC<Props> = ({
   setSliderVal,
   canMove,
   canPan,
+  canZoom,
   setCanMove,
   setCanPan,
+  setCanZoom,
+  visualRestrictions,
+  setVisualRestrictions,
   className,
 }) => {
   return (
@@ -59,8 +69,19 @@ const LobbyGameSettings: FC<Props> = ({
                   <ToggleSwitch isActive={canPan} setIsActive={setCanPan} disabled={defaultsLocked} />
                   <div className="movementOptionLabel">Pan</div>
                 </div>
+
+                <div className="movementOption">
+                  <ToggleSwitch isActive={canZoom} setIsActive={setCanZoom} disabled={defaultsLocked} />
+                  <div className="movementOptionLabel">Zoom</div>
+                </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        <section className="settingsWrapper" aria-label="Visual restrictions" style={{ marginTop: 14 }}>
+          <div className="controlCard detailedSettings">
+            <VisualRestrictionsPanel value={visualRestrictions} onChange={setVisualRestrictions} />
           </div>
         </section>
       </div>

@@ -9,11 +9,12 @@ import { StreetViewControls } from '@components/StreetViewControls'
 import { MapIcon } from '@heroicons/react/outline'
 import { useAppSelector } from '@redux/hook'
 import { GameViewType, GoogleMapsConfigType, LocationType } from '@types'
-import { getStreetviewOptions, isPanZoomEnabled } from '@utils/constants/googleMapOptions'
+import { getStreetviewOptions } from '@utils/constants/googleMapOptions'
 import { KEY_CODES } from '@utils/constants/keyCodes'
 import { mailman, showToast } from '@utils/helpers'
 import { attachStreetViewPanZoomLock } from '@utils/helpers/lockStreetViewPanZoom'
 import type { LockedStreetViewPose } from '@utils/helpers/lockStreetViewPanZoom'
+import { normalizeVisualRestrictions } from '@utils/constants/visualRestrictions'
 import { StyledStreetView } from './'
 import { DailyQuotaModal } from '@components/modals/DailyQuotaModal'
 import { PlonkitGuideLauncher } from '@components/PlonkitCountryGuide'
@@ -113,15 +114,23 @@ const Streetview: FC<Props> = ({
   const detachPanZoomLockRef = useRef<(() => void) | null>(null)
 
   const undoLocRef = useRef<LocationType[]>([])
-  const panZoomEnabled = isPanZoomEnabled(gameData.gameSettings)
+  const canPan = Boolean(gameData.gameSettings.canPan)
+  const canZoom = Boolean(gameData.gameSettings.canZoom)
+  const lockPan = !canPan
+  const lockZoom = !canZoom
+  const fullyFrozenView = lockPan && lockZoom
+  const visualFx = useMemo(
+    () => normalizeVisualRestrictions(gameData.gameSettings.visualRestrictions),
+    [gameData.gameSettings.visualRestrictions]
+  )
 
   const lockPoseTo = useCallback((heading: number, pitch: number, zoom: number) => {
-    if (!isPanZoomEnabled(gameData.gameSettings)) {
+    if (lockPan || lockZoom) {
       lockedPoseRef.current = { heading, pitch, zoom }
       return
     }
     lockedPoseRef.current = null
-  }, [gameData.gameSettings])
+  }, [lockPan, lockZoom])
 
   // Initializes Streetview & loads first pano
   useEffect(() => {
@@ -205,10 +214,11 @@ const Streetview: FC<Props> = ({
     detachPanZoomLockRef.current = null
     lockedPoseRef.current = null
 
-    if (!isPanZoomEnabled(gameData.gameSettings)) {
+    if (lockPan || lockZoom) {
       detachPanZoomLockRef.current = attachStreetViewPanZoomLock(
         svPanorama,
-        () => lockedPoseRef.current
+        () => lockedPoseRef.current,
+        { lockPan, lockZoom }
       )
     }
 
@@ -449,7 +459,12 @@ const Streetview: FC<Props> = ({
       e.preventDefault()
     }
 
-    if (!panZoomEnabled && (panKeys.includes(e.key) || zoomKeys.includes(e.key))) {
+    if (!canPan && panKeys.includes(e.key)) {
+      e.stopPropagation()
+      e.preventDefault()
+    }
+
+    if (!canZoom && zoomKeys.includes(e.key)) {
       e.stopPropagation()
       e.preventDefault()
     }
@@ -463,10 +478,10 @@ const Streetview: FC<Props> = ({
     return () => {
       document.removeEventListener('keydown', handleRestrictedViewKeys, { capture: true })
     }
-  }, [view, enableGlobalShortcuts, panZoomEnabled, gameData.gameSettings.canMove])
+  }, [view, enableGlobalShortcuts, canPan, canZoom, gameData.gameSettings.canMove])
 
   useEffect(() => {
-    if (panZoomEnabled || view !== 'Game') return
+    if (!fullyFrozenView || view !== 'Game') return
     const root = panoContainerRef.current
     if (!root) return
 
@@ -501,15 +516,41 @@ const Streetview: FC<Props> = ({
         root.removeEventListener(type, blockInteraction, opts)
       }
     }
-  }, [panZoomEnabled, view, googleMapsConfig])
+  }, [fullyFrozenView, view, googleMapsConfig])
 
   return (
     <>
-      <StyledStreetView showMap={!loading}>
+      <StyledStreetView showMap={!loading} $fx={visualFx}>
         {loading && <LoadingPage />}
 
-        <div ref={panoContainerRef} id={panoElementId} className="streetview-pano">
-          {!panZoomEnabled && view === 'Game' ? (
+        <div className="streetview-pano">
+          <div className="streetview-fx-stack">
+            <div className="fx-layer-spin">
+              <div className="fx-layer-wander">
+                <div className="fx-layer-drunk">
+                  <div className="fx-layer-wobble">
+                    <div className="fx-layer-zigzag">
+                      <div className="fx-layer-bubble">
+                        <div className="fx-layer-static">
+                          <div
+                            ref={panoContainerRef}
+                            id={panoElementId}
+                            className="streetview-fx-target"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="fx-blink-veil" aria-hidden />
+          <div className="fx-vignette-veil" aria-hidden />
+          <div className="fx-noise-veil" aria-hidden />
+
+          {fullyFrozenView && view === 'Game' ? (
             <div
               className="streetview-interaction-block"
               aria-hidden
@@ -580,7 +621,6 @@ const Streetview: FC<Props> = ({
           >
             <MapIcon />
           </button>
-
         </div>
       </StyledStreetView>
 

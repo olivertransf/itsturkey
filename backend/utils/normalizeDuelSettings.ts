@@ -1,13 +1,46 @@
 import { z } from 'zod'
 import { DEFAULT_TOTAL_ROUNDS, MAX_TOTAL_ROUNDS } from '@utils/constants/gameModes'
+import { normalizeVisualRestrictions } from '@utils/constants/visualRestrictions'
 import { DUEL_DEFAULT_HP, DUEL_DEFAULT_REACTIVE_SECONDS, DUEL_HP_LOCATION_BATCH } from './duelConstants'
 import type { DuelMultiplierMode } from '@backend/models/duelSession'
+
+const visualRestrictionsSchema = z
+  .object({
+    grayscale: z.boolean().optional(),
+    invert: z.boolean().optional(),
+    hueShift: z.boolean().optional(),
+    blink: z.boolean().optional(),
+    pixelate: z.boolean().optional(),
+    pixelateLevel: z.number().min(2).max(16).optional(),
+    upsideDown: z.boolean().optional(),
+    spin: z.boolean().optional(),
+    wander: z.boolean().optional(),
+    mirror: z.boolean().optional(),
+    blur: z.boolean().optional(),
+    vignette: z.boolean().optional(),
+    drunk: z.boolean().optional(),
+    rgbSplit: z.boolean().optional(),
+    sepia: z.boolean().optional(),
+    posterize: z.boolean().optional(),
+    tunnel: z.boolean().optional(),
+    wobble: z.boolean().optional(),
+    flashlight: z.boolean().optional(),
+    staticNoise: z.boolean().optional(),
+    comic: z.boolean().optional(),
+    nightVision: z.boolean().optional(),
+    stretch: z.boolean().optional(),
+    zigzag: z.boolean().optional(),
+    deepFry: z.boolean().optional(),
+    bubble: z.boolean().optional(),
+  })
+  .optional()
 
 export const gameSettingsSchema = z.object({
   timeLimit: z.number(),
   canMove: z.boolean(),
   canPan: z.boolean(),
   canZoom: z.boolean(),
+  visualRestrictions: visualRestrictionsSchema,
 })
 
 export const createDuelBodySchema = z.object({
@@ -55,6 +88,14 @@ export const normalizeCreateDuelBody = (raw: unknown): { ok: true; value: Normal
 
   const data = parsed.data
   const multiplierMode = resolveMultiplierMode(data)
+  const fx = normalizeVisualRestrictions(data.gameSettings.visualRestrictions)
+  const gameSettings = {
+    timeLimit: data.gameSettings.timeLimit,
+    canMove: data.gameSettings.canMove,
+    canPan: data.gameSettings.canPan,
+    canZoom: data.gameSettings.canZoom,
+    ...(Object.keys(fx).length ? { visualRestrictions: fx } : {}),
+  }
 
   if (data.mode === 'points') {
     let tr = data.totalRounds
@@ -68,7 +109,7 @@ export const normalizeCreateDuelBody = (raw: unknown): { ok: true; value: Normal
       value: {
         mapId: data.mapId,
         mapName: data.mapName,
-        gameSettings: data.gameSettings,
+        gameSettings,
         mode: 'points',
         locationCount: totalRounds,
         totalRounds,
@@ -88,7 +129,7 @@ export const normalizeCreateDuelBody = (raw: unknown): { ok: true; value: Normal
     value: {
       mapId: data.mapId,
       mapName: data.mapName,
-      gameSettings: data.gameSettings,
+      gameSettings,
       mode: 'hp',
       locationCount: DUEL_HP_LOCATION_BATCH,
       reactiveSeconds: data.reactiveSeconds ?? DUEL_DEFAULT_REACTIVE_SECONDS,

@@ -19,14 +19,33 @@ const effectiveSubmission = (
 
 export type DuelResolveOutcome = { type: 'none' } | { type: 'resolved'; duel: DuelSession }
 
-/** Start 15s (or reactiveSeconds) countdown once exactly one player has locked. */
+/** Start reactive countdown once exactly one player has locked (may only shorten an existing round deadline). */
 export const applyReactiveDeadlineIfNeeded = (duel: DuelSession, now: Date): void => {
   const hl = duel.hostLockedGuess
   const gl = duel.guestLockedGuess
   if (hl && gl) return
   if (!hl && !gl) return
-  if (duel.roundDeadlineAt) return
-  duel.roundDeadlineAt = new Date(now.getTime() + duel.reactiveSeconds * 1000)
+
+  const reactiveEnd = new Date(now.getTime() + duel.reactiveSeconds * 1000)
+  if (!duel.roundDeadlineAt) {
+    duel.roundDeadlineAt = reactiveEnd
+    return
+  }
+
+  const existing = new Date(duel.roundDeadlineAt).getTime()
+  if (reactiveEnd.getTime() < existing) {
+    duel.roundDeadlineAt = reactiveEnd
+  }
+}
+
+/** Per-round time limit from lobby settings (gameSettings.timeLimit seconds; 0 = none). */
+export const ensureRoundTimeDeadline = (duel: DuelSession, now: Date): boolean => {
+  if (duel.status !== 'in_progress') return false
+  if (duel.roundDeadlineAt) return false
+  const limit = duel.gameSettings?.timeLimit ?? 0
+  if (!Number.isFinite(limit) || limit <= 0) return false
+  duel.roundDeadlineAt = new Date(now.getTime() + limit * 1000)
+  return true
 }
 
 const resolveMultiplierMode = (duel: DuelSession): 'round_ramp' | 'win_streak' => {
@@ -56,9 +75,8 @@ export const tryResolveCurrentRound = (duel: DuelSession, now: Date, actual: Loc
 
   const bothLocked = !!(hl && gl)
   const deadlinePassed = dl !== null && now.getTime() >= dl
-  const oneLocked = !!(hl || gl)
 
-  if (!bothLocked && !(deadlinePassed && oneLocked)) return { type: 'none' }
+  if (!bothLocked && !deadlinePassed) return { type: 'none' }
 
   const roundEnding = bothLocked || deadlinePassed
 

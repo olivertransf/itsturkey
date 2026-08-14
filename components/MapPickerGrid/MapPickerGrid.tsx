@@ -2,7 +2,7 @@ import { SearchIcon } from '@heroicons/react/outline'
 import { CheckIcon } from '@heroicons/react/solid'
 import Image from 'next/image'
 import { FC, useMemo, useState } from 'react'
-import { resolveMapImageSrc } from '@utils/helpers/mapPreviewSrc'
+import { resolveMapImageSrc, isGenericMapPreview } from '@utils/helpers/mapPreviewSrc'
 import type { MapPickerRow } from '@utils/loadMapPickerOptions'
 import { parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
 import { flagEmojiFromIsoAlpha2 } from '@utils/helpers/flagEmoji'
@@ -102,6 +102,7 @@ const MapPickerGrid: FC<Props> = ({
               const selected = id === String(value)
               const countryCode = parseEquitableCountryMapKey(id)
               const thumbSrc = resolveMapImageSrc(row.previewImg)
+              const usePlaceholderArt = isGenericMapPreview(row.previewImg)
               const descRaw = row.description?.trim()
               const desc = showDescriptions ? descRaw : undefined
 
@@ -119,13 +120,15 @@ const MapPickerGrid: FC<Props> = ({
                     <LeadFlag title={row.name}>
                       <span aria-hidden>{flagEmojiFromIsoAlpha2(countryCode)}</span>
                     </LeadFlag>
+                  ) : usePlaceholderArt ? (
+                    <LeadMedia $placeholder aria-hidden />
                   ) : (
                     <LeadMedia>
                       <Image
                         src={thumbSrc}
                         alt=""
-                        width={40}
-                        height={40}
+                        width={44}
+                        height={44}
                         style={{ objectFit: 'cover' }}
                       />
                     </LeadMedia>

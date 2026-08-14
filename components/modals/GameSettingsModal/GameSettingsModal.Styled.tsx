@@ -199,7 +199,7 @@ const StyledGameSettingsModal = styled.div`
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 22px;
+    gap: 16px 18px;
     color: var(--color4);
     font-size: 14px;
   }

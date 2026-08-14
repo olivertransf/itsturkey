@@ -327,3 +327,10 @@ textarea {
     overflow: auto;
   }
 }
+
+@property --sv-hue {
+  syntax: '<angle>';
+  inherits: true;
+  initial-value: 0deg;
+}
+

@@ -1,5 +1,5 @@
 import type DuelSession from '@backend/models/duelSession'
-import { tryResolveCurrentRound } from './duelResolve'
+import { ensureRoundTimeDeadline, tryResolveCurrentRound } from './duelResolve'
 import { ensureNextRoundLocation } from './ensureDuelLocations'
 
 export const advanceDuelState = async (duel: DuelSession): Promise<{ duel: DuelSession; mutated: boolean }> => {
@@ -30,6 +30,12 @@ export const advanceDuelState = async (duel: DuelSession): Promise<{ duel: DuelS
     mutated = true
   }
   /* eslint-enable no-await-in-loop */
+
+  if (duel.status === 'in_progress' && duel.guest.joined) {
+    if (ensureRoundTimeDeadline(duel, now)) {
+      mutated = true
+    }
+  }
 
   return { duel, mutated }
 }

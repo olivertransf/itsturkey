@@ -63,19 +63,25 @@ const OverlayRoot = styled.div<{ $fullscreen: boolean; $compact: boolean }>`
   flex: ${({ $fullscreen }) => ($fullscreen ? '1' : '0 0 auto')};
   min-height: ${({ $fullscreen }) => ($fullscreen ? '0' : 'auto')};
   overflow: ${({ $fullscreen }) => ($fullscreen ? 'auto' : 'visible')};
-  position: ${({ $fullscreen }) => ($fullscreen ? 'absolute' : 'relative')};
+  /* fixed: finishing-blow recap is rendered outside PlayStage and still needs full viewport */
+  position: ${({ $fullscreen }) => ($fullscreen ? 'fixed' : 'relative')};
   inset: ${({ $fullscreen }) => ($fullscreen ? '0' : 'auto')};
   z-index: ${({ $fullscreen }) => ($fullscreen ? '40' : '1')};
   padding: ${({ $fullscreen, $compact }) =>
     $fullscreen ? '18px var(--pad-card-sm) 22px' : $compact ? '0' : 'var(--pad-card-sm)'};
+  padding-bottom: ${({ $fullscreen }) =>
+    $fullscreen ? 'max(22px, env(safe-area-inset-bottom, 0px))' : undefined};
   background-color: ${({ $fullscreen }) => ($fullscreen ? 'var(--bg-primary)' : 'transparent')};
   color: var(--text-primary);
   border: ${({ $fullscreen }) => ($fullscreen ? 'none' : 'none')};
   border-radius: 0;
+  box-sizing: border-box;
 
   @media (max-width: 560px) {
     padding: ${({ $fullscreen, $compact }) =>
       $fullscreen ? '14px 12px 18px' : $compact ? '0' : '12px'};
+    padding-bottom: ${({ $fullscreen }) =>
+      $fullscreen ? 'max(18px, env(safe-area-inset-bottom, 0px))' : undefined};
   }
 `
 

@@ -1,8 +1,9 @@
 import type { NextPage } from 'next'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { HeartIcon, LightningBoltIcon, SparklesIcon } from '@heroicons/react/outline'
+import { LobbyGameSettings } from '@components/LobbyGameSettings'
 import { MapPickerGrid } from '@components/MapPickerGrid'
 import { Meta } from '@components/Meta'
 import { PageBackLink } from '@components/PageBackLink'
@@ -23,6 +24,12 @@ import { DEFAULT_MAP_PREVIEW_FILE } from '@utils/helpers/mapPreviewSrc'
 import { loadMapPickerOptions } from '@utils/loadMapPickerOptions'
 import type { MapPickerRow } from '@utils/loadMapPickerOptions'
 import { mailman, showToast } from '@utils/helpers'
+import {
+  EMPTY_VISUAL_RESTRICTIONS,
+  hasAnyVisualRestriction,
+  normalizeVisualRestrictions,
+} from '@utils/constants/visualRestrictions'
+import type { VisualRestrictions } from '@utils/constants/visualRestrictions'
 import styled from 'styled-components'
 
 const CardHero = styled.div`
@@ -195,6 +202,24 @@ const DuelLobbyPage: NextPage = () => {
   const [multiplierMode, setMultiplierMode] = useState<'round_ramp' | 'win_streak'>('round_ramp')
   const [submitting, setSubmitting] = useState(false)
   const [hostNickname, setHostNickname] = useState('')
+  const [defaultsLocked, setDefaultsLocked] = useState(true)
+  const [sliderVal, setSliderVal] = useState(0)
+  const [canMove, setCanMove] = useState(true)
+  const [canPan, setCanPan] = useState(true)
+  const [canZoom, setCanZoom] = useState(true)
+  const [visualRestrictions, setVisualRestrictions] = useState<VisualRestrictions>({})
+
+  const onToggleDefaults = useCallback(() => {
+    setDefaultsLocked((prev) => {
+      if (prev) return false
+      setCanMove(true)
+      setCanPan(true)
+      setCanZoom(true)
+      setSliderVal(0)
+      setVisualRestrictions({ ...EMPTY_VISUAL_RESTRICTIONS })
+      return true
+    })
+  }, [])
 
   const create = async () => {
     setSubmitting(true)
@@ -202,14 +227,16 @@ const DuelLobbyPage: NextPage = () => {
     const totalRounds =
       mode === 'points' ? Math.min(MAX_TOTAL_ROUNDS, Math.max(1, Math.floor(Number(rounds) || DEFAULT_TOTAL_ROUNDS))) : undefined
 
+    const fx = normalizeVisualRestrictions(visualRestrictions)
     const body = {
       mapId: mapField,
       ...(mapNameForField ? { mapName: mapNameForField } : {}),
       gameSettings: {
-        timeLimit: 90,
-        canMove: true,
-        canPan: true,
-        canZoom: true,
+        timeLimit: defaultsLocked ? 0 : sliderVal * 10,
+        canMove: defaultsLocked ? true : canMove,
+        canPan: defaultsLocked ? true : canPan,
+        canZoom: defaultsLocked ? true : canZoom,
+        ...(hasAnyVisualRestriction(fx) ? { visualRestrictions: fx } : {}),
       },
       mode,
       ...(mode === 'points' ? { totalRounds } : {}),
@@ -356,6 +383,23 @@ const DuelLobbyPage: NextPage = () => {
                   </ModeStrip>
                 </>
               )}
+
+              <div style={{ marginTop: 12 }}>
+                <LobbyGameSettings
+                  defaultsLocked={defaultsLocked}
+                  onToggleDefaults={onToggleDefaults}
+                  sliderVal={sliderVal}
+                  setSliderVal={setSliderVal}
+                  canMove={canMove}
+                  canPan={canPan}
+                  canZoom={canZoom}
+                  setCanMove={setCanMove}
+                  setCanPan={setCanPan}
+                  setCanZoom={setCanZoom}
+                  visualRestrictions={visualRestrictions}
+                  setVisualRestrictions={setVisualRestrictions}
+                />
+              </div>
 
               <Button
                 variant="primary"

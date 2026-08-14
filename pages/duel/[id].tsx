@@ -384,6 +384,10 @@ const DuelRoomPage: PageType = () => {
     payload.lastRoundResult != null &&
     payload.lastRoundActualLocation != null
 
+  const canShowPlaySurface =
+    (payload.status === 'in_progress' && !!payload.currentLocation && !!payload.mapDetails) ||
+    (showFinalDamage && !!payload.mapDetails)
+
   const opponentRematchLabel =
     you === 'host' ? payload.playerNames.guest : you === 'guest' ? payload.playerNames.host : 'Opponent'
   const opponentWantsRematch =
@@ -405,7 +409,7 @@ const DuelRoomPage: PageType = () => {
     <StyledMultiGamePage>
       <Meta title="Duel" />
 
-      {showFinalDamage && payload.lastRoundResult && payload.lastRoundActualLocation ? (
+      {showFinalDamage && payload.lastRoundResult && payload.lastRoundActualLocation && !canShowPlaySurface ? (
         <DuelRoundOverview
           variant="fullscreen"
           roundOneBased={payload.lastRoundResult.roundIndex + 1}
@@ -538,12 +542,25 @@ const DuelRoomPage: PageType = () => {
         </GamifiedCenterStage>
       )}
 
-      {payload.status === 'in_progress' && payload.currentLocation && payload.mapDetails && (
+      {canShowPlaySurface && (
         <>
-          {you === 'spectator' ? (
-            <DuelSpectateSurface duelId={duelId} payload={payload} onRefresh={refresh} />
+          {you === 'spectator' || spectateMode ? (
+            <DuelSpectateSurface
+              duelId={duelId}
+              payload={payload}
+              onRefresh={refresh}
+              finalDamageMode={showFinalDamage}
+              onSeeMatchSummary={advanceToMatchSummary}
+            />
           ) : isPlayer ? (
-            <DuelPlaySurface duelId={duelId} payload={payload} role={you} onRefresh={refresh} />
+            <DuelPlaySurface
+              duelId={duelId}
+              payload={payload}
+              role={you}
+              onRefresh={refresh}
+              finalDamageMode={showFinalDamage}
+              onSeeMatchSummary={advanceToMatchSummary}
+            />
           ) : null}
         </>
       )}

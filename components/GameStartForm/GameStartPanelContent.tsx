@@ -7,6 +7,7 @@ import { MAX_TOTAL_ROUNDS } from '@utils/constants/gameModes'
 import { parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
 import { formatTimeLimit } from '@utils/helpers'
 import type { GameStartFlowApi } from './useGameStartFlow'
+import VisualRestrictionsPanel from './VisualRestrictionsPanel'
 
 type Props = Omit<GameStartFlowApi, 'primaryAction' | 'cancelAction' | 'footerMeta' | 'isSubmitting'> & {
   hideMapSummary?: boolean
@@ -25,6 +26,7 @@ const GameStartPanelContent: FC<Props> = ({
   showDetailedChecked,
   canMove,
   canPan,
+  canZoom,
   playMode,
   roundCount,
   allowHomeMapPicker,
@@ -36,8 +38,11 @@ const GameStartPanelContent: FC<Props> = ({
   setSliderVal,
   setCanMove,
   setCanPan,
+  setCanZoom,
   handleCheck,
   sliderVal,
+  visualRestrictions,
+  setVisualRestrictions,
 }) => {
   const defaultsLocked = !!showDetailedChecked
 
@@ -147,8 +152,17 @@ const GameStartPanelContent: FC<Props> = ({
                     <ToggleSwitch isActive={canPan} setIsActive={setCanPan} disabled={defaultsLocked} />
                     <div className="movementOptionLabel">Pan</div>
                   </div>
+
+                  <div className="movementOption">
+                    <ToggleSwitch isActive={canZoom} setIsActive={setCanZoom} disabled={defaultsLocked} />
+                    <div className="movementOptionLabel">Zoom</div>
+                  </div>
                 </div>
               </div>
+            </div>
+
+            <div className="controlCard unifiedSettingsCard" style={{ marginTop: 12 }}>
+              <VisualRestrictionsPanel value={visualRestrictions} onChange={setVisualRestrictions} />
             </div>
           </section>
 

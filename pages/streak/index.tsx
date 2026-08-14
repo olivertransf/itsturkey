@@ -25,6 +25,12 @@ import {
 } from '@utils/constants/random'
 import { mailman, showToast } from '@utils/helpers'
 import type { MapPickerRow } from '@utils/loadMapPickerOptions'
+import {
+  EMPTY_VISUAL_RESTRICTIONS,
+  hasAnyVisualRestriction,
+  normalizeVisualRestrictions,
+} from '@utils/constants/visualRestrictions'
+import type { VisualRestrictions } from '@utils/constants/visualRestrictions'
 import styled from 'styled-components'
 
 const ALLOWED_STREAK_MAP_IDS = new Set([EQUITABLE_COUNTRY_STREAK_ID, COUNTRY_STREAKS_ID])
@@ -98,6 +104,8 @@ const StreakLobbyPage: NextPage = () => {
   const [sliderVal, setSliderVal] = useState(0)
   const [canMove, setCanMove] = useState(true)
   const [canPan, setCanPan] = useState(true)
+  const [canZoom, setCanZoom] = useState(true)
+  const [visualRestrictions, setVisualRestrictions] = useState<VisualRestrictions>({})
 
   useEffect(() => {
     if (!router.isReady) return
@@ -125,7 +133,9 @@ const StreakLobbyPage: NextPage = () => {
       if (prev) return false
       setCanMove(true)
       setCanPan(true)
+      setCanZoom(true)
       setSliderVal(0)
+      setVisualRestrictions({ ...EMPTY_VISUAL_RESTRICTIONS })
       return true
     })
   }, [])
@@ -133,13 +143,21 @@ const StreakLobbyPage: NextPage = () => {
   const start = async () => {
     setSubmitting(true)
 
+    const fx = normalizeVisualRestrictions(visualRestrictions)
     const gameSettings = defaultsLocked
-      ? { timeLimit: 0, canMove: true, canPan: true, canZoom: true }
+      ? {
+          timeLimit: 0,
+          canMove: true,
+          canPan: true,
+          canZoom: true,
+          ...(hasAnyVisualRestriction(fx) ? { visualRestrictions: fx } : {}),
+        }
       : {
           timeLimit: sliderVal * 10,
           canMove,
           canPan,
-          canZoom: canPan,
+          canZoom,
+          ...(hasAnyVisualRestriction(fx) ? { visualRestrictions: fx } : {}),
         }
 
     const gameData = {
@@ -153,7 +171,13 @@ const StreakLobbyPage: NextPage = () => {
     dispatch(updateStartTime({ startTime: new Date().getTime() }))
     dispatch(
       updateGameSettings({
-        gameSettings: { canMove: gameSettings.canMove, canPan: gameSettings.canPan, canZoom: gameSettings.canZoom, timeLimit: sliderVal },
+        gameSettings: {
+          canMove: gameSettings.canMove,
+          canPan: gameSettings.canPan,
+          canZoom: gameSettings.canZoom,
+          timeLimit: sliderVal,
+          ...(hasAnyVisualRestriction(fx) ? { visualRestrictions: fx } : {}),
+        },
       })
     )
 
@@ -215,8 +239,12 @@ const StreakLobbyPage: NextPage = () => {
                 setSliderVal={setSliderVal}
                 canMove={canMove}
                 canPan={canPan}
+                canZoom={canZoom}
                 setCanMove={setCanMove}
                 setCanPan={setCanPan}
+                setCanZoom={setCanZoom}
+                visualRestrictions={visualRestrictions}
+                setVisualRestrictions={setVisualRestrictions}
               />
               <Button
                 variant="primary"

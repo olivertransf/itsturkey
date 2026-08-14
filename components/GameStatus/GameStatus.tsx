@@ -17,13 +17,18 @@ const GameStatus: FC<Props> = ({ gameData, handleSubmitGuess }) => {
   const [timeLeft, setTimeLeft] = useState(timeLimit)
 
   useEffect(() => {
+    if (!hasTimeLimit) return
+    setTimeLeft(timeLimit)
+  }, [gameData.round, hasTimeLimit, timeLimit])
+
+  useEffect(() => {
     if (hasTimeLimit) {
       if (timeLeft === 0) {
         return handleSubmitGuess(true)
       }
 
       const timer = setTimeout(() => {
-        setTimeLeft((timeLeft as number) - 1)
+        setTimeLeft((prev) => (prev as number) - 1)
       }, 1000)
 
       return () => clearTimeout(timer)

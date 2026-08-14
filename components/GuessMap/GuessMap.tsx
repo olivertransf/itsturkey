@@ -1,5 +1,5 @@
 import GoogleMapReact from 'google-map-react'
-import { FC, useEffect, useState } from 'react'
+import { FC, useEffect, useRef, useState } from 'react'
 import Game from '@backend/models/game'
 import { Marker } from '@components/Marker'
 import { Button } from '@components/system'
@@ -67,6 +67,7 @@ const GuessMap: FC<Props> = ({
   const mapExpanded = hovering || isPinned || Boolean(mobileMapOpen)
   const tabletTouch = chromeMode === 'tabletTouch'
   const showDesktopControls = mapExpanded && chromeMode !== 'phone' && !guessLocked
+  const wrapperRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     handleSetupMap()
@@ -82,6 +83,21 @@ const GuessMap: FC<Props> = ({
     const { map, mapsApi } = googleMapsConfig
     mapsApi.event.trigger(map, 'resize')
   }, [googleMapsConfig, mapWidth, mapHeight, mapExpanded, mobileMapOpen])
+
+  useEffect(() => {
+    if (!tabletTouch || !mapExpanded || guessLocked || mobileMapOpen) return
+
+    const onPointerDown = (e: PointerEvent) => {
+      const root = wrapperRef.current
+      if (!root) return
+      if (e.target instanceof Node && root.contains(e.target)) return
+      setIsPinned(false)
+      setHovering(false)
+    }
+
+    document.addEventListener('pointerdown', onPointerDown, true)
+    return () => document.removeEventListener('pointerdown', onPointerDown, true)
+  }, [tabletTouch, mapExpanded, guessLocked, mobileMapOpen, setHovering, setIsPinned])
 
   const handleSetupMap = () => {
     if (!googleMapsConfig) return
@@ -156,6 +172,7 @@ const GuessMap: FC<Props> = ({
       mapExpanded={mapExpanded}
     >
       <div
+        ref={wrapperRef}
         className="guessMapWrapper"
         onMouseOver={guessLocked || tabletTouch ? undefined : handleMapHover}
         onMouseLeave={guessLocked || tabletTouch ? undefined : handleMapLeave}
