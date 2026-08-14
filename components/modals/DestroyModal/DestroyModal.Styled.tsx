@@ -1,12 +1,10 @@
 import styled from 'styled-components'
 
-type StyledProps = {}
-
-const StyledDestroyModal = styled.div<StyledProps>`
+const StyledDestroyModal = styled.div`
   .a {
     display: grid;
-    gap: 16px;
-    padding: 20px;
+    gap: var(--space-4);
+    padding: var(--space-5);
 
     .header {
       display: flex;
@@ -14,9 +12,8 @@ const StyledDestroyModal = styled.div<StyledProps>`
       justify-content: space-between;
 
       .title {
-        font-size: 16px;
-        position: relative;
-        top: 1px;
+        font-size: var(--font-section);
+        font-weight: 600;
       }
 
       .close-button {
@@ -24,33 +21,35 @@ const StyledDestroyModal = styled.div<StyledProps>`
         align-items: center;
         justify-content: center;
         background: transparent;
-        color: var(--color2);
-        padding: 6px;
-        border-radius: 6px;
+        color: var(--text-muted);
+        padding: var(--space-1);
+        border-radius: var(--radius-sm);
 
         &:hover {
-          background-color: #222;
+          background-color: var(--control-fill);
+          color: var(--text-primary);
         }
         svg {
-          height: 20px;
+          height: var(--icon-md);
+          width: var(--icon-md);
         }
       }
     }
   }
 
   .message {
-    color: #808080;
-    font-weight: 400;
-    font-size: 14px;
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: var(--font-meta);
   }
 
   .footer {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 14px;
-    padding: 14px 20px;
-    border-top: 1px solid #222;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-5);
+    border-top: var(--border-default);
   }
 `
 

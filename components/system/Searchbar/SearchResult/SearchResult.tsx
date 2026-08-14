@@ -37,45 +37,39 @@ const SearchResult: FC<Props> = ({ searchResult, hasNoResults, setIsFocused }) =
   return (
     <StyledSearchResult>
       {type === 'user' && (
-        <Link href={`/user/${searchResult._id}`}>
-          <a className="linkWrapper" onClick={() => handleResultClick()}>
-            <FlexGroup gap={12}>
-              <Avatar type="user" src={searchResult.avatar?.emoji} backgroundColor={searchResult.avatar?.color} />
-              <div className="searchResultLabelWrapper">
-                <span className="searchResultLabel">{searchResult.name}</span>
-              </div>
-            </FlexGroup>
-          </a>
+        <Link href={`/user/${searchResult._id}`} className="linkWrapper" onClick={() => handleResultClick()}>
+          <FlexGroup gap={12}>
+            <Avatar type="user" src={searchResult.avatar?.emoji} backgroundColor={searchResult.avatar?.color} />
+            <div className="searchResultLabelWrapper">
+              <span className="searchResultLabel">{searchResult.name}</span>
+            </div>
+          </FlexGroup>
         </Link>
       )}
 
       {type === 'map' && (
-        <Link href={`/map/${searchResult._id}`}>
-          <a className="linkWrapper" onClick={() => handleResultClick()}>
-            <FlexGroup gap={12}>
-              <Avatar type="map" src={searchResult.previewImg} />
-              <div className="searchResultLabelWrapper">
-                <span className="searchResultLabel">{searchResult.name}</span>
-              </div>
-            </FlexGroup>
-          </a>
+        <Link href={`/map/${searchResult._id}`} className="linkWrapper" onClick={() => handleResultClick()}>
+          <FlexGroup gap={12}>
+            <Avatar type="map" src={searchResult.previewImg} />
+            <div className="searchResultLabelWrapper">
+              <span className="searchResultLabel">{searchResult.name}</span>
+            </div>
+          </FlexGroup>
         </Link>
       )}
 
       {type === 'term' && (
-        <Link href={`/search?q=${searchResult.term}`}>
-          <a className="linkWrapper" onClick={() => handleResultClick()}>
-            <FlexGroup gap={12}>
-              <div className="termAvatar">
-                <SearchIcon height={18} color="#888" />
-              </div>
-              <div className="searchResultLabelWrapper">
-                <span className="searchResultLabel">
-                  {hasNoResults ? `Search for ${searchResult.term}` : searchResult.term}
-                </span>
-              </div>
-            </FlexGroup>
-          </a>
+        <Link href={`/search?q=${searchResult.term}`} className="linkWrapper" onClick={() => handleResultClick()}>
+          <FlexGroup gap={12}>
+            <div className="termAvatar">
+              <SearchIcon height={18} color="#888" />
+            </div>
+            <div className="searchResultLabelWrapper">
+              <span className="searchResultLabel">
+                {hasNoResults ? `Search for ${searchResult.term}` : searchResult.term}
+              </span>
+            </div>
+          </FlexGroup>
         </Link>
       )}
     </StyledSearchResult>

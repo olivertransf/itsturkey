@@ -5,90 +5,91 @@ const StyledStandardResults = styled.div`
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  gap: 2px;
-  padding: 32px 20px;
+  gap: var(--space-1);
+  padding: var(--space-6) var(--space-5);
   height: 100%;
   width: 100%;
   background-color: var(--bg-primary);
   border-top: var(--border-default);
 
   .pointsWrapper {
-    font-size: 20px;
+    font-size: var(--font-title);
     font-weight: 600;
-    color: #ababab;
+    color: var(--text-muted);
   }
 
   .progress-bar {
-    margin-top: 10px;
-    margin-bottom: 16px;
+    margin-top: var(--space-3);
+    margin-bottom: var(--space-4);
     max-width: 525px;
     width: 100%;
   }
 
   .noGuessMessage {
-    font-size: 16px;
-    color: #6b6b6b;
+    font-size: var(--font-body);
+    color: var(--text-subtle);
   }
 
   .distanceMessage {
-    font-size: 16px;
-    color: #808080;
+    font-size: var(--font-body);
+    color: var(--text-muted);
 
     @media (max-width: 600px) {
-      font-size: 14px;
+      font-size: var(--font-meta);
       text-align: center;
     }
 
     .emphasisText {
-      font-weight: bold;
-      color: #909090;
+      font-weight: 600;
+      color: var(--text-primary);
     }
   }
 
   .actionButton {
-    margin-top: 30px;
+    margin-top: var(--space-6);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: var(--space-3);
 
     .next-round-btn {
-      border-radius: 50rem;
+      border-radius: var(--radius-md);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      height: 50px;
+      gap: var(--space-2);
+      height: var(--control-height-lg);
       width: 200px;
-      font-size: 18px;
-      font-weight: 400;
+      font-size: var(--font-section);
+      font-weight: 600;
       user-select: none;
-      background-color: var(--mediumPurple);
-      color: #fff;
+      background-color: var(--accent-primary);
+      color: var(--white);
 
       :hover {
-        background-color: var(--indigo-600);
+        background-color: var(--accent-primary-hover);
       }
     }
 
     .end-session-btn {
-      border-radius: 50rem;
-      height: 44px;
+      border-radius: var(--radius-md);
+      height: var(--control-height-md);
       width: 200px;
-      font-size: 15px;
-      font-weight: 500;
+      font-size: var(--font-body);
+      font-weight: 600;
       user-select: none;
       background: transparent;
-      color: var(--color3);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: var(--text-muted);
+      border: 1px solid var(--border-strong);
 
       :hover:not(:disabled) {
-        border-color: rgba(255, 255, 255, 0.35);
-        color: #fff;
+        border-color: var(--border-strong);
+        color: var(--text-primary);
+        background: var(--control-fill);
       }
 
       :disabled {
-        opacity: 0.6;
+        opacity: 0.45;
       }
     }
   }

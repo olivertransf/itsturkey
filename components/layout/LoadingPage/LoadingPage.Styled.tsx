@@ -5,9 +5,9 @@ const StyledLoadingPage = styled.main`
   align-items: center;
   justify-content: center;
   height: 100%;
-  background-color: #0e0e0e;
+  background-color: var(--bg-primary);
   width: 100%;
-  z-index: 999999999999;
+  z-index: var(--z-blocker);
   position: fixed;
   inset: 0;
 `

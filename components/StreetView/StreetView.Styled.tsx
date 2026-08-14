@@ -314,12 +314,12 @@ const StyledStreetView = styled.div<StyledProps>`
       position: absolute;
       bottom: max(28px, calc(16px + env(safe-area-inset-bottom, 0px)));
       right: max(12px, env(safe-area-inset-right, 0px));
-      z-index: 2;
+      z-index: var(--z-hud);
       -webkit-tap-highlight-color: transparent;
 
       svg {
-        height: 36px;
-        color: var(--color2);
+        height: var(--icon-lg);
+        color: var(--text-primary);
 
         path {
           stroke-width: 1.5px;
@@ -332,7 +332,7 @@ const StyledStreetView = styled.div<StyledProps>`
     position: absolute;
     right: 20px;
     bottom: 108px;
-    z-index: 4;
+    z-index: calc(var(--z-hud) + 1);
     max-width: min(320px, calc(100vw - 40px));
 
     @media (max-width: 900px) {
@@ -353,13 +353,13 @@ const StyledStreetView = styled.div<StyledProps>`
     top: max(12px, env(safe-area-inset-top, 0px));
     left: 50%;
     transform: translateX(-50%);
-    z-index: 4;
+    z-index: calc(var(--z-hud) + 1);
     padding: 8px 14px;
     border-radius: 999px;
-    background: rgba(12, 14, 18, 0.78);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    color: #fbbf24;
-    font-size: 12px;
+    background: var(--hud-surface);
+    border: 1px solid var(--border-strong);
+    color: var(--warning);
+    font-size: var(--font-compact);
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;

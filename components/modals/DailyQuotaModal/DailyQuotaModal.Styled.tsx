@@ -60,7 +60,7 @@ const StyledDailyQuotaModal = styled.div<StyledProps>`
     padding: 28px;
 
     &:not(:first-child) {
-      border-top: 1px solid #282828;
+      border-top: var(--border-default);
     }
   }
 
@@ -82,7 +82,7 @@ const StyledDailyQuotaModal = styled.div<StyledProps>`
       flex-shrink: 0;
 
       &:hover {
-        background-color: var(--indigo-600);
+        background-color: var(--accent-primary-hover);
       }
 
       &.donate {

@@ -55,26 +55,20 @@ const Navbar: FC<NavbarProps> = ({ backHref, backLabel }) => {
               </button>
 
               {session && user.id ? (
-                <Link href={`/user/${user.id}`}>
-                  <a className="userInfo">
-                    <span className="username">{user.name}</span>
-                    <Avatar type="user" src={user.avatar.emoji} backgroundColor={user.avatar.color} />
-                  </a>
+                <Link href={`/user/${user.id}`} className="userInfo">
+                  <span className="username">{user.name}</span>
+                  <Avatar type="user" src={user.avatar.emoji} backgroundColor={user.avatar.color} />
                 </Link>
               ) : (
                 <>
                   <Link href="/login">
-                    <a>
-                      <Button variant="solidCustom" size="sm" backgroundColor="#3d3d3d" color="#fff" hoverColor="#444">
-                        Log In
-                      </Button>
-                    </a>
+                    <Button variant="secondary" size="sm">
+                      Log In
+                    </Button>
                   </Link>
 
                   <Link href="/register">
-                    <a>
-                      <Button size="sm">Sign Up</Button>
-                    </a>
+                    <Button size="sm">Sign Up</Button>
                   </Link>
                 </>
               )}

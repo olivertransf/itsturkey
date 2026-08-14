@@ -2,15 +2,16 @@ import styled from 'styled-components'
 
 const StyledAuthModal = styled.div`
   .header {
-    padding: 16px;
+    padding: var(--space-4);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 1px solid #282828;
+    border-bottom: var(--border-default);
 
     .modal-title {
-      font-size: 18px;
-      font-weight: 400;
+      font-size: var(--font-section);
+      font-weight: 600;
+      letter-spacing: var(--tracking-title);
     }
 
     .close-button {
@@ -18,26 +19,28 @@ const StyledAuthModal = styled.div`
       align-items: center;
       justify-content: center;
       background: transparent;
-      color: var(--color2);
-      padding: 4px;
-      border-radius: 6px;
+      color: var(--text-muted);
+      padding: var(--space-1);
+      border-radius: var(--radius-sm);
 
       &:hover {
-        background-color: #222;
+        background-color: var(--control-fill);
+        color: var(--text-primary);
       }
 
       svg {
-        height: 24px;
+        height: var(--icon-lg);
+        width: var(--icon-lg);
       }
     }
   }
 
   .mainContent {
-    padding: 16px;
+    padding: var(--space-4);
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #131314;
+    background-color: var(--bg-elevated);
   }
 
   .buttonsWrapper {
@@ -46,7 +49,7 @@ const StyledAuthModal = styled.div`
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    gap: 16px;
+    gap: var(--space-4);
 
     a {
       width: 100%;

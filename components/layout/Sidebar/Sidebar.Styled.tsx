@@ -6,7 +6,7 @@ const StyledSidebar = styled.div`
   .sidebar {
     width: var(--sidebarWidth);
     height: 100%;
-    background-color: ${({ theme }) => theme.color.gray[900]};
+    background-color: var(--bg-elevated);
     border-right: 1px solid var(--border-subtle);
     z-index: 1;
     height: 100% !important;
@@ -31,7 +31,7 @@ const StyledSidebar = styled.div`
     display: grid;
     gap: 4px;
     padding: 4px;
-    border-bottom: 1px solid ${({ theme }) => theme.color.gray[800]};
+    border-bottom: 1px solid var(--border-subtle);
 
     @media (max-width: 1200px) {
       gap: 10px;

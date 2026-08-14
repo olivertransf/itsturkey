@@ -11,72 +11,66 @@ const StyledHomeFriendsCard = styled.div`
   overflow: hidden;
   flex: 0 1 auto;
   min-height: 0;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 42%),
-    var(--palette-surface, #1c1e22);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.04) inset,
-    0 18px 40px rgba(0, 0, 0, 0.28);
+  border-radius: var(--radius-xl);
+  border: var(--border-default);
+  background: var(--bg-card);
 
   .friends-card-head {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 12px;
-    padding: 16px 16px 14px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    gap: var(--space-3);
+    padding: var(--pad-row-card);
+    border-bottom: 1px solid var(--divider-line);
   }
 
   .friends-card-title-wrap {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--space-1);
     min-width: 0;
   }
 
   .friends-card-title {
     margin: 0;
-    font-size: 13px;
+    font-size: var(--font-label);
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: var(--tracking-label);
     text-transform: uppercase;
     color: var(--text-primary);
   }
 
   .friends-card-summary {
-    font-size: 12px;
+    font-size: var(--font-compact);
     line-height: 1.35;
     color: var(--text-muted);
   }
 
   .friends-card-link,
   .friends-card-more {
-    font-size: 12px;
+    font-size: var(--font-compact);
     font-weight: 600;
-    color: var(--palette-accent, #2f7fff);
+    color: var(--accent-primary);
     text-decoration: none;
     flex-shrink: 0;
 
     &:hover {
-      text-decoration: underline;
-      text-underline-offset: 3px;
+      color: var(--accent-primary-hover);
     }
   }
 
   .friends-card-more {
     display: block;
-    padding: 12px 16px 14px;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding: var(--space-3) var(--space-4);
+    border-top: 1px solid var(--divider-line);
     color: var(--text-muted);
     font-weight: 500;
   }
 
   .friends-card-empty {
     margin: 0;
-    padding: 18px 16px 20px;
-    font-size: 13px;
+    padding: var(--space-4);
+    font-size: var(--font-meta);
     line-height: 1.5;
     color: var(--text-muted);
 
@@ -89,39 +83,23 @@ const StyledHomeFriendsCard = styled.div`
   .friends-card-loading {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 12px;
+    gap: var(--space-2);
+    padding: var(--space-3);
   }
 
   .friends-skel {
     height: 52px;
-    border-radius: 12px;
-    background: linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.03),
-      rgba(255, 255, 255, 0.07),
-      rgba(255, 255, 255, 0.03)
-    );
-    background-size: 200% 100%;
-    animation: friends-shimmer 1.2s ease-in-out infinite;
-  }
-
-  @keyframes friends-shimmer {
-    0% {
-      background-position: 100% 0;
-    }
-    100% {
-      background-position: -100% 0;
-    }
+    border-radius: var(--radius-md);
+    background: var(--control-fill);
   }
 
   .friends-card-list {
     list-style: none;
     margin: 0;
-    padding: 8px;
+    padding: var(--space-2);
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--space-1);
     max-height: min(42vh, 420px);
     overflow-y: auto;
     overscroll-behavior: contain;
@@ -133,14 +111,14 @@ const StyledHomeFriendsCard = styled.div`
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
+    gap: var(--space-3);
     min-height: 52px;
-    padding: 8px 10px;
-    border-radius: 12px;
-    transition: background 0.12s ease;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    transition: background var(--duration-fast) var(--ease);
 
     &:hover {
-      background: rgba(255, 255, 255, 0.04);
+      background: var(--control-fill);
     }
   }
 
@@ -153,7 +131,7 @@ const StyledHomeFriendsCard = styled.div`
   }
 
   .friends-card-name {
-    font-size: 14px;
+    font-size: var(--font-meta);
     font-weight: 600;
     letter-spacing: -0.01em;
     color: var(--text-primary);
@@ -164,33 +142,31 @@ const StyledHomeFriendsCard = styled.div`
     white-space: nowrap;
 
     &:hover {
-      text-decoration: underline;
-      text-underline-offset: 3px;
+      color: var(--accent-primary);
     }
   }
 
   .friends-card-status {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-2);
     flex-shrink: 0;
-    font-size: 11px;
-    letter-spacing: 0.01em;
+    font-size: var(--font-compact);
     color: var(--text-muted);
   }
 
   .friends-card-actions {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-2);
     flex-shrink: 0;
   }
 
   .friends-invite-label {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    font-size: 12px;
+    gap: var(--space-1);
+    font-size: var(--font-compact);
 
     svg {
       width: 13px;
@@ -199,29 +175,27 @@ const StyledHomeFriendsCard = styled.div`
   }
 
   .status-text--active {
-    color: #fbbf24;
+    color: var(--warning);
     font-weight: 600;
   }
 
   .status-dot {
     width: 7px;
     height: 7px;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     flex-shrink: 0;
   }
 
   .status-dot--online {
-    background: #4ade80;
-    box-shadow: 0 0 8px rgba(74, 222, 128, 0.45);
+    background: var(--success);
   }
 
   .status-dot--active {
-    background: #fbbf24;
-    box-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+    background: var(--warning);
   }
 
   .status-dot--offline {
-    background: #52525b;
+    background: var(--text-subtle);
   }
 `
 

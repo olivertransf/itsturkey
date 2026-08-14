@@ -6,49 +6,50 @@ const StyledSitePasswordPage = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: var(--space-5);
   background: var(--bg-primary);
   color: var(--text-primary);
 
   .password-card {
     width: min(420px, 100%);
-    padding: 28px;
-    border-radius: 14px;
-    background: ${({ theme }) => theme.color.gray[900]};
-    border: 1px solid ${({ theme }) => theme.color.gray[800]};
-    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+    padding: var(--pad-card);
+    border-radius: var(--radius-xl);
+    background: var(--bg-elevated);
+    border: var(--border-default);
+    box-shadow: var(--shadow-card);
   }
 
   h1 {
-    margin: 0 0 10px;
-    font-size: 1.5rem;
+    margin: 0 0 var(--space-3);
+    font-size: var(--font-title);
+    letter-spacing: var(--tracking-title);
   }
 
   p {
-    margin: 0 0 20px;
-    color: ${({ theme }) => theme.color.gray[500]};
+    margin: 0 0 var(--space-5);
+    color: var(--text-muted);
     line-height: 1.5;
   }
 
   form {
     display: grid;
-    gap: 12px;
+    gap: var(--space-3);
   }
 
   input {
-    height: 44px;
-    padding: 0 14px;
-    border-radius: 8px;
-    border: 1px solid ${({ theme }) => theme.color.gray[700]};
-    background: ${({ theme }) => theme.color.gray[800]};
-    color: #fff;
-    font-size: 1rem;
+    height: var(--control-height-md);
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-strong);
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    font-size: var(--font-body);
   }
 
   .error {
     margin: 0;
-    color: #f87171;
-    font-size: 0.9rem;
+    color: var(--danger);
+    font-size: var(--font-meta);
   }
 `
 

@@ -21,18 +21,12 @@ const GamemodeCard: FC<Props> = ({ title, titleColor, description, buttonText, h
 
       {href && (
         <Link href={href}>
-          <a>
-            <Button variant="solidCustom" backgroundColor="#4f46e5" color="#fff">
-              {buttonText}
-            </Button>
-          </a>
+          <Button variant="primary">{buttonText}</Button>
         </Link>
       )}
 
       {!href && (
-        <Button variant="solidCustom" backgroundColor="#4f46e5" color="#fff">
-          {buttonText}
-        </Button>
+        <Button variant="primary">{buttonText}</Button>
       )}
     </StyledGamemodeCard>
   )

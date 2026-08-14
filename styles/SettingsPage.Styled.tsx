@@ -7,25 +7,26 @@ const StyledSettingsPage = styled.div`
     display: flex;
     align-items: end;
     justify-content: space-between;
-    border-bottom: 1px solid ${({ theme }) => theme.color.gray[800]};
+    border-bottom: 1px solid var(--divider-line);
 
     &.header--embedded {
-      padding-bottom: 16px;
-      margin-bottom: 16px;
+      padding-bottom: var(--space-4);
+      margin-bottom: var(--space-4);
     }
 
     .header-details {
       h1 {
-        font-size: 20px;
-        font-weight: 500;
-        color: rgb(245, 245, 245);
+        font-size: var(--font-title);
+        font-weight: 600;
+        letter-spacing: var(--tracking-title);
+        color: var(--text-primary);
       }
 
       h2 {
-        margin-top: 6px;
-        font-size: 15px;
-        font-weight: 400;
-        color: rgb(163, 163, 163);
+        margin-top: var(--space-1);
+        font-size: var(--font-meta);
+        font-weight: 500;
+        color: var(--text-muted);
       }
     }
   }
@@ -73,17 +74,17 @@ const StyledSettingsPage = styled.div`
 
     .maps-key-cta {
       padding: 16px;
-      border-radius: 6px;
-      border: 1px solid ${({ theme }) => theme.color.gray[800]};
-      background-color: #181818;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      background-color: var(--bg-surface);
 
       .cta-title {
         display: block;
-        font-weight: 500;
-        font-size: 18px;
-        letter-spacing: -0.02rem;
-        color: #f3f3f3;
-        line-height: 26px;
+        font-weight: 600;
+        font-size: var(--font-section);
+        letter-spacing: var(--tracking-title);
+        color: var(--text-primary);
+        line-height: 1.4;
       }
 
       .cta-description {
@@ -111,14 +112,14 @@ const StyledSettingsPage = styled.div`
       gap: 8px;
       padding: 16px;
       border-radius: 6px;
-      border: 1px solid ${({ theme }) => theme.color.gray[800]};
+      border: 1px solid var(--border-subtle);
       background-color: #181818;
     }
 
     .friends-section {
       padding: 16px;
       border-radius: 6px;
-      border: 1px solid ${({ theme }) => theme.color.gray[800]};
+      border: 1px solid var(--border-subtle);
       background-color: #181818;
       display: grid;
       gap: 14px;
@@ -165,7 +166,7 @@ const StyledSettingsPage = styled.div`
         padding: 8px 10px;
         border-radius: 6px;
         background: rgba(255, 255, 255, 0.04);
-        border: 1px solid ${({ theme }) => theme.color.gray[800]};
+        border: 1px solid var(--border-subtle);
       }
 
       .friend-add-row {

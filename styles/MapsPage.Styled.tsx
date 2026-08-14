@@ -7,12 +7,16 @@ const StyledMapsPage = styled.div`
     margin-bottom: var(--stack-gap-md);
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    padding: 4px 8px 8px;
+    margin-left: -8px;
+    margin-right: -8px;
   }
 
   .page-wrapper {
     display: grid;
     gap: var(--stack-gap-lg);
     width: 100%;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
 
     .section-title {
       font-size: var(--label-upper-size);
@@ -21,15 +25,8 @@ const StyledMapsPage = styled.div`
       text-transform: uppercase;
       color: var(--text-muted);
       text-align: left;
-      position: sticky;
-      top: 0;
-      z-index: 12;
       margin: 0;
-      padding: var(--stack-gap-md) 0 var(--stack-gap-sm);
-      background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border-subtle);
+      padding: 0 0 var(--stack-gap-sm);
     }
 
     .section-subtext {
@@ -42,15 +39,15 @@ const StyledMapsPage = styled.div`
 
     .maps-wrapper {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
-      gap: var(--grid-gap-cards);
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+      gap: 16px;
       align-items: stretch;
       width: 100%;
     }
 
     .maps-wrapper.equitable-countries-grid {
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 10px;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+      gap: 16px;
       align-items: stretch;
     }
 
@@ -63,19 +60,19 @@ const StyledMapsPage = styled.div`
       button {
         background-color: var(--bg-elevated);
         color: var(--text-primary);
-        border-radius: var(--radius-pill);
-        padding: 8px 18px;
-        font-size: 13px;
+        border-radius: var(--radius-md);
+        padding: var(--space-2) var(--space-4);
+        font-size: var(--font-meta);
         font-weight: 600;
         display: flex;
         align-items: center;
         justify-content: center;
         border: 1px solid var(--border-subtle);
-        transition: background 0.15s ease, border-color 0.15s ease;
+        transition: background var(--duration-fast) var(--ease), border-color var(--duration-fast) var(--ease);
 
         &:hover {
-          background: rgba(255, 255, 255, 0.06);
-          border-color: rgba(255, 255, 255, 0.1);
+          background: var(--control-fill);
+          border-color: var(--border-strong);
         }
       }
     }

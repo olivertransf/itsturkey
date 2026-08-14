@@ -1,12 +1,11 @@
 export const elevation = {
   base: 0,
-  dropdown: 10,
+  hud: 10,
   sticky: 20,
-  fixed: 30,
-  backdrop: 40,
+  dropdown: 40,
   modal: 50,
-  drawer: 60,
-  notification: 70,
+  popover: 60,
+  toast: 70,
   tooltip: 80,
-  override: 90
+  blocker: 90
 }

@@ -1,107 +1,117 @@
 import styled from 'styled-components'
 
-type StyledProps = {}
-
-const StyledSelectMapLayers = styled.div<StyledProps>`
+const radixSelectStyles = `
   .SelectTrigger {
     display: inline-flex;
     align-items: center;
-    border-radius: 3px;
-    padding: 0 15px;
-    font-size: 13px;
+    border-radius: var(--radius-md);
+    padding: 0 var(--space-4);
+    font-size: var(--font-meta);
     line-height: 1;
-    height: 38px;
-    gap: 5px;
-    background-color: #333;
-    color: #dcdcdc;
+    height: var(--control-height-md);
+    gap: var(--space-2);
+    background-color: var(--bg-elevated);
+    color: var(--text-primary);
     min-width: 185px;
     position: relative;
-    box-shadow: 0 0 0 1px #434343;
+    border: 1px solid var(--border-strong);
+    font-weight: 500;
 
     &:hover {
-      background-color: #383838;
+      background-color: var(--control-fill);
+    }
+
+    &:focus-visible {
+      outline: var(--focus-ring);
+      outline-offset: 2px;
     }
   }
 
   .SelectTrigger[data-placeholder] {
-    color: #dcdcdc;
+    color: var(--text-muted);
   }
 
   .SelectIcon {
-    color: #999;
+    color: var(--text-muted);
     position: absolute;
-    right: 8px;
+    right: var(--space-2);
     display: inline-flex;
     align-items: center;
     justify-content: center;
 
     svg {
-      height: 20px;
+      height: var(--icon-md);
+      width: var(--icon-md);
     }
   }
 
   .SelectContent {
     overflow: hidden;
-    background-color: #333;
-    border-radius: 6px;
-    box-shadow: 0px 10px 38px -10px rgba(22, 23, 24, 0.35), 0px 10px 20px -15px rgba(22, 23, 24, 0.2);
-    z-index: 99;
-    box-shadow: 0 0 0 1px #434343;
+    background-color: var(--bg-elevated);
+    border-radius: var(--radius-md);
+    z-index: var(--z-dropdown);
+    border: 1px solid var(--border-strong);
+    box-shadow: var(--shadow-card);
     min-width: 185px;
   }
 
   .SelectViewport {
-    padding: 5px;
+    padding: var(--space-1);
   }
 
   .SelectItem {
-    font-size: 13px;
+    font-size: var(--font-meta);
     line-height: 1;
-    color: #dcdcdc;
-    border-radius: 3px;
+    color: var(--text-primary);
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
-    padding: 10px 35px 10px 15px;
+    padding: var(--space-3) var(--space-7) var(--space-3) var(--space-3);
     position: relative;
     user-select: none;
-    font-weight: 400;
+    font-weight: 500;
   }
 
   .SelectItem[data-disabled] {
-    color: #aaa;
+    color: var(--text-subtle);
     pointer-events: none;
   }
 
   .SelectItem[data-highlighted] {
     outline: none;
-    background-color: #434343;
-    color: #fff;
+    background-color: var(--control-fill-hover);
+    color: var(--text-primary);
   }
 
   .SelectLabel {
-    padding: 0 15px;
-    font-size: 12px;
+    padding: 0 var(--space-3);
+    font-size: var(--font-compact);
     line-height: 25px;
-    color: #949494;
+    color: var(--text-muted);
   }
 
   .SelectSeparator {
     height: 1px;
-    background-color: #505050;
-    margin: 5px;
+    background-color: var(--divider-line);
+    margin: var(--space-1);
   }
 
   .SelectItemIndicator {
     position: absolute;
-    right: 8px;
+    right: var(--space-2);
     display: inline-flex;
     align-items: center;
     justify-content: center;
 
     svg {
-      height: 16px;
+      height: var(--icon-sm);
+      width: var(--icon-sm);
     }
   }
+`
+
+const StyledSelectMapLayers = styled.div`
+  ${radixSelectStyles}
 `
 
 export default StyledSelectMapLayers

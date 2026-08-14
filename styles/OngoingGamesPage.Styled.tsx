@@ -190,7 +190,7 @@ const StyledOngoingGamesPage = styled.div`
           }
 
           &:hover {
-            background-color: var(--indigo-600);
+            background-color: var(--accent-primary-hover);
 
             &.delete-button {
               background-color: #991b1b;

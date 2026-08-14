@@ -11,7 +11,7 @@ const StyledMapPreviewCard = styled.div<StyledProps>`
 
   .large-card-wrapper {
     border-radius: var(--radius-lg);
-    background-color: ${({ theme }) => theme.color.gray[900]};
+    background-color: var(--bg-card);
     border: 1px solid var(--border-subtle);
     box-shadow: var(--shadow-card);
     display: grid;
@@ -19,7 +19,6 @@ const StyledMapPreviewCard = styled.div<StyledProps>`
     min-width: 0;
     box-sizing: border-box;
     gap: 1rem;
-    max-height: 300px;
 
     ${({ isForDisplayOnly }) =>
       isForDisplayOnly &&
@@ -30,6 +29,7 @@ const StyledMapPreviewCard = styled.div<StyledProps>`
     .map-avatar {
       height: 125px;
       width: 100%;
+      overflow: hidden;
       border-radius: calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0 0;
       position: relative;
 
@@ -52,7 +52,7 @@ const StyledMapPreviewCard = styled.div<StyledProps>`
       justify-content: center;
       flex-direction: column;
       gap: 18px;
-      margin-top: -48px;
+    margin-top: 0;
     }
 
     .mapNameWrapper {
@@ -95,7 +95,7 @@ const StyledMapPreviewCard = styled.div<StyledProps>`
     }
 
     .mapDescription {
-      color: ${({ theme }) => theme.color.gray[500]};
+      color: var(--text-muted);
       font-weight: 400;
       line-height: 25px;
       text-align: center;
@@ -105,7 +105,8 @@ const StyledMapPreviewCard = styled.div<StyledProps>`
       overflow: hidden;
       -webkit-box-orient: vertical;
       word-break: break-word;
-      height: 50px;
+      height: auto;
+      min-height: 0;
       font-size: inherit;
     }
 
@@ -123,17 +124,17 @@ const StyledMapPreviewCard = styled.div<StyledProps>`
       align-items: center;
       justify-content: center;
       border-radius: var(--radius-md);
-      height: 40px;
-      padding: 0 25px;
-      font-size: 1rem;
-      font-weight: 500;
+      height: var(--control-height-md);
+      padding: 0 var(--space-5);
+      font-size: var(--font-body);
+      font-weight: 600;
       user-select: none;
       width: clamp(120px, 70%, 300px);
-      background-color: rgb(255, 255, 255, 0.1);
-      color: rgb(255, 255, 255, 0.7);
+      background-color: var(--control-fill);
+      color: var(--text-muted);
 
       &:hover {
-        background-color: rgb(255, 255, 255, 0.15);
+        background-color: var(--control-fill-hover);
       }
     }
 
@@ -142,31 +143,31 @@ const StyledMapPreviewCard = styled.div<StyledProps>`
       align-items: center;
       justify-content: center;
       border-radius: var(--radius-md);
-      height: 40px;
-      padding: 0 25px;
-      font-size: 1rem;
-      font-weight: 500;
+      height: var(--control-height-md);
+      padding: 0 var(--space-5);
+      font-size: var(--font-body);
+      font-weight: 600;
       user-select: none;
       width: clamp(120px, 70%, 300px);
-      background-color: var(--indigo-700);
+      background-color: var(--accent-primary);
       color: #fff;
 
       ${({ isForDisplayOnly }) =>
         isForDisplayOnly &&
         `
-         background-color: #222;
-         color: #777;
+         background-color: var(--control-fill);
+         color: var(--text-subtle);
       `}
 
       :hover {
-        background-color: ${({ isForDisplayOnly }) => !isForDisplayOnly && 'var(--indigo-600)'};
+        background-color: ${({ isForDisplayOnly }) => !isForDisplayOnly && 'var(--accent-primary-hover)'};
       }
     }
   }
 
   .small-card-wrapper {
     border-radius: var(--radius-lg);
-    background-color: ${({ theme }) => theme.color.gray[900]};
+    background-color: var(--bg-card);
     border: 1px solid var(--border-subtle);
     box-shadow: var(--shadow-card);
     position: relative;
@@ -246,8 +247,8 @@ const StyledMapPreviewCard = styled.div<StyledProps>`
       font-size: 1rem;
       font-weight: 500;
       user-select: none;
-      background-color: rgb(255, 255, 255, 0.1);
-      color: rgb(255, 255, 255, 0.7);
+      background-color: var(--control-fill);
+      color: var(--text-muted);
 
       svg {
         height: 20px;
@@ -255,10 +256,10 @@ const StyledMapPreviewCard = styled.div<StyledProps>`
       }
 
       &:hover {
-        background-color: rgb(255, 255, 255, 0.15);
+        background-color: var(--control-fill-hover);
 
         &.mapDeleteBtn {
-          background-color: #991b1b;
+          background-color: var(--danger-fill-hover);
         }
       }
     }
@@ -268,17 +269,17 @@ const StyledMapPreviewCard = styled.div<StyledProps>`
       align-items: center;
       justify-content: center;
       border-radius: var(--radius-md);
-      height: 40px;
-      padding: 0 25px;
-      font-size: 1rem;
-      font-weight: 500;
+      height: var(--control-height-md);
+      padding: 0 var(--space-5);
+      font-size: var(--font-body);
+      font-weight: 600;
       user-select: none;
-      background-color: var(--indigo-700);
+      background-color: var(--accent-primary);
       color: #fff;
       width: 100%;
 
       :hover {
-        background-color: var(--indigo-600);
+        background-color: var(--accent-primary-hover);
       }
     }
   }

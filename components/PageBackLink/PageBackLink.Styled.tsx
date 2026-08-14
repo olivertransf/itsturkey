@@ -11,22 +11,25 @@ const StyledPageBackLink = styled.div<{ $compact?: boolean }>`
   .page-back-link {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    font-size: 14px;
+    gap: var(--space-2);
+    font-size: var(--font-meta);
     font-weight: 500;
     color: var(--text-muted);
     text-decoration: none;
 
     svg {
-      width: 18px;
-      height: 18px;
+      width: var(--icon-md);
+      height: var(--icon-md);
       flex-shrink: 0;
     }
 
     &:hover {
       color: var(--text-primary);
-      text-decoration: underline;
-      text-underline-offset: 3px;
+    }
+
+    &:focus-visible {
+      outline: var(--focus-ring);
+      outline-offset: 2px;
     }
   }
 `

@@ -5,82 +5,66 @@ const StyledHomePage = styled.div`
   background-color: var(--bg-primary);
 
   .main-content {
-    max-width: min(1280px, var(--mainMaxWidth, 1280px));
     width: 100%;
-    margin: 0 auto;
+    max-width: none;
+    margin: 0;
     box-sizing: border-box;
     display: flex;
-    justify-content: center;
+    justify-content: stretch;
     padding: var(--pad-page-y-lg) var(--page-gutter) var(--pad-page-y-bottom);
 
-    @media (max-width: 500px) {
-      padding: clamp(1.75rem, 8vh, 4rem) var(--page-gutter) var(--pad-page-y-bottom);
+    @media (max-width: 600px) {
+      padding: clamp(1.25rem, 6vh, 3rem) var(--page-gutter) var(--pad-page-y-bottom);
     }
   }
 
   .home-shell {
     width: 100%;
-    max-width: 1120px;
-    margin-inline: auto;
+    max-width: none;
+    margin: 0;
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: clamp(1.5rem, 3.2vw, 2.15rem);
+    gap: clamp(1.35rem, 3vw, 2rem);
   }
 
-  .home-shell--with-friends {
-    max-width: 1240px;
-  }
-
-  .home-auth-row {
+  .home-topbar {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     width: 100%;
-    flex-wrap: wrap;
   }
 
-  .home-auth-profile {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 14px;
-    font-weight: 500;
+  .home-wordmark {
+    font-size: var(--font-section);
+    font-weight: 800;
+    letter-spacing: var(--tracking-display);
     color: var(--text-primary);
     text-decoration: none;
 
     &:hover {
-      text-decoration: underline;
-      text-underline-offset: 3px;
+      color: var(--palette-accent);
     }
   }
 
-  .home-hero {
+  .home-topbar-end {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: var(--stack-gap-sm);
-    max-width: 36rem;
-    margin-inline: auto;
-    text-align: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 
-  .site-title {
-    margin: 0;
-    font-size: clamp(1.9rem, 5vw, 2.5rem);
-    font-weight: 800;
-    letter-spacing: -0.04em;
-    line-height: 1.12;
-    color: var(--text-primary);
-  }
-
-  .site-tagline {
-    margin: 0;
-    font-size: clamp(0.95rem, 2.4vw, 1.05rem);
-    font-weight: 400;
-    line-height: 1.45;
+  .home-online-jump {
+    font-size: var(--font-meta);
+    font-weight: 600;
     color: var(--text-muted);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--text-primary);
+    }
   }
 
   .home-body {
@@ -110,12 +94,12 @@ const StyledHomePage = styled.div`
   .home-friends-rail {
     min-width: 0;
     position: sticky;
-    top: 18px;
+    top: var(--space-4);
     align-self: start;
-    max-height: calc(100vh - 36px);
+    max-height: calc(100vh - var(--space-8));
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: var(--space-3);
     overflow-y: auto;
     overscroll-behavior: contain;
     scrollbar-width: thin;
@@ -137,40 +121,38 @@ const StyledHomePage = styled.div`
     gap: var(--stack-gap-sm);
   }
 
-  .home-section-hint {
-    margin: -4px 0 8px;
-    font-size: 12px;
-    line-height: 1.45;
-    color: var(--text-muted);
-    max-width: 52rem;
+  .mode-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+    gap: 14px;
+  }
 
-    code {
-      font-size: 0.85em;
-      color: var(--text-primary);
-    }
+  .home-featured-map {
+    margin-bottom: var(--space-2);
+  }
+
+  .home-empty-quiet {
+    margin: 0;
+    font-size: var(--font-meta);
+    color: var(--text-muted);
   }
 
   .home-equitable-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 10px;
+    gap: 14px;
     width: 100%;
     align-items: stretch;
   }
 
   .home-equitable-status {
     margin: 0;
-    font-size: 12.5px;
+    font-size: var(--font-compact);
     line-height: 1.45;
     color: var(--text-muted);
 
-    code {
-      font-size: 0.85em;
-      color: var(--text-primary);
-    }
-
     &--error {
-      color: #fca5a5;
+      color: var(--danger);
     }
   }
 
@@ -199,8 +181,8 @@ const StyledHomePage = styled.div`
   .card-grid {
     width: 100%;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+    gap: 14px;
     align-items: stretch;
     justify-items: stretch;
   }
@@ -209,58 +191,25 @@ const StyledHomePage = styled.div`
     width: 100%;
     display: flex;
     justify-content: center;
-    margin-top: 14px;
+    margin-top: var(--space-3);
   }
 
   .home-geo-cta {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 12px 28px;
-    border-radius: 12px;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    height: var(--control-height-md);
+    padding: 0 var(--space-6);
+    border-radius: var(--radius-md);
+    font-size: var(--font-body);
+    font-weight: 600;
+    letter-spacing: -0.01em;
     text-decoration: none;
-    color: #fff;
-    background: var(--palette-accent);
-    box-shadow:
-      0 0 0 1px rgba(255, 255, 255, 0.12) inset,
-      0 12px 32px rgba(47, 127, 255, 0.28);
-    transition:
-      transform 0.12s ease,
-      box-shadow 0.12s ease,
-      filter 0.12s ease;
+    color: var(--white);
+    background: var(--accent-primary);
 
     &:hover {
-      filter: brightness(1.06);
       background: var(--accent-primary-hover);
-      transform: translateY(-1px);
-      box-shadow:
-        0 0 0 1px rgba(255, 255, 255, 0.16) inset,
-        0 16px 40px rgba(47, 127, 255, 0.35);
-    }
-
-    &:active {
-      transform: translateY(0);
-    }
-  }
-
-  .home-empty {
-    width: 100%;
-    max-width: 720px;
-    margin-top: 1.25rem;
-    padding: 18px 18px;
-    border-radius: 14px;
-    border: 1px solid var(--border-subtle);
-    background: var(--bg-elevated);
-    color: var(--text-muted);
-    line-height: 1.55;
-    font-size: 0.95rem;
-
-    code {
-      font-size: 0.85em;
-      color: var(--text-primary);
     }
   }
 

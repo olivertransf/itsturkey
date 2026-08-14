@@ -10,7 +10,19 @@ type Props = {
 
 const Checkbox: FC<Props> = ({ isChecked, setChecked, label }) => {
   return (
-    <StyledCheckbox onClick={() => setChecked(!isChecked)}>
+    <StyledCheckbox
+      role="checkbox"
+      aria-checked={isChecked}
+      tabIndex={0}
+      $checked={isChecked}
+      onClick={() => setChecked(!isChecked)}
+      onKeyDown={(e) => {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault()
+          setChecked(!isChecked)
+        }
+      }}
+    >
       <div className="checkbox">
         {isChecked && (
           <div className="checkIcon">

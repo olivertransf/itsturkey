@@ -22,7 +22,7 @@ const StyledGuessMap = styled.div<StyledProps>`
     position: absolute;
     bottom: max(20px, env(safe-area-inset-bottom, 0px));
     right: max(20px, env(safe-area-inset-right, 0px));
-    z-index: 3;
+    z-index: calc(var(--z-hud) + 1);
     width: min(
       calc(${({ mapWidth }) => mapWidth}vmin * 1.18),
       calc(100vw - 32px)
@@ -45,7 +45,7 @@ const StyledGuessMap = styled.div<StyledProps>`
       max-width: 100%;
       bottom: -100%;
       right: 0;
-      background-color: var(--background1);
+      background-color: var(--bg-primary);
       gap: 0;
 
       ${({ mobileMapOpen }) =>
@@ -64,10 +64,10 @@ const StyledGuessMap = styled.div<StyledProps>`
       if (mobileMapOpen || !mapDimmed) return 1
       return duelLayout ? 0.88 : 0.63
     }};
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     transition: opacity 0.15s ease, width 0.15s ease, aspect-ratio 0.15s ease;
     position: relative;
-    margin-bottom: 10px;
+    margin-bottom: var(--space-3);
     overflow: hidden;
     touch-action: none;
 
@@ -96,11 +96,13 @@ const StyledGuessMap = styled.div<StyledProps>`
   .controls {
     display: flex;
     align-items: center;
-    gap: 8px;
-    background-color: rgba(0, 0, 0, 0.55);
+    gap: var(--space-2);
+    background-color: var(--hud-surface);
     width: fit-content;
-    padding: 8px;
-    border-radius: 4px 4px 0 0;
+    padding: var(--space-2);
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    border: 1px solid var(--border-strong);
+    border-bottom: 0;
 
     @media ${PHONE_GUESS_MAP_MQ} {
       display: none;
@@ -108,9 +110,9 @@ const StyledGuessMap = styled.div<StyledProps>`
   }
 
   .controlBtn {
-    height: 28px;
-    width: 28px;
-    background-color: #fff;
+    height: var(--icon-lg);
+    width: var(--icon-lg);
+    background-color: var(--text-primary);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -132,7 +134,7 @@ const StyledGuessMap = styled.div<StyledProps>`
 
     svg {
       height: 14px;
-      color: var(--background1);
+      color: var(--bg-primary);
 
       path {
         stroke-width: 3;
@@ -143,7 +145,7 @@ const StyledGuessMap = styled.div<StyledProps>`
       font-size: 14px;
       font-weight: 800;
       line-height: 1;
-      color: var(--background1);
+      color: var(--bg-primary);
 
       svg {
         display: none;
@@ -154,7 +156,7 @@ const StyledGuessMap = styled.div<StyledProps>`
       font-size: 16px;
       font-weight: 800;
       line-height: 1;
-      color: var(--background1);
+      color: var(--bg-primary);
 
       svg {
         display: none;
@@ -172,19 +174,19 @@ const StyledGuessMap = styled.div<StyledProps>`
       position: absolute;
       top: max(10px, env(safe-area-inset-top, 0px));
       right: max(10px, env(safe-area-inset-right, 0px));
-      background-color: var(--background2);
-      height: 44px;
-      width: 44px;
+      background-color: var(--hud-surface);
+      height: var(--control-height-md);
+      width: var(--control-height-md);
       border-radius: 50%;
-      border: 1px solid var(--background1);
-      z-index: 2;
+      border: 1px solid var(--border-strong);
+      z-index: calc(var(--z-hud) + 1);
 
       ${({ mobileMapOpen }) => !mobileMapOpen && 'display: none'};
     }
 
     svg {
       height: 22px;
-      color: var(--color2);
+      color: var(--text-primary);
     }
   }
 

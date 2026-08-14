@@ -1,14 +1,14 @@
 import styled from 'styled-components'
 
 const StyledSlider = styled.div`
-  --slider-track: rgba(255, 255, 255, 0.14);
-  --slider-fill: var(--accent-primary, #2f7fff);
-  --slider-thumb: #f4f4f5;
-  --slider-thumb-ring: var(--accent-primary, #2f7fff);
+  --slider-track: var(--control-fill-hover);
+  --slider-fill: var(--accent-primary);
+  --slider-thumb: var(--text-primary);
+  --slider-thumb-ring: var(--accent-primary);
 
   width: 100%;
   max-width: 100%;
-  padding: 4px 0;
+  padding: var(--space-1) 0;
   box-sizing: border-box;
 
   input[type='range'] {
@@ -31,20 +31,16 @@ const StyledSlider = styled.div`
   }
 
   input[type='range']:focus-visible::-webkit-slider-thumb {
-    box-shadow:
-      0 1px 3px rgba(0, 0, 0, 0.4),
-      0 0 0 3px rgba(47, 127, 255, 0.28);
+    box-shadow: var(--shadow-sm), 0 0 0 3px var(--accent-muted);
   }
 
   input[type='range']:focus-visible::-moz-range-thumb {
-    box-shadow:
-      0 1px 3px rgba(0, 0, 0, 0.4),
-      0 0 0 3px rgba(47, 127, 255, 0.28);
+    box-shadow: var(--shadow-sm), 0 0 0 3px var(--accent-muted);
   }
 
   input[type='range']::-webkit-slider-runnable-track {
     height: 6px;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     background: linear-gradient(
       to right,
       var(--slider-fill) 0%,
@@ -57,14 +53,14 @@ const StyledSlider = styled.div`
   input[type='range']::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 16px;
-    height: 16px;
+    width: var(--icon-sm);
+    height: var(--icon-sm);
     margin-top: -5px;
     border-radius: 50%;
     background: var(--slider-thumb);
     border: 2px solid var(--slider-thumb-ring);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--duration-fast) var(--ease), box-shadow var(--duration-fast) var(--ease);
   }
 
   input[type='range']:not(:disabled):hover::-webkit-slider-thumb {
@@ -73,25 +69,25 @@ const StyledSlider = styled.div`
 
   input[type='range']::-moz-range-track {
     height: 6px;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     background: var(--slider-track);
   }
 
   input[type='range']::-moz-range-progress {
     height: 6px;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     background: var(--slider-fill);
   }
 
   input[type='range']::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
+    width: var(--icon-sm);
+    height: var(--icon-sm);
     border-radius: 50%;
     background: var(--slider-thumb);
     border: 2px solid var(--slider-thumb-ring);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    box-shadow: var(--shadow-sm);
     box-sizing: border-box;
-    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    transition: transform var(--duration-fast) var(--ease), box-shadow var(--duration-fast) var(--ease);
   }
 
   input[type='range']:not(:disabled):hover::-moz-range-thumb {

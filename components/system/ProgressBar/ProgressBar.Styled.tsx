@@ -6,19 +6,18 @@ type StyledProps = {
 }
 
 const StyledProgressBar = styled.div<StyledProps>`
-  height: 10px;
+  height: 8px;
   width: 100%;
-  border-radius: 50rem;
-  background: #202020;
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-pill);
+  background: var(--control-fill);
+  border: 1px solid var(--border-subtle);
 
   .progress {
     width: ${({ progress }) => progress}%;
     height: 100%;
-    border-radius: 50rem;
+    border-radius: var(--radius-pill);
     background-color: ${({ backgroundColor }) => backgroundColor};
-    transition: all 0.5s;
+    transition: width var(--duration) var(--ease);
   }
 `
 

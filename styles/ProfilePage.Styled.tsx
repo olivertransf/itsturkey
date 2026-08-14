@@ -18,7 +18,7 @@ const StyledProfilePage = styled.div<StyledProps>`
     position: relative;
     z-index: 2;
     margin-top: 0;
-    padding: 24px 20px 20px;
+    padding: 0 0 32px;
 
     .profile-heading {
       padding-bottom: 20px;
@@ -30,12 +30,12 @@ const StyledProfilePage = styled.div<StyledProps>`
         justify-content: space-between;
 
         .profile-avatar {
-          background-color: #0e0e0e;
-          width: 125px;
-          height: 125px;
+          background-color: var(--palette-surface, #1c1e22);
+          width: 72px;
+          height: 72px;
           border-radius: 50%;
           position: relative;
-          box-shadow: 0 0 0 5px #0e0e0e;
+          box-shadow: 0 0 0 2px var(--border-subtle, rgba(255, 255, 255, 0.08));
           display: flex;
           align-items: center;
           justify-content: center;
@@ -160,18 +160,59 @@ const StyledProfilePage = styled.div<StyledProps>`
     }
 
     .user-stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 12px;
-      margin-top: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-top: 12px;
 
-      .user-stat-card {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 20px;
+      .stat-group {
         border-radius: 16px;
-        background-color: #363636;
+        border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+        background: rgba(255, 255, 255, 0.03);
+        padding: 14px 14px 12px;
+      }
+
+      .stat-group-title {
+        margin: 0 0 10px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+
+      .stat-group-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 8px;
+      }
+
+      .stat-item {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+        padding: 10px 11px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+      }
+
+      .stat-value {
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        color: var(--text-primary);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .stat-label {
+        font-size: 12px;
+        line-height: 1.3;
+        color: var(--text-muted);
       }
     }
 
@@ -203,7 +244,7 @@ const StyledProfilePage = styled.div<StyledProps>`
         padding: 14px 16px;
         border-radius: 12px;
         background-color: #2a2a2a;
-        border: 1px solid #333;
+        border: 1px solid var(--border-strong);
 
         a {
           color: var(--color2);
@@ -275,7 +316,7 @@ const StyledProfilePage = styled.div<StyledProps>`
         padding: 14px 16px;
         border-radius: 12px;
         background-color: #2a2a2a;
-        border: 1px solid #333;
+        border: 1px solid var(--border-strong);
       }
 
       .friend-info {
@@ -323,8 +364,8 @@ const StyledProfilePage = styled.div<StyledProps>`
 
         .avatar-wrapper {
           .profile-avatar {
-            height: 75px;
-            width: 75px;
+            height: 64px;
+            width: 64px;
 
             .profile-avatar-editing-icon {
               top: -6px;

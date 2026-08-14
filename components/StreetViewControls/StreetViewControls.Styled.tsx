@@ -4,7 +4,7 @@ import { PHONE_GUESS_MAP_MQ } from '@utils/constants/breakpoints'
 const StyledStreetViewControls = styled.div<{ $hudPrimaryStyle?: boolean }>`
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: var(--z-hud);
   pointer-events: none;
 
   .primary-controls {
@@ -12,7 +12,7 @@ const StyledStreetViewControls = styled.div<{ $hudPrimaryStyle?: boolean }>`
     left: max(10px, env(safe-area-inset-left));
     bottom: max(100px, calc(88px + env(safe-area-inset-bottom)));
     display: grid;
-    gap: 8px;
+    gap: var(--space-2);
     pointer-events: auto;
 
     @media ${PHONE_GUESS_MAP_MQ} {
@@ -22,15 +22,15 @@ const StyledStreetViewControls = styled.div<{ $hudPrimaryStyle?: boolean }>`
     ${({ $hudPrimaryStyle }) =>
       $hudPrimaryStyle
         ? css`
-            padding: 8px;
-            border-radius: 14px;
-            background: rgba(12, 14, 18, 0.76);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: var(--space-2);
+            border-radius: var(--radius-lg);
+            background: var(--hud-surface);
+            border: 1px solid var(--border-strong);
             backdrop-filter: blur(10px) saturate(135%);
-            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.38);
+            box-shadow: var(--shadow-sm);
           `
         : css`
-            gap: 15px;
+            gap: var(--space-3);
           `}
   }
 
@@ -51,43 +51,28 @@ const StyledStreetViewControls = styled.div<{ $hudPrimaryStyle?: boolean }>`
     align-items: center;
     justify-content: center;
     user-select: none;
+    height: var(--control-height-md);
+    width: var(--control-height-md);
+    border-radius: var(--radius-md);
+    background: var(--hud-surface);
+    border: 1px solid var(--border-strong);
+    backdrop-filter: blur(10px);
+    transition: background-color var(--duration-fast) var(--ease);
 
-    ${({ $hudPrimaryStyle }) =>
-      $hudPrimaryStyle
-        ? css`
-            height: 44px;
-            width: 44px;
-            border-radius: var(--radius-md, 10px);
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+    :hover {
+      background: var(--hud-surface-hover);
+    }
 
-            :hover {
-              background: rgba(255, 255, 255, 0.1);
-            }
+    &:focus-visible {
+      outline: var(--focus-ring);
+      outline-offset: 2px;
+    }
 
-            svg {
-              height: 22px;
-              width: 22px;
-              color: rgba(244, 244, 245, 0.92);
-            }
-          `
-        : css`
-            height: 48px;
-            width: 48px;
-            border-radius: 50%;
-            background-color: rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-
-            :hover {
-              background-color: rgba(0, 0, 0, 0.75);
-            }
-
-            svg {
-              height: 22px;
-              width: 22px;
-              color: #fff;
-            }
-          `}
+    svg {
+      height: var(--icon-lg);
+      width: var(--icon-lg);
+      color: var(--text-primary);
+    }
   }
 `
 

@@ -2,11 +2,11 @@ import styled from 'styled-components'
 
 const StyledSelect = styled.div`
   label {
-    font-weight: 400;
-    margin-bottom: 8px;
+    font-weight: 600;
+    margin-bottom: var(--space-2);
     display: block;
-    color: #919191;
-    font-size: 14px;
+    color: var(--text-muted);
+    font-size: var(--font-meta);
   }
 
   .select-wrapper {
@@ -15,26 +15,33 @@ const StyledSelect = styled.div`
     align-items: center;
 
     select {
-      border: 1px solid #202020;
       width: 100%;
-      height: 38px;
-      border-radius: 5px;
-      padding: 0 14px;
-      color: var(--color3);
-      background-color: var(--background3);
+      height: var(--control-height-md);
+      border-radius: var(--radius-md);
+      padding: 0 var(--space-7) 0 var(--space-4);
+      color: var(--text-primary);
+      background-color: var(--bg-elevated);
       appearance: none;
       cursor: pointer;
-      /* padding-right: 36px; */
-      transition: background-color 240ms, box-shadow 240ms;
-      border: 1px solid #282828;
-      font-size: 15px;
+      font-size: var(--font-body);
+      font-weight: 500;
+      transition: background-color var(--duration) var(--ease), border-color var(--duration) var(--ease),
+        box-shadow var(--duration) var(--ease);
+      border: 1px solid var(--border-strong);
+
+      &:focus-visible {
+        outline: none;
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 2px var(--accent-muted);
+      }
     }
 
     .selectSuffix {
       display: inline-flex;
       position: absolute;
-      right: 12px;
+      right: var(--space-3);
       pointer-events: none;
+      color: var(--text-muted);
     }
   }
 `

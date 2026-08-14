@@ -30,7 +30,7 @@ const Root = styled.div<{ $corner: 'top-left' | 'top-right'; $belowHud?: boolean
     $corner === 'top-left'
       ? 'left: max(10px, env(safe-area-inset-left, 0px));'
       : 'right: max(10px, env(safe-area-inset-right, 0px));'}
-  z-index: 36;
+  z-index: calc(var(--z-hud) + 2);
   display: flex;
   flex-direction: column;
   align-items: ${({ $corner }) => ($corner === 'top-left' ? 'flex-start' : 'flex-end')};
@@ -45,7 +45,7 @@ const Chip = styled.div`
   gap: 6px;
   padding: 6px 10px;
   border-radius: 999px;
-  background: rgba(12, 14, 18, 0.78);
+  background: var(--hud-surface);
   border: 1px solid rgba(251, 191, 36, 0.35);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
   color: #fde68a;

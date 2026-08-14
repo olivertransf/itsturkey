@@ -133,7 +133,7 @@ const StyledChallengeStart = styled.div<StyledProps>`
     font-weight: 500;
 
     :hover {
-      background-color: var(--indigo-600);
+      background-color: var(--accent-primary-hover);
       transform: scale(1.02);
     }
   }

@@ -5,8 +5,8 @@ import { plonkitReadableGuideCss } from './plonkitGuideReadable.styles'
 export const StyledPlonkitBackdrop = styled.div<{ $elevated?: boolean }>`
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  z-index: ${({ $elevated }) => ($elevated ? 119 : 59)};
+  background: var(--overlay-scrim);
+  z-index: ${({ $elevated }) => ($elevated ? 'calc(var(--z-blocker) - 1)' : 'calc(var(--z-popover) - 1)')};
   backdrop-filter: blur(2px);
 `
 
@@ -29,7 +29,7 @@ export const StyledPlonkitPanel = styled.aside<{ $presentation?: 'drawer' | 'ful
           bottom: 0;
           width: 100%;
           max-width: none;
-          z-index: 120;
+          z-index: var(--z-blocker);
           border-radius: 0;
           box-shadow: none;
         `
@@ -40,10 +40,10 @@ export const StyledPlonkitPanel = styled.aside<{ $presentation?: 'drawer' | 'ful
           left: auto;
           width: min(460px, 100vw);
           max-width: 100%;
-          z-index: 61;
+          z-index: var(--z-popover);
         `}
   background-color: var(--bg-elevated);
-  color: #ebebf5;
+  color: var(--text-primary);
   box-shadow: -12px 0 40px rgba(0, 0, 0, 0.45);
   display: flex;
   flex-direction: column;

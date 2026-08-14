@@ -14,28 +14,30 @@ const StyledSearchbar = styled.div<StyledProps>`
     display: flex;
     align-items: center;
     width: 100%;
-    height: ${({ isSmall }) => (isSmall ? 30 : 38)}px;
-    border-radius: 6px;
-    background-color: ${({ theme }) => theme.color.gray[800]};
-    color: rgba(206, 206, 206, 0.6);
-    transition: background-color 100ms, box-shadow 100ms;
-    box-shadow: ${({ isFocused, theme }) => isFocused && `0 0 0 2px ${theme.color.brand}`};
-    border: 1px solid ${({ theme }) => theme.color.gray[700]};
+    height: ${({ isSmall }) => (isSmall ? 'var(--control-height-sm)' : 'var(--control-height-md)')};
+    border-radius: var(--radius-md);
+    background-color: var(--bg-elevated);
+    color: var(--text-muted);
+    transition: background-color var(--duration-fast) var(--ease), box-shadow var(--duration-fast) var(--ease),
+      border-color var(--duration-fast) var(--ease);
+    box-shadow: ${({ isFocused }) => (isFocused ? '0 0 0 2px var(--accent-muted)' : 'none')};
+    border: 1px solid ${({ isFocused }) => (isFocused ? 'var(--accent-primary)' : 'var(--border-strong)')};
   }
 
   input {
-    color: #d1d1d1;
+    color: var(--text-primary);
     width: 100%;
     pointer-events: all;
     height: 100%;
     background: transparent;
-    font-weight: 400;
-    margin-left: 10px;
-    border-radius: 6px;
+    font-weight: 500;
+    font-size: var(--font-body);
+    margin-left: var(--space-3);
+    border-radius: var(--radius-md);
 
     ::placeholder {
-      color: ${({ theme }) => theme.color.gray[600]};
-      font-weight: 400;
+      color: var(--text-subtle);
+      font-weight: 500;
     }
   }
 
@@ -44,16 +46,16 @@ const StyledSearchbar = styled.div<StyledProps>`
     align-items: center;
     justify-content: center;
     height: 100%;
-    padding: 0 1rem;
-    transition: 0.2s;
-    background-color: ${({ theme }) => theme.color.gray[800]};
-    border-left: 1px solid ${({ theme }) => theme.color.gray[700]};
-    border-radius: 0 6px 6px 0;
+    padding: 0 var(--space-4);
+    transition: background-color var(--duration-fast) var(--ease);
+    background-color: transparent;
+    border-left: 1px solid var(--border-subtle);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    color: var(--text-muted);
 
     svg {
-      height: 20px;
-      width: 20px;
-      color: rgba(206, 206, 206, 0.6);
+      height: var(--icon-md);
+      width: var(--icon-md);
 
       path {
         stroke-width: 1.5;
@@ -61,7 +63,8 @@ const StyledSearchbar = styled.div<StyledProps>`
     }
 
     &:hover {
-      background-color: ${({ theme }) => theme.color.gray[700]};
+      background-color: var(--control-fill);
+      color: var(--text-primary);
     }
   }
 `

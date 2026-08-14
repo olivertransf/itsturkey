@@ -60,9 +60,51 @@
 
   --font-family1: 'Graphik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
     'Open Sans', 'Helvetica Neue', sans-serif;
-  --font-family2: 'Open Sans', 'Roboto', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Oxygen', 'Ubuntu',
-    'Cantarell', 'Helvetica Neue', 'sans-serif';
   --font-mono: 'SF Mono', SFMono-Regular, ui-monospace, 'DejaVu Sans Mono', Menlo, Consolas, monospace;
+
+  --font-display: clamp(1.5rem, 2vw, 1.75rem);
+  --font-title: clamp(1.25rem, 2.8vw, 1.5rem);
+  --font-section: 0.9375rem;
+  --font-body: 0.9375rem;
+  --font-label: 0.72rem;
+  --font-meta: 0.8125rem;
+  --font-compact: 0.75rem;
+  --tracking-display: -0.04em;
+  --tracking-title: -0.025em;
+  --tracking-label: 0.14em;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 40px;
+  --space-8: 48px;
+
+  --control-height-sm: 32px;
+  --control-height-md: 40px;
+  --control-height-lg: 48px;
+  --icon-sm: 16px;
+  --icon-md: 20px;
+  --icon-lg: 24px;
+
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --duration-fast: 120ms;
+  --duration: 180ms;
+
+  --z-hud: 10;
+  --z-sticky: 20;
+  --z-dropdown: 40;
+  --z-modal: 50;
+  --z-popover: 60;
+  --z-toast: 70;
+  --z-tooltip: 80;
+  --z-blocker: 90;
+
+  --bp-phone: 600px;
+  --bp-tablet: 960px;
+  --bp-desktop: 1200px;
 
   --gray-050: #f9fafb;
   --gray-100: #f3f4f6;
@@ -152,36 +194,6 @@
   --pink-800: #9d174d;
   --pink-900: #831843;
 
-  --border: 1px solid #2f3133;
-  --borderLight: 1px solid #454546;
-  --modalPadding: 2.5rem 1.5rem;
-  --sidebarWidth: 220px;
-  --navbarHeight: 50px;
-  --mobileNavHeight: 50px;
-  --mainMaxWidth: 1362px;
-
-  --mainPadding: 4rem;
-  --iconColor: #8d8f92;
-  --activeColor: #a5adff;
-  --color1: #fff;
-  --color2: #dadbdd;
-  --color3: #bababa;
-  --color4: #8d949a;
-  --color5: #81858b;
-  --background1: #0e0e10;
-  --background2: #191a1b;
-  --background3: #212223;
-  --background4: #34373a;
-  --background5: #56585c;
-  --lightGreen: #10b981;
-  --lightYellow: #fcd34d;
-  --lightRed: #f87171;
-  --lightPurple: #a5adff;
-
-  /*
-   * App palette (5 swatches): saturated accent blue + layered dark cool greys.
-   * Maps to surfaces and --accent-* for buttons, links, and highlights.
-   */
   --palette-accent: #2f7fff;
   --palette-surface: #1a1e26;
   --palette-surface-deep: #14181f;
@@ -190,23 +202,65 @@
 
   --accent-primary: var(--palette-accent);
   --accent-primary-hover: #2566e6;
-  /* Legacy: shared token for primary actions */
+  --accent-muted: rgba(47, 127, 255, 0.16);
+
+  --bg-primary: var(--palette-bg-root);
+  --bg-elevated: var(--palette-surface-deep);
+  --bg-surface: var(--palette-bg-raised);
+  --bg-card: var(--palette-surface);
+  --text-primary: #fafafa;
+  --text-muted: #8b9099;
+  --text-subtle: #6b7078;
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-strong: rgba(255, 255, 255, 0.1);
+  --divider-line: rgba(255, 255, 255, 0.045);
+  --overlay-scrim: rgba(0, 0, 0, 0.72);
+  --hud-surface: rgba(8, 10, 15, 0.72);
+  --hud-surface-hover: rgba(8, 10, 15, 0.88);
+  --control-fill: rgba(255, 255, 255, 0.08);
+  --control-fill-hover: rgba(255, 255, 255, 0.12);
+
+  --success: var(--green-400);
+  --warning: var(--amber-300);
+  --danger: var(--red-400);
+  --danger-fill: var(--red-800);
+  --danger-fill-hover: var(--red-700);
+
   --mediumPurple: var(--accent-primary);
   --darkPurple: var(--accent-primary-hover);
   --bronze: #6a3805;
   --silver: #d7d7d7;
   --gold: #c9b037;
 
+  --border: 1px solid var(--border-subtle);
+  --borderLight: 1px solid var(--border-strong);
+  --modalPadding: var(--space-6) var(--space-4);
+  --sidebarWidth: 220px;
+  --navbarHeight: 52px;
+  --mobileNavHeight: 52px;
+  --mainMaxWidth: 1362px;
+
+  --mainPadding: var(--space-8);
+  --iconColor: var(--text-muted);
+  --activeColor: var(--accent-primary);
+  --color1: var(--text-primary);
+  --color2: #dadbdd;
+  --color3: var(--text-muted);
+  --color4: var(--text-subtle);
+  --color5: var(--text-subtle);
+  --background1: var(--bg-primary);
+  --background2: var(--bg-elevated);
+  --background3: var(--bg-card);
+  --background4: #34373a;
+  --background5: #56585c;
+  --lightGreen: var(--success);
+  --lightYellow: var(--warning);
+  --lightRed: var(--danger);
+  --lightPurple: var(--accent-primary);
+
   --focus-border: var(--accent-primary) !important;
   --separator-border: var(--palette-bg-root) !important;
-
-  --bg-primary: var(--palette-bg-root);
-  --bg-elevated: var(--palette-surface-deep);
-  --bg-surface: var(--palette-bg-raised);
-  --text-primary: #fafafa;
-  --text-muted: #8b9099;
-  --border-subtle: rgba(255, 255, 255, 0.05);
-  --divider-line: rgba(255, 255, 255, 0.045);
+  --focus-ring: 2px solid var(--accent-primary);
 
   --radius-sm: 8px;
   --radius-md: 10px;
@@ -218,24 +272,24 @@
   --space-page-x: clamp(1.25rem, 4vw, 2.75rem);
   --space-page-y: clamp(1.5rem, 4.5vw, 2.75rem);
   --space-page-y-mobile: 1rem;
-  --stack-gap-xs: 0.35rem;
-  --stack-gap-sm: 0.6rem;
-  --stack-gap-md: 1.25rem;
-  --stack-gap-lg: 2rem;
-  --grid-gap-cards: 1.25rem;
+  --stack-gap-xs: var(--space-1);
+  --stack-gap-sm: var(--space-2);
+  --stack-gap-md: var(--space-4);
+  --stack-gap-lg: var(--space-5);
+  --grid-gap-cards: var(--space-4);
 
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.28);
   --shadow-card: 0 16px 44px rgba(0, 0, 0, 0.38);
   --backdrop-nav: rgba(16, 16, 18, 0.85);
 
-  --label-upper-size: 0.72rem;
-  --label-upper-tracking: 0.14em;
+  --label-upper-size: var(--font-label);
+  --label-upper-tracking: var(--tracking-label);
 
-  /* Layout: consistent padding and borders (no gradient backgrounds). */
   --pad-page-y: clamp(1.5rem, 4.5vw, 2.75rem);
   --pad-page-y-lg: clamp(2rem, 10vh, 5.5rem);
   --pad-page-y-bottom: clamp(2.5rem, 8vh, 5rem);
-  --pad-card: 24px;
-  --pad-card-sm: 16px;
+  --pad-card: var(--space-5);
+  --pad-card-sm: var(--space-4);
   --pad-row-card: 14px 16px;
   --border-default: 1px solid var(--border-subtle);
 }
@@ -296,12 +350,20 @@ input,
 button,
 select,
 textarea {
-  outline: none;
   margin: 0;
   padding: 0;
-  font-size: 1rem;
+  font-size: var(--font-body);
   border: 0;
   font-family: var(--font-family1);
+}
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
 }
 
 /* Custom Scrollbar */

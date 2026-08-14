@@ -43,12 +43,10 @@ const SearchOverlayCard: FC<Props> = ({ results, query, isLoading, setIsFocused 
         )}
 
         {query && results.length > 0 && (
-          <Link href={`/search?q=${query}`}>
-            <a onClick={() => setIsFocused(false)}>
-              <div className="seeAllResults">
-                <span>See all results</span>
-              </div>
-            </a>
+          <Link href={`/search?q=${query}`} onClick={() => setIsFocused(false)}>
+            <div className="seeAllResults">
+              <span>See all results</span>
+            </div>
           </Link>
         )}
       </div>

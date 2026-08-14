@@ -2,42 +2,45 @@ import styled from 'styled-components'
 
 const StyledSearchOverlayCard = styled.div`
   .searchOverlayCard {
-    width: calc(100% + 4px);
-    background-color: var(--background2);
-    color: var(--color3);
-    border-radius: 6px;
+    width: 100%;
+    background-color: var(--bg-elevated);
+    color: var(--text-muted);
+    border-radius: var(--radius-md);
     position: absolute;
-    top: 41px;
-    left: -2px;
-    z-index: 9999999;
+    top: calc(100% + var(--space-2));
+    left: 0;
+    z-index: var(--z-dropdown);
     pointer-events: all;
-    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.5);
-    border: 1px solid #2f3133;
+    box-shadow: var(--shadow-card);
+    border: var(--border-default);
 
     .searchOverlayBody {
       display: grid;
       width: 100%;
 
       .search-result-skeleton {
-        padding: 14px;
+        padding: var(--space-3);
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: var(--space-3);
       }
     }
   }
 
   .seeAllResults {
-    height: 40px;
-    border-top: var(--border);
+    height: var(--control-height-md);
+    border-top: var(--border-default);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #8d8f92;
+    color: var(--text-muted);
     cursor: pointer;
+    font-size: var(--font-meta);
+    font-weight: 600;
 
     :hover {
-      background-color: #202020;
+      background-color: var(--control-fill);
+      color: var(--text-primary);
     }
   }
 `

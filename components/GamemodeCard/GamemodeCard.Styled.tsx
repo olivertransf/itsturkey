@@ -5,29 +5,27 @@ type StyledProps = {
 }
 
 const StyledGamemodeCard = styled.div<StyledProps>`
-  background-color: #181818;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
-  padding: 30px;
-  box-shadow: 0px 2px 4px rgb(0 0 0 / 55%);
+  background: var(--bg-card);
+  border: var(--border-default);
+  border-radius: var(--radius-xl);
+  padding: var(--pad-card);
+  box-shadow: var(--shadow-card);
 
   .gamemode-details {
-    margin-bottom: 28px;
+    margin-bottom: var(--space-5);
 
     h2 {
-      color: #ffffff;
-
-      font-weight: 500;
-      margin-bottom: 12px;
-
-      letter-spacing: -0.01rem;
-      font-size: 26px;
+      color: var(--text-primary);
+      font-weight: 600;
+      margin-bottom: var(--space-3);
+      letter-spacing: var(--tracking-title);
+      font-size: var(--font-display);
     }
 
     p {
-      color: ${({ theme }) => theme.color.gray[500]};
-      font-size: 1rem;
-      font-weight: 400;
+      color: var(--text-muted);
+      font-size: var(--font-body);
+      font-weight: 500;
     }
   }
 `

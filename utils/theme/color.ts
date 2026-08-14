@@ -1,8 +1,8 @@
 export const color = {
-  background: '#FFFFFF',
-  foreground: '#000000',
+  background: '#080a0f',
+  foreground: '#fafafa',
   SCPink: '#9D174D',
-  brand: '#4338ca',
+  brand: '#2f7fff',
 
   gray: {
     50: '#fafafa',

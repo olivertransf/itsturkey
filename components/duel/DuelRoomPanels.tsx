@@ -643,10 +643,23 @@ const DuelRoomCodeCard: FC<{ shortCode: string; hint: string }> = ({ shortCode, 
 const DuelLobbyFriendsInvite: FC<{
   friends?: { id: string; name: string }[]
   invitingFriendId?: string | null
+  lastInvite?: { friendId: string; name: string; expiresAt: string } | null
+  guestJoined?: boolean
   onInviteFriend?: (friend: { id: string; name: string }) => void | Promise<void>
-}> = ({ friends, invitingFriendId, onInviteFriend }) => {
+}> = ({ friends, invitingFriendId, lastInvite, guestJoined, onInviteFriend }) => {
   if (!onInviteFriend) return null
   const list = friends ?? []
+  const expired =
+    !!lastInvite && !guestJoined && new Date(lastInvite.expiresAt).getTime() <= Date.now()
+  const statusLine = guestJoined
+    ? 'Joined'
+    : invitingFriendId
+      ? 'Inviting…'
+      : expired && lastInvite
+        ? `Invite to ${lastInvite.name} expired`
+        : lastInvite
+          ? `Invite sent — waiting for ${lastInvite.name}`
+          : null
 
   return (
     <FriendsSection>
@@ -656,34 +669,50 @@ const DuelLobbyFriendsInvite: FC<{
           Invite a friend
         </FriendsSectionTitle>
       </FriendsSectionHead>
+      {statusLine ? <FriendsEmpty>{statusLine}</FriendsEmpty> : null}
       {list.length === 0 ? (
         <FriendsEmpty>
           No friends yet.{' '}
-          <Link href="/friends">
-            <a>Add friends</a>
-          </Link>{' '}
+          <Link href="/friends">Add friends</Link>{' '}
           to send one-tap duel invites.
         </FriendsEmpty>
       ) : (
         <FriendsChipRow>
-          {list.map((f) => (
-            <FriendChip key={f.id}>
-              <FriendName title={f.name}>{f.name}</FriendName>
-              <Button
-                variant="solidGray"
-                size="sm"
-                disabled={invitingFriendId === f.id}
-                isLoading={invitingFriendId === f.id}
-                spinnerSize={18}
-                onClick={() => void onInviteFriend(f)}
-              >
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                  <PaperAirplaneIcon style={{ width: 14, height: 14 }} />
-                  Invite
-                </span>
-              </Button>
-            </FriendChip>
-          ))}
+          {list.map((f) => {
+            const isLast = lastInvite?.friendId === f.id
+            const label =
+              invitingFriendId === f.id
+                ? 'Inviting…'
+                : guestJoined && isLast
+                  ? 'Joined'
+                  : expired && isLast
+                    ? 'Invite again'
+                    : isLast
+                      ? 'Invite sent'
+                      : 'Invite'
+            return (
+              <FriendChip key={f.id}>
+                <FriendName title={f.name}>{f.name}</FriendName>
+                <Button
+                  variant="solidGray"
+                  size="sm"
+                  disabled={
+                    invitingFriendId === f.id ||
+                    (guestJoined && isLast) ||
+                    (isLast && !expired && !guestJoined)
+                  }
+                  isLoading={invitingFriendId === f.id}
+                  spinnerSize={18}
+                  onClick={() => void onInviteFriend(f)}
+                >
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <PaperAirplaneIcon style={{ width: 14, height: 14 }} />
+                    {label}
+                  </span>
+                </Button>
+              </FriendChip>
+            )
+          })}
         </FriendsChipRow>
       )}
     </FriendsSection>
@@ -744,7 +773,7 @@ const FinishBtnPair = styled.div`
 const RematchModalRoot = styled.div`
   position: fixed;
   inset: 0;
-  z-index: 100;
+  z-index: calc(var(--z-modal) + 10);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1100,9 +1129,11 @@ export const DuelLobbyHostWaitingPanel: FC<{
   match: DuelLobbyMatchInfo
   friends?: { id: string; name: string }[]
   invitingFriendId?: string | null
+  lastInvite?: { friendId: string; name: string; expiresAt: string } | null
+  guestJoined?: boolean
   onInviteFriend?: (friend: { id: string; name: string }) => void | Promise<void>
   chat?: DuelLobbyChatProps
-}> = ({ shortCode, match, friends, invitingFriendId, onInviteFriend, chat }) => (
+}> = ({ shortCode, match, friends, invitingFriendId, lastInvite, guestJoined, onInviteFriend, chat }) => (
   <LobbyWideGrid>
     <LobbyMainColumn>
       <Shell $variant="lobby">
@@ -1129,6 +1160,8 @@ export const DuelLobbyHostWaitingPanel: FC<{
         <DuelLobbyFriendsInvite
           friends={friends}
           invitingFriendId={invitingFriendId}
+          lastInvite={lastInvite}
+          guestJoined={guestJoined}
           onInviteFriend={onInviteFriend}
         />
       </Shell>
@@ -1172,9 +1205,7 @@ export const DuelLobbyGuestJoinPanel: FC<{
                 autoComplete="nickname"
               />
               <TipLink>
-                <Link href={loginHref} passHref>
-                  <a>Sign in</a>
-                </Link>{' '}
+                <Link href={loginHref}>Sign in</Link>{' '}
                 to use your account name and friends list.
               </TipLink>
             </>
