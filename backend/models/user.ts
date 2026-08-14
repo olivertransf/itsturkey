@@ -10,8 +10,8 @@ type User = {
   /** Stable invite-style code for adding friends (unique). */
   friendCode?: string
   lastSeenAt?: Date
-  presenceActivity?: 'idle' | 'browsing' | 'in_game' | 'in_duel'
-  /** Optional live session pointer for friends Watch (cleared when not in a match). */
+  presenceActivity?: 'idle' | 'browsing' | 'in_game' | 'in_duel' | 'spectating'
+  /** Active match or spectate target pointer for friends Watch / watcher chips. */
   presenceSession?: { kind: 'duel' | 'game' | 'multi'; id: string }
   createdAt?: Date
   isAdmin?: boolean

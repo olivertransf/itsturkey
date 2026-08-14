@@ -55,14 +55,21 @@ export const listFriends = async (req: NextApiRequest, res: NextApiResponse) => 
     // Heartbeat only — abandoned waiting/in_progress duel rows must not stick "In a duel".
     if (!online) {
       presenceActivity = undefined
-    } else if (presenceActivity === 'in_game' || presenceActivity === 'in_duel') {
+    } else if (
+      presenceActivity === 'in_game' ||
+      presenceActivity === 'in_duel' ||
+      presenceActivity === 'spectating'
+    ) {
       // keep live heartbeat activity
     } else {
       presenceActivity = 'browsing'
     }
 
     const presenceSession =
-      online && (presenceActivity === 'in_game' || presenceActivity === 'in_duel')
+      online &&
+      (presenceActivity === 'in_game' ||
+        presenceActivity === 'in_duel' ||
+        presenceActivity === 'spectating')
         ? normalizePresenceSession((u as { presenceSession?: unknown }).presenceSession)
         : undefined
 

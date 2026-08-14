@@ -1,4 +1,5 @@
-export type FriendPresenceActivity = 'idle' | 'browsing' | 'in_game' | 'in_duel'
+export type FriendPresenceActivity = 'idle' | 'browsing' | 'in_game' | 'in_duel' | 'spectating'
+
 
 export type PresenceSessionKind = 'duel' | 'game' | 'multi'
 
@@ -36,6 +37,7 @@ export function friendPresenceLabel(friend: Pick<FriendRow, 'online' | 'presence
   if (!friend.online) return 'Inactive'
   if (friend.presenceActivity === 'in_duel') return 'In a duel'
   if (friend.presenceActivity === 'in_game') return 'In a game'
+  if (friend.presenceActivity === 'spectating') return 'Watching'
   return 'Online'
 }
 

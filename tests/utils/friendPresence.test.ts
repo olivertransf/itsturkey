@@ -21,6 +21,7 @@ describe('friendPresenceLabel', () => {
     expect(friendPresenceLabel(base({ online: true, presenceActivity: 'browsing' }))).toBe('Online')
     expect(friendPresenceLabel(base({ online: true, presenceActivity: 'in_game' }))).toBe('In a game')
     expect(friendPresenceLabel(base({ online: true, presenceActivity: 'in_duel' }))).toBe('In a duel')
+    expect(friendPresenceLabel(base({ online: true, presenceActivity: 'spectating' }))).toBe('Watching')
   })
 })
 

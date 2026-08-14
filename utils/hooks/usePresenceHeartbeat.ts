@@ -17,7 +17,11 @@ export function usePresenceHeartbeat(
     const payload: { activity: FriendPresenceActivity; presenceSession?: PresenceSession } = {
       activity,
     }
-    if (sessionKind && sessionId && (activity === 'in_game' || activity === 'in_duel')) {
+    if (
+      sessionKind &&
+      sessionId &&
+      (activity === 'in_game' || activity === 'in_duel' || activity === 'spectating')
+    ) {
       payload.presenceSession = { kind: sessionKind, id: sessionId }
     }
     void mailman('users/presence', 'POST', JSON.stringify(payload))

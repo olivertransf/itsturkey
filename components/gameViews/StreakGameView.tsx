@@ -3,6 +3,7 @@ import Game from '@backend/models/game'
 import { StreakContinueCard, StreakEndedCard } from '@components/resultCards'
 import { StreaksResultMap } from '@components/StreaksResultMap'
 import { StreetView } from '@components/StreetView'
+import type { WatcherChip } from '@components/WatchersIndicator'
 import { GameViewType } from '@types'
 import { mailman, normalizeStreetViewLiveView } from '@utils/helpers'
 import type { StreetViewLiveView } from '@utils/helpers/streetViewLiveView'
@@ -14,9 +15,17 @@ type Props = {
   view: GameViewType
   setView: (view: GameViewType) => void
   isSpectator?: boolean
+  watchers?: WatcherChip[]
 }
 
-const StreakGameView: FC<Props> = ({ gameData, setGameData, view, setView, isSpectator = false }) => {
+const StreakGameView: FC<Props> = ({
+  gameData,
+  setGameData,
+  view,
+  setView,
+  isSpectator = false,
+  watchers = [],
+}) => {
   const followLiveView = useMemo(
     () => (isSpectator ? normalizeStreetViewLiveView(gameData.liveView) : null),
     [isSpectator, gameData.liveView]
@@ -41,6 +50,7 @@ const StreakGameView: FC<Props> = ({ gameData, setGameData, view, setView, isSpe
           isSpectator={isSpectator}
           onLiveViewChange={isSpectator ? undefined : onLiveViewChange}
           followLiveView={followLiveView}
+          watchers={isSpectator ? [] : watchers}
         />
       </div>
 

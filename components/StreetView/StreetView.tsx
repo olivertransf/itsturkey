@@ -11,6 +11,8 @@ import { useAppSelector } from '@redux/hook'
 import { GameViewType, GoogleMapsConfigType, LocationType } from '@types'
 import { getStreetviewOptions } from '@utils/constants/googleMapOptions'
 import { KEY_CODES } from '@utils/constants/keyCodes'
+import { WatchersIndicator } from '@components/WatchersIndicator'
+import type { WatcherChip } from '@components/WatchersIndicator'
 import { getMapsKey, googleMapLoaderAsync, mailman, showToast } from '@utils/helpers'
 import type { StreetViewLiveView } from '@utils/helpers/streetViewLiveView'
 import { attachStreetViewPanZoomLock } from '@utils/helpers/lockStreetViewPanZoom'
@@ -62,6 +64,8 @@ type Props = {
   onLiveViewChange?: (view: StreetViewLiveView) => void
   /** Spectator: force-follow this camera pose. */
   followLiveView?: StreetViewLiveView | null
+  /** Friends currently watching this match (shown to the player). */
+  watchers?: WatcherChip[]
 }
 
 const Streetview: FC<Props> = ({
@@ -80,6 +84,7 @@ const Streetview: FC<Props> = ({
   isSpectator = false,
   onLiveViewChange,
   followLiveView = null,
+  watchers = [],
 }) => {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
@@ -728,6 +733,13 @@ const Streetview: FC<Props> = ({
               Spectating
               {typeof gameData.userDetails?.name === 'string' ? ` · ${gameData.userDetails.name}` : ''}
             </div>
+          ) : null}
+          {!isSpectator && view === 'Game' && watchers.length > 0 ? (
+            <WatchersIndicator
+              watchers={watchers}
+              corner="top-left"
+              belowHud={isDuel}
+            />
           ) : null}
           {view === 'Game' && !isDuel && (
             <div data-streetview-ui>

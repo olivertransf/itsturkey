@@ -5,6 +5,7 @@ import { NotFound } from '@components/errorViews'
 import { StandardGameView, StreakGameView } from '@components/gameViews'
 import { LoadingPage } from '@components/layout'
 import { Meta } from '@components/Meta'
+import type { WatcherChip } from '@components/WatchersIndicator'
 import { useAppDispatch } from '@redux/hook'
 import { updateRecentlyPlayed } from '@redux/slices'
 import StyledGamePage from '@styles/GamePage.Styled'
@@ -14,11 +15,13 @@ import { usePresenceHeartbeat } from '@utils/hooks/usePresenceHeartbeat'
 import { useVisibleInterval } from '@utils/useVisibleInterval'
 
 const SPECTATE_POLL_MS = 600
+const WATCHERS_POLL_MS = 4000
 
 const GamePage: PageType = () => {
   const [view, setView] = useState<GameViewType>('Game')
   const [gameData, setGameData] = useState<Game | null>()
   const [isSpectator, setIsSpectator] = useState(false)
+  const [watchers, setWatchers] = useState<WatcherChip[]>([])
   const [fatal, setFatal] = useState<string | null>(null)
   const [prevGameId, setPrevGameId] = useState('')
   const prevGuessCountRef = useRef(0)
@@ -32,6 +35,29 @@ const GamePage: PageType = () => {
     Boolean(!isSpectator && gameData && gameData.state !== 'finished' && view === 'Game'),
     gameId ? { kind: 'game', id: gameId } : null
   )
+
+  usePresenceHeartbeat(
+    'spectating',
+    Boolean(isSpectator && gameData && gameData.state === 'started'),
+    gameId ? { kind: 'game', id: gameId } : null
+  )
+
+  const fetchWatchers = useCallback(async () => {
+    if (!gameId || gameId.length !== 24 || isSpectator) return
+    const res = await mailman(`games/${gameId}/watchers`)
+    if (res?.error || !Array.isArray(res?.watchers)) return
+    setWatchers(
+      res.watchers
+        .filter(
+          (w: unknown): w is WatcherChip =>
+            !!w &&
+            typeof w === 'object' &&
+            typeof (w as WatcherChip).id === 'string' &&
+            typeof (w as WatcherChip).name === 'string'
+        )
+        .map((w: WatcherChip) => ({ id: w.id, name: w.name }))
+    )
+  }, [gameId, isSpectator])
 
   const fetchGame = useCallback(async () => {
     if (!gameId || gameId.length !== 24) return
@@ -102,6 +128,7 @@ const GamePage: PageType = () => {
       setView('Game')
       prevGuessCountRef.current = 0
       setIsSpectator(false)
+      setWatchers([])
       setFatal(null)
     }
   }, [gameId, prevGameId])
@@ -110,6 +137,12 @@ const GamePage: PageType = () => {
     () => void fetchGame(),
     SPECTATE_POLL_MS,
     Boolean(isSpectator && gameData && gameData.state === 'started')
+  )
+
+  useVisibleInterval(
+    () => void fetchWatchers(),
+    WATCHERS_POLL_MS,
+    Boolean(!isSpectator && gameData && gameData.state === 'started' && view === 'Game')
   )
 
   if (gameData === null) {
@@ -144,6 +177,7 @@ const GamePage: PageType = () => {
           view={view}
           setView={setView}
           isSpectator={isSpectator}
+          watchers={watchers}
         />
       )}
 
@@ -154,6 +188,7 @@ const GamePage: PageType = () => {
           view={view}
           setView={setView}
           isSpectator={isSpectator}
+          watchers={watchers}
         />
       )}
     </StyledGamePage>

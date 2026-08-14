@@ -4,6 +4,7 @@ import { StandardFinalResults, StandardResults } from '@components/resultCards'
 import { ResultMap } from '@components/ResultMap'
 import { LeaderboardCard } from '@components/Results'
 import { StreetView } from '@components/StreetView'
+import type { WatcherChip } from '@components/WatchersIndicator'
 import { ChevronLeftIcon } from '@heroicons/react/outline'
 import { GameViewType, MapType } from '@types'
 import { DEFAULT_TOTAL_ROUNDS } from '@utils/constants/gameModes'
@@ -18,11 +19,19 @@ type Props = {
   view: GameViewType
   setView: (view: GameViewType) => void
   isSpectator?: boolean
+  watchers?: WatcherChip[]
 }
 
 const RESULT_VIEWS = ['Result', 'FinalResults', 'Leaderboard']
 
-const StandardGameView: FC<Props> = ({ gameData, setGameData, view, setView, isSpectator = false }) => {
+const StandardGameView: FC<Props> = ({
+  gameData,
+  setGameData,
+  view,
+  setView,
+  isSpectator = false,
+  watchers = [],
+}) => {
   const totalRounds = gameData.totalRounds ?? gameData.rounds?.length ?? DEFAULT_TOTAL_ROUNDS
 
   const plonkLastRoundIso = useMemo(() => {
@@ -69,6 +78,7 @@ const StandardGameView: FC<Props> = ({ gameData, setGameData, view, setView, isS
           isSpectator={isSpectator}
           onLiveViewChange={isSpectator ? undefined : onLiveViewChange}
           followLiveView={followLiveView}
+          watchers={isSpectator ? [] : watchers}
         />
       </div>
 

@@ -3,7 +3,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { collections, getUserId, throwError } from '@backend/utils'
 import { normalizePresenceSession } from '@utils/friends/friendPresence'
 
-const ALLOWED_ACTIVITIES = new Set(['idle', 'browsing', 'in_game', 'in_duel'])
+const ALLOWED_ACTIVITIES = new Set(['idle', 'browsing', 'in_game', 'in_duel', 'spectating'])
 
 const postUserPresence = async (req: NextApiRequest, res: NextApiResponse) => {
   const userId = await getUserId(req, res)
@@ -12,17 +12,19 @@ const postUserPresence = async (req: NextApiRequest, res: NextApiResponse) => {
   const raw = typeof req.body?.activity === 'string' ? req.body.activity.trim() : 'idle'
   const activity = ALLOWED_ACTIVITIES.has(raw) ? raw : 'idle'
   const session = normalizePresenceSession(req.body?.presenceSession)
-  const inMatch = activity === 'in_game' || activity === 'in_duel'
-  const persistSession = inMatch && session ? session : undefined
+  const keepSession =
+    (activity === 'in_game' || activity === 'in_duel' || activity === 'spectating') && session
+      ? session
+      : undefined
 
-  if (persistSession) {
+  if (keepSession) {
     await collections.users?.updateOne(
       { _id: new ObjectId(userId) },
       {
         $set: {
           lastSeenAt: new Date(),
           presenceActivity: activity,
-          presenceSession: persistSession,
+          presenceSession: keepSession,
         },
       }
     )

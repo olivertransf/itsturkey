@@ -2,6 +2,7 @@ import { FC, memo, useCallback, useEffect, useMemo, useRef, useState } from 'rea
 import Game from '@backend/models/game'
 import StreetView from '@components/StreetView/StreetView'
 import type { DuelGuessSubmitPayload } from '@components/StreetView/StreetView'
+import type { WatcherChip } from '@components/WatchersIndicator'
 import { ChevronLeftIcon, FlagIcon, LockClosedIcon } from '@heroicons/react/outline'
 import { useRouter } from 'next/router'
 import { DuelHpMeter, DuelPointsMeter } from '@components/duel/DuelHpMeter'
@@ -659,6 +660,7 @@ type StreetSectionProps = {
   /** Force a provisional pin PATCH so timeout resolve has latest coords. */
   forcePinFlush?: boolean
   followLiveView?: StreetViewLiveView | null
+  watchers?: WatcherChip[]
 }
 
 const DuelStreetSection = memo(
@@ -678,6 +680,7 @@ const DuelStreetSection = memo(
     onRefresh,
     forcePinFlush = false,
     followLiveView = null,
+    watchers = [],
   }: StreetSectionProps) {
     const [view, setView] = useState<GameViewType>('Game')
     const pinRef = useRef<{ lat: number; lng: number } | null>(null)
@@ -759,6 +762,7 @@ const DuelStreetSection = memo(
             primaryControlsLeading={streetChatDock}
             onLiveViewChange={readOnly ? undefined : onLiveViewChange}
             followLiveView={readOnly ? followLiveView : null}
+            watchers={readOnly ? [] : watchers}
           />
         </PanoStretch>
       </StreetOverlayWrap>
@@ -776,7 +780,8 @@ const DuelStreetSection = memo(
     prev.playerAvatars === next.playerAvatars &&
     prev.viewerRole === next.viewerRole &&
     prev.forcePinFlush === next.forcePinFlush &&
-    prev.followLiveView === next.followLiveView
+    prev.followLiveView === next.followLiveView &&
+    prev.watchers === next.watchers
 )
 
 type Props = {
@@ -787,6 +792,7 @@ type Props = {
   /** Killing / finishing round: keep play chrome + HP drain, then hand off to match summary. */
   finalDamageMode?: boolean
   onSeeMatchSummary?: () => void
+  watchers?: WatcherChip[]
 }
 
 function frozenHudTotals(payload: DuelClientPayload, lr: DuelRoundResultClient | null, recapOpen: boolean) {
@@ -837,6 +843,7 @@ const DuelPlaySurface: FC<Props> = ({
   onRefresh,
   finalDamageMode = false,
   onSeeMatchSummary,
+  watchers = [],
 }) => {
   const spectating = role === 'spectator'
   const hudRole: Exclude<DuelViewerRole, null | 'spectator'> = spectating ? 'host' : role
@@ -1202,6 +1209,7 @@ const DuelPlaySurface: FC<Props> = ({
               deadlineMs !== null &&
               deadlineMs <= 400
             }
+            watchers={spectating ? [] : watchers}
           />
         )}
       </PlayStage>

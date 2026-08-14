@@ -16,6 +16,7 @@ import {
 } from '@components/duel/DuelRoomPanels'
 import type { DuelLobbyMatchInfo } from '@components/duel/DuelRoomPanels'
 import type { DuelClientPayload } from '@components/duel/duelApiTypes'
+import type { WatcherChip } from '@components/WatchersIndicator'
 import { NotFound } from '@components/errorViews'
 import { PageBackLink } from '@components/PageBackLink'
 import { LoadingPage } from '@components/layout'
@@ -57,6 +58,7 @@ const DuelRoomPage: PageType = () => {
   const [rematchNudgeDismissed, setRematchNudgeDismissed] = useState(false)
   const [recapView, setRecapView] = useState<DuelMatchRecapView>('all')
   const [endPhase, setEndPhase] = useState<'final_damage' | 'summary'>('final_damage')
+  const [watchers, setWatchers] = useState<WatcherChip[]>([])
 
   const isAuthenticated = status === 'authenticated'
   const loginHref =
@@ -79,6 +81,24 @@ const DuelRoomPage: PageType = () => {
     setPayload(res as DuelClientPayload)
     setFatal(null)
   }, [duelId, spectateMode])
+
+  const fetchWatchers = useCallback(async () => {
+    if (!duelId || !isValidDuelUrlSegment(duelId) || spectateMode) return
+    if (payload?.viewerRole !== 'host' && payload?.viewerRole !== 'guest') return
+    const res = await mailman(`duels/${duelId}/watchers`)
+    if (res?.error || !Array.isArray(res?.watchers)) return
+    setWatchers(
+      res.watchers
+        .filter(
+          (w: unknown): w is WatcherChip =>
+            !!w &&
+            typeof w === 'object' &&
+            typeof (w as WatcherChip).id === 'string' &&
+            typeof (w as WatcherChip).name === 'string'
+        )
+        .map((w: WatcherChip) => ({ id: w.id, name: w.name }))
+    )
+  }, [duelId, spectateMode, payload?.viewerRole])
 
   useEffect(() => {
     if (!duelId || !isValidDuelUrlSegment(duelId) || !spectateMode) return
@@ -123,17 +143,34 @@ const DuelRoomPage: PageType = () => {
     !!duelId && isValidDuelUrlSegment(duelId)
   )
 
+  useVisibleInterval(
+    () => void fetchWatchers(),
+    4000,
+    Boolean(
+      !!duelId &&
+        isValidDuelUrlSegment(duelId) &&
+        !spectateMode &&
+        payload?.status === 'in_progress' &&
+        (payload.viewerRole === 'host' || payload.viewerRole === 'guest')
+    )
+  )
+
   useEffect(() => {
     if (!isAuthenticated) return
     const inLiveDuel =
       payload != null &&
       (payload.status === 'waiting' || payload.status === 'in_progress') &&
       (payload.viewerRole === 'host' || payload.viewerRole === 'guest')
+    const isSpectating =
+      payload != null &&
+      payload.viewerRole === 'spectator' &&
+      (payload.status === 'in_progress' || payload.status === 'waiting')
 
-    const activity = inLiveDuel ? 'in_duel' : 'browsing'
-    const presenceBody = inLiveDuel
-      ? { activity, presenceSession: { kind: 'duel' as const, id: duelId } }
-      : { activity }
+    const activity = inLiveDuel ? 'in_duel' : isSpectating ? 'spectating' : 'browsing'
+    const presenceBody =
+      inLiveDuel || isSpectating
+        ? { activity, presenceSession: { kind: 'duel' as const, id: duelId } }
+        : { activity }
 
     void mailman('users/presence', 'POST', JSON.stringify(presenceBody))
     const id = window.setInterval(() => {
@@ -567,6 +604,7 @@ const DuelRoomPage: PageType = () => {
               onRefresh={refresh}
               finalDamageMode={showFinalDamage}
               onSeeMatchSummary={advanceToMatchSummary}
+              watchers={watchers}
             />
           ) : null}
         </>
