@@ -5,6 +5,7 @@ import { MapPlayInline } from '@components/GameStartForm'
 import { WidthController } from '@components/layout'
 import { MapLeaderboard } from '@components/MapLeaderboard'
 import { Meta } from '@components/Meta'
+import { PageBackLink } from '@components/PageBackLink'
 import { SkeletonMapInfo } from '@components/skeletons'
 import { Tab, Tabs } from '@components/system'
 import StyledMapPage from '@styles/MapPage.Styled'
@@ -132,16 +133,18 @@ const MapPage: FC = () => {
 
   return (
     <StyledMapPage>
-      <WidthController customWidth="1100px" mobilePadding="0px">
+      <WidthController customWidth="none">
         <Meta title={mapDetails?.name ? `${SITE_NAME} — ${mapDetails.name}` : SITE_NAME} />
 
         {mapDetails ? (
           <>
-            <header className="mapPlayHead">
-              <h1 className="mapPlayTitle">{mapDetails.name}</h1>
-            </header>
-
-            <MapPlayInline mapDetails={mapDetails} gameMode="standard" />
+            <section className="mapPlayCard">
+              <PageBackLink href="/" label="Back" compact />
+              <header className="mapPlayHead">
+                <h1 className="mapPlayTitle">{mapDetails.name}</h1>
+              </header>
+              <MapPlayInline mapDetails={mapDetails} gameMode="standard" />
+            </section>
 
             <div className="mapLeaderboardSection">
               <div className="mapLeaderboardBucketTabs">

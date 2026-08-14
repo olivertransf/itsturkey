@@ -113,23 +113,24 @@ const MapPlayInline: FC<Props> = ({ mapDetails, gameMode }) => {
         <VisualRestrictionsPanel value={visualRestrictions} onChange={setVisualRestrictions} embedded />
       </div>
 
-      {equitableCountryIso && gameMode !== 'streak' ? (
-        <PlonkitGuideLauncher
-          variant="compact"
-          countryIso={equitableCountryIso}
-          mapLabel={mapDetails.name}
-          compactAlign="start"
-        />
-      ) : null}
-
-      <Button
-        variant="primary"
-        width="100%"
-        onClick={() => void primaryAction()}
-        isLoading={isSubmitting}
-      >
-        {footerMeta.actionLabel}
-      </Button>
+      <div className="play-footer">
+        {equitableCountryIso && gameMode !== 'streak' ? (
+          <PlonkitGuideLauncher
+            variant="compact"
+            countryIso={equitableCountryIso}
+            mapLabel={mapDetails.name}
+            compactAlign="start"
+          />
+        ) : null}
+        <Button
+          variant="primary"
+          width="100%"
+          onClick={() => void primaryAction()}
+          isLoading={isSubmitting}
+        >
+          {footerMeta.actionLabel}
+        </Button>
+      </div>
     </StyledMapPlayInline>
   )
 }
