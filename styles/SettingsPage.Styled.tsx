@@ -48,6 +48,29 @@ const StyledSettingsPage = styled.div`
       align-content: flex-start;
     }
 
+    .maps-key-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px 14px;
+      margin-top: -8px;
+    }
+
+    .maps-key-status {
+      font-size: 13px;
+      line-height: 1.35;
+      color: #9e9e9e;
+      max-width: 42ch;
+    }
+
+    .maps-key-status--ok {
+      color: #86efac;
+    }
+
+    .maps-key-status--fail {
+      color: #fca5a5;
+    }
+
     .maps-key-cta {
       padding: 16px;
       border-radius: 6px;

@@ -28,6 +28,13 @@ export { default as formatTimeLimit } from './formatTimeLimit'
 export { getHomeMapAccentColor } from './homeMapAccent'
 export { default as getGuessMapSize } from './getGuessMapSize'
 export { default as getMapsKey } from './getMapsKey'
+export {
+  checkGoogleMapsApiKeyInBrowser,
+  GOOGLE_MAPS_KEY_LENGTH,
+  isPlausibleGoogleMapsApiKey,
+  normalizeGoogleMapsApiKey,
+} from './checkGoogleMapsApiKey'
+export type { MapsKeyCheckResult } from './checkGoogleMapsApiKey'
 export { default as googleMapLoaderAsync } from './googleMapLoaderAsync'
 export { default as getRandomAvatar } from './getRandomAvatar'
 export { openStreetViewLocation } from './openStreetViewLocation'

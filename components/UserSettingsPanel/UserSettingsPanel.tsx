@@ -5,7 +5,12 @@ import { ArrowRightIcon } from '@heroicons/react/outline'
 import { Button, Input, Select, Spinner } from '@components/system'
 import { useAppDispatch } from '@redux/hook'
 import { logOutUser, updateDistanceUnit, updateMapsAPIKey } from '@redux/slices'
-import { mailman, showToast } from '@utils/helpers'
+import {
+  checkGoogleMapsApiKeyInBrowser,
+  mailman,
+  normalizeGoogleMapsApiKey,
+  showToast,
+} from '@utils/helpers'
 
 const DISTANCE_UNIT_OPTIONS = [
   { value: 'metric', label: 'Metric (km)' },
@@ -33,6 +38,11 @@ const UserSettingsPanel: FC<Props> = ({ embedded }) => {
   const [distanceUnit, setDistanceUnit] = useState('metric')
   const [mapsAPIKey, setMapsAPIKey] = useState('')
   const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [checkingKey, setCheckingKey] = useState(false)
+  const [keyCheckStatus, setKeyCheckStatus] = useState<'idle' | 'ok' | 'fail'>('idle')
+  const [keyCheckMessage, setKeyCheckMessage] = useState('')
+  const [verifiedKey, setVerifiedKey] = useState('')
   const [initialSettings, setInitialSettings] = useState<SettingsType>()
   const [friendCode, setFriendCode] = useState('')
   const [friends, setFriends] = useState<FriendRow[]>([])
@@ -40,11 +50,21 @@ const UserSettingsPanel: FC<Props> = ({ embedded }) => {
   const [friendBusy, setFriendBusy] = useState(false)
   const dispatch = useAppDispatch()
 
+  const normalizedKey = useMemo(() => normalizeGoogleMapsApiKey(mapsAPIKey), [mapsAPIKey])
+  const keyAlreadySaved =
+    Boolean(initialSettings?.mapsAPIKey) &&
+    normalizeGoogleMapsApiKey(initialSettings?.mapsAPIKey) === normalizedKey
+
   const hasEdited = useMemo(
     () =>
-      initialSettings && (distanceUnit !== initialSettings?.distanceUnit || mapsAPIKey !== initialSettings?.mapsAPIKey),
-    [distanceUnit, mapsAPIKey, initialSettings]
+      initialSettings &&
+      (distanceUnit !== initialSettings.distanceUnit ||
+        normalizedKey !== normalizeGoogleMapsApiKey(initialSettings.mapsAPIKey)),
+    [distanceUnit, normalizedKey, initialSettings]
   )
+
+  const keyReadyToSave =
+    !normalizedKey || keyAlreadySaved || (keyCheckStatus === 'ok' && verifiedKey === normalizedKey)
 
   const fetchFriends = useCallback(async () => {
     const fr = await mailman('users/friends')
@@ -63,20 +83,53 @@ const UserSettingsPanel: FC<Props> = ({ embedded }) => {
     }
 
     setLoading(false)
+    const key = typeof res.mapsAPIKey === 'string' ? res.mapsAPIKey : ''
     setInitialSettings({
       distanceUnit: res.distanceUnit,
-      mapsAPIKey: res.mapsAPIKey,
+      mapsAPIKey: key,
       friendCode: typeof res.friendCode === 'string' ? res.friendCode : undefined,
     })
     setDistanceUnit(res.distanceUnit)
-    setMapsAPIKey(res.mapsAPIKey)
+    setMapsAPIKey(key)
     setFriendCode(typeof res.friendCode === 'string' ? res.friendCode : '')
+    setKeyCheckStatus(key ? 'ok' : 'idle')
+    setVerifiedKey(normalizeGoogleMapsApiKey(key))
+    setKeyCheckMessage(key ? 'Saved key on this account.' : '')
     void fetchFriends()
   }, [fetchFriends])
 
   useEffect(() => {
     void fetchUserSettings()
   }, [fetchUserSettings])
+
+  const onMapsKeyChange = (value: string) => {
+    setMapsAPIKey(value)
+    setKeyCheckStatus('idle')
+    setKeyCheckMessage('')
+    setVerifiedKey('')
+  }
+
+  const handleCheckKey = async () => {
+    setCheckingKey(true)
+    setKeyCheckStatus('idle')
+    setKeyCheckMessage('')
+    const result = await checkGoogleMapsApiKeyInBrowser(mapsAPIKey)
+    setCheckingKey(false)
+
+    if (!result.ok) {
+      setKeyCheckStatus('fail')
+      setKeyCheckMessage(result.message)
+      setVerifiedKey('')
+      showToast('error', result.message)
+      return
+    }
+
+    const key = normalizeGoogleMapsApiKey(mapsAPIKey)
+    setKeyCheckStatus('ok')
+    setVerifiedKey(key)
+    setKeyCheckMessage('Key works with Maps JavaScript API.')
+    showToast('success', 'API key looks good')
+  }
 
   const copyFriendCode = async () => {
     if (!friendCode) return
@@ -119,25 +172,57 @@ const UserSettingsPanel: FC<Props> = ({ embedded }) => {
   }
 
   const handleSaveChanges = async () => {
-    const newSettings = { distanceUnit, mapsAPIKey } as SettingsType
+    if (!hasEdited || saving) return
 
-    const res = await mailman('users/settings', 'POST', JSON.stringify(newSettings))
+    let clientVerified = keyAlreadySaved || (keyCheckStatus === 'ok' && verifiedKey === normalizedKey)
+
+    if (normalizedKey && !clientVerified) {
+      setCheckingKey(true)
+      const result = await checkGoogleMapsApiKeyInBrowser(normalizedKey)
+      setCheckingKey(false)
+      if (!result.ok) {
+        setKeyCheckStatus('fail')
+        setKeyCheckMessage(result.message)
+        setVerifiedKey('')
+        showToast('error', result.message)
+        return
+      }
+      setKeyCheckStatus('ok')
+      setVerifiedKey(normalizedKey)
+      setKeyCheckMessage('Key works with Maps JavaScript API.')
+      clientVerified = true
+    }
+
+    setSaving(true)
+    const newSettings = { distanceUnit, mapsAPIKey: normalizedKey } as SettingsType
+
+    const res = await mailman(
+      'users/settings',
+      'POST',
+      JSON.stringify({
+        ...newSettings,
+        mapsAPIKeyClientVerified: Boolean(normalizedKey && clientVerified),
+      })
+    )
+    setSaving(false)
 
     if (res.error) {
       return showToast('error', res.error.message)
     }
 
     setInitialSettings(newSettings)
-
     dispatch(updateDistanceUnit(distanceUnit))
-    dispatch(updateMapsAPIKey(mapsAPIKey))
-
+    dispatch(updateMapsAPIKey(normalizedKey))
     showToast('success', 'Successfully updated user settings')
   }
 
   const handleLogout = () => {
     signOut({ callbackUrl: '/' })
     dispatch(logOutUser())
+  }
+
+  const handleResetKey = () => {
+    onMapsKeyChange('')
   }
 
   return (
@@ -149,12 +234,12 @@ const UserSettingsPanel: FC<Props> = ({ embedded }) => {
         </div>
 
         <Button
-          variant={hasEdited ? 'primary' : 'solidGray'}
-          onClick={() => handleSaveChanges()}
+          variant={hasEdited && keyReadyToSave ? 'primary' : 'solidGray'}
+          onClick={() => void handleSaveChanges()}
           style={{ padding: '0 12px' }}
-          disabled={!hasEdited}
+          disabled={!hasEdited || saving || checkingKey || Boolean(normalizedKey && !keyReadyToSave)}
         >
-          Save Changes
+          {saving ? 'Saving…' : 'Save Changes'}
         </Button>
       </div>
 
@@ -177,8 +262,27 @@ const UserSettingsPanel: FC<Props> = ({ embedded }) => {
               type="text"
               placeholder="Ex. AIza-lots-of-characters"
               value={mapsAPIKey}
-              callback={setMapsAPIKey}
+              callback={onMapsKeyChange}
             />
+            <div className="maps-key-actions">
+              <Button
+                variant="solidGray"
+                style={{ padding: '0 12px' }}
+                disabled={!normalizedKey || checkingKey || saving}
+                onClick={() => void handleCheckKey()}
+              >
+                {checkingKey ? 'Testing…' : 'Test key'}
+              </Button>
+              {keyCheckStatus === 'ok' ? (
+                <span className="maps-key-status maps-key-status--ok">{keyCheckMessage || 'Key works'}</span>
+              ) : null}
+              {keyCheckStatus === 'fail' ? (
+                <span className="maps-key-status maps-key-status--fail">{keyCheckMessage}</span>
+              ) : null}
+              {normalizedKey && keyCheckStatus === 'idle' && !keyAlreadySaved ? (
+                <span className="maps-key-status">Test the key before saving.</span>
+              ) : null}
+            </div>
           </div>
 
           <div className="friends-section">
@@ -239,7 +343,8 @@ const UserSettingsPanel: FC<Props> = ({ embedded }) => {
             <div className="maps-key-cta">
               <div className="cta-title">How to add your own Google Maps API key</div>
               <p className="cta-description">
-                Adding your own key allows you to play essentially unlimited games for free!
+                Adding your own key allows you to play essentially unlimited games for free! Enable the Maps
+                JavaScript API (and billing) on the key.
               </p>
 
               <Link href="/custom-key-instructions.pdf" passHref>
@@ -256,7 +361,7 @@ const UserSettingsPanel: FC<Props> = ({ embedded }) => {
               <div>Thank you for using your own maps key. People like you are helping keep this site free.</div>
               <div>For your key to take effect, you must refresh the page.</div>
 
-              <Button onClick={() => setMapsAPIKey('')} style={{ padding: '0 12px', marginTop: '12px' }}>
+              <Button onClick={handleResetKey} style={{ padding: '0 12px', marginTop: '12px' }}>
                 Reset Key
               </Button>
             </div>
