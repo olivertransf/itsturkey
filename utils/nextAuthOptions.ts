@@ -54,21 +54,9 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    jwt: async ({ token, user, trigger, session }) => {
+    jwt: async ({ token, user }) => {
       if (user) {
         token.user = user
-      }
-
-      if (trigger === 'update' && session && token.user) {
-        const current = token.user as Session['user']
-        const patch = session as Partial<Session['user']>
-        token.user = {
-          ...current,
-          ...(typeof patch.mapsAPIKey === 'string' ? { mapsAPIKey: patch.mapsAPIKey } : {}),
-          ...(patch.distanceUnit === 'metric' || patch.distanceUnit === 'imperial'
-            ? { distanceUnit: patch.distanceUnit }
-            : {}),
-        }
       }
 
       return token
