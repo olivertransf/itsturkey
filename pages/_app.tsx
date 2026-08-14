@@ -1,4 +1,5 @@
 import '@styles/globals.css'
+import { Analytics } from '@vercel/analytics/react'
 import { SessionProvider } from 'next-auth/react'
 import { ReactElement } from 'react'
 import { Toaster } from 'react-hot-toast'
@@ -45,6 +46,7 @@ const App = ({ Component, pageProps }: AppPropsWithLayout) => {
           </PersistGate>
         </RedudxProvider>
       </SessionProvider>
+      <Analytics />
     </>
   )
 }
