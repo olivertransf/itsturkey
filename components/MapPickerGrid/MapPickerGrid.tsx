@@ -33,6 +33,7 @@ type Props = {
   showDescriptions?: boolean
   /** Search filter on map name. Default true. */
   showSearch?: boolean
+  scrollClassName?: string
 }
 
 const MapPickerGrid: FC<Props> = ({
@@ -44,6 +45,7 @@ const MapPickerGrid: FC<Props> = ({
   emptyMessage = 'No maps available.',
   showDescriptions = true,
   showSearch = true,
+  scrollClassName,
 }) => {
   const [query, setQuery] = useState('')
 
@@ -93,7 +95,7 @@ const MapPickerGrid: FC<Props> = ({
           </div>
         </SearchWrap>
       ) : null}
-      <ScrollRegion $maxHeight={maxHeight} role="group" aria-label="Choose map">
+      <ScrollRegion $maxHeight={maxHeight} className={scrollClassName} role="group" aria-label="Choose map">
         <ColumnList>
           {filteredOptions.length === 0 ? (
             <LoadingHint>No maps match your search.</LoadingHint>
