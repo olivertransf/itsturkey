@@ -46,16 +46,22 @@ const StreaksGuessMap: FC<Props> = ({
     mapWidth,
     hovering,
     isPinned,
+    chromeMode,
     setHovering,
     setIsPinned,
     handleMapHover,
     handleMapLeave,
+    expandAndPin,
     changeMapSize,
     resetGuessMapDimensions,
   } = useGuessMap()
 
   const user = useAppSelector((state) => state.user)
   const prevCountriesRef = useRef<any>(null)
+
+  const mapExpanded = hovering || isPinned || Boolean(mobileMapOpen)
+  const tabletTouch = chromeMode === 'tabletTouch'
+  const showDesktopControls = mapExpanded && chromeMode !== 'phone'
 
   useEffect(() => {
     handleSetupMap()
@@ -64,6 +70,11 @@ const StreaksGuessMap: FC<Props> = ({
   useEffect(() => {
     handleResetMapState()
   }, [resetMap, googleMapsConfig])
+
+  useEffect(() => {
+    if (!googleMapsConfig?.map || !googleMapsConfig.mapsApi) return
+    googleMapsConfig.mapsApi.event.trigger(googleMapsConfig.map, 'resize')
+  }, [googleMapsConfig, mapWidth, mapHeight, mapExpanded, mobileMapOpen])
 
   const handleSetupMap = async () => {
     if (!googleMapsConfig) return
@@ -124,33 +135,73 @@ const StreaksGuessMap: FC<Props> = ({
       })
   }
 
+  const nudgeZoom = (delta: number) => {
+    if (!googleMapsConfig?.map) return
+    const map = googleMapsConfig.map
+    const next = Math.min(21, Math.max(1, (map.getZoom() ?? 1) + delta))
+    map.setZoom(next)
+  }
+
   return (
     <StyledStreaksGuessMap
       mapHeight={mapHeight}
       mapWidth={mapWidth}
       mobileMapOpen={mobileMapOpen}
       mapDimmed={!mobileMapOpen && !hovering && !isPinned}
+      tabletTouch={tabletTouch}
+      mapExpanded={mapExpanded}
     >
-      <div className="guessMapWrapper" onMouseOver={handleMapHover} onMouseLeave={handleMapLeave}>
-        {hovering && (
+      <div
+        className="guessMapWrapper"
+        onMouseOver={tabletTouch ? undefined : handleMapHover}
+        onMouseLeave={tabletTouch ? undefined : handleMapLeave}
+      >
+        {showDesktopControls && (
           <div className="controls">
             <button
+              type="button"
               className={`controlBtn increase ${user.guessMapSize === 4 ? 'disabled' : ''}`}
               onClick={() => changeMapSize('increase')}
               disabled={user.guessMapSize === 4}
+              aria-label="Larger map"
             >
               <ArrowRightIcon />
             </button>
 
             <button
+              type="button"
               className={`controlBtn decrease ${user.guessMapSize === 1 ? 'disabled' : ''}`}
               onClick={() => changeMapSize('decrease')}
               disabled={user.guessMapSize === 1}
+              aria-label="Smaller map"
             >
               <ArrowRightIcon />
             </button>
 
-            <button className="controlBtn" onClick={() => setIsPinned(!isPinned)}>
+            {tabletTouch && (
+              <>
+                <button type="button" className="controlBtn zoom-glyph" onClick={() => nudgeZoom(1)} aria-label="Zoom in">
+                  +
+                </button>
+                <button type="button" className="controlBtn zoom-glyph" onClick={() => nudgeZoom(-1)} aria-label="Zoom out">
+                  −
+                </button>
+              </>
+            )}
+
+            <button
+              type="button"
+              className="controlBtn"
+              onClick={() => {
+                if (tabletTouch && isPinned) {
+                  setIsPinned(false)
+                  setHovering(false)
+                  return
+                }
+                setIsPinned(!isPinned)
+              }}
+              aria-label={isPinned ? 'Collapse map' : 'Pin map'}
+            >
               {isPinned ? <LockClosedIcon /> : <LockOpenIcon />}
             </button>
           </div>
@@ -175,6 +226,10 @@ const StreaksGuessMap: FC<Props> = ({
               />
               <span>{selectedCountryName}</span>
             </div>
+          )}
+
+          {tabletTouch && !mapExpanded && (
+            <button type="button" className="expand-map-hit" onClick={expandAndPin} aria-label="Expand map" />
           )}
         </div>
 

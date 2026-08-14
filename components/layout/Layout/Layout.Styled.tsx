@@ -4,6 +4,7 @@ const StyledLayout = styled.div`
   .app-layout {
     overflow: hidden;
     height: 100vh;
+    height: 100dvh;
     position: relative;
   }
 
@@ -17,7 +18,7 @@ const StyledLayout = styled.div`
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    bottom: 20px;
+    bottom: max(20px, env(safe-area-inset-bottom, 0px));
     padding: 20px;
     border-radius: 20px;
     background-color: #14073a;
@@ -28,6 +29,7 @@ const StyledLayout = styled.div`
     text-align: center;
     font-weight: 400;
     width: fit-content;
+    max-width: calc(100vw - 32px);
 
     p {
       margin-top: 4px;
@@ -40,10 +42,12 @@ const StyledLayout = styled.div`
   main {
     width: 100% !important;
     height: 100vh;
+    height: 100dvh;
     max-height: 100%;
     position: relative;
     overflow: hidden auto;
     background-color: var(--bg-primary);
+    -webkit-overflow-scrolling: touch;
   }
 
   .mainContent {
@@ -54,12 +58,12 @@ const StyledLayout = styled.div`
     height: 100%;
     box-sizing: border-box;
 
-    @media (max-width: 600px) {
+    @media (max-width: 1024px) {
       padding: var(--space-page-y-mobile) var(--page-gutter);
     }
   }
 
-  @media (max-width: 600px) {
+  @media (max-width: 1024px) {
     .app-layout {
       width: 100%;
       height: unset;
@@ -71,6 +75,7 @@ const StyledLayout = styled.div`
     main {
       height: auto;
       min-height: 100vh;
+      min-height: 100dvh;
       overflow: unset;
     }
   }

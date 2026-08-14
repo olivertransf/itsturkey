@@ -4,8 +4,8 @@ const StyledGameStatus = styled.div`
   background-color: rgba(0, 0, 0, 0.8);
   border-radius: 4px;
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: max(12px, env(safe-area-inset-top, 0px));
+  right: max(12px, env(safe-area-inset-right, 0px));
   z-index: 2;
   display: flex;
   align-items: center;
@@ -17,7 +17,7 @@ const StyledGameStatus = styled.div`
     padding: 10px 25px;
 
     &.mapName {
-      @media (max-width: 600px) {
+      @media (max-width: 900px) {
         display: none;
       }
     }

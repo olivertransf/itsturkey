@@ -16,6 +16,12 @@ export const GUESS_MAP_MAX_WIDTH_PX = 800
 /** Hover/pin: scale idle width+height by this (same aspect ratio as uncovered). */
 export const GUESS_MAP_HOVER_UNIFORM_SCALE = 2.05
 
+/**
+ * iPad / touch-tablet expand: larger than desktop hover so pan + pinch are usable.
+ * CSS still clamps to the viewport edge.
+ */
+export const GUESS_MAP_TABLET_EXPAND_UNIFORM_SCALE = 3.55
+
 /** Table width vs height: lower = narrower strip (same hover/idle behavior). */
 const MAP_WIDTH_SCALE = 0.68
 

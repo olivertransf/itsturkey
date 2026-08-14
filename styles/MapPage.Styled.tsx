@@ -4,7 +4,7 @@ const StyledMapPage = styled.div`
   .mainContent {
     max-width: 1100px;
 
-    @media (max-width: 600px) {
+    @media (max-width: 900px) {
       padding: 0;
     }
   }

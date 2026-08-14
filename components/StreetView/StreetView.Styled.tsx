@@ -1,4 +1,5 @@
 import styled from 'styled-components'
+import { PHONE_GUESS_MAP_MQ } from '@utils/constants/breakpoints'
 
 type StyledProps = {
   showMap?: boolean
@@ -34,23 +35,23 @@ const StyledStreetView = styled.div<StyledProps>`
   .toggle-map-button {
     display: none;
 
-    @media (max-width: 600px) {
-      display: block;
-      background-color: var(--mediumPurple);
-      border: 2px solid var(--color2);
-      height: 80px;
-      width: 80px;
-      border-radius: 50%;
+    @media ${PHONE_GUESS_MAP_MQ} {
       display: flex;
       align-items: center;
       justify-content: center;
+      background-color: var(--mediumPurple);
+      border: 2px solid var(--color2);
+      height: 72px;
+      width: 72px;
+      border-radius: 50%;
       position: absolute;
-      bottom: 36px;
-      right: 12px;
+      bottom: max(28px, calc(16px + env(safe-area-inset-bottom, 0px)));
+      right: max(12px, env(safe-area-inset-right, 0px));
       z-index: 2;
+      -webkit-tap-highlight-color: transparent;
 
       svg {
-        height: 40px;
+        height: 36px;
         color: var(--color2);
 
         path {
@@ -71,6 +72,12 @@ const StyledStreetView = styled.div<StyledProps>`
       right: 14px;
       bottom: 96px;
       max-width: min(280px, calc(100vw - 24px));
+    }
+
+    @media ${PHONE_GUESS_MAP_MQ} {
+      right: max(12px, env(safe-area-inset-right, 0px));
+      bottom: max(112px, calc(96px + env(safe-area-inset-bottom, 0px)));
+      max-width: min(280px, calc(100vw - 100px));
     }
   }
 

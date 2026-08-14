@@ -1,7 +1,8 @@
 import styled from 'styled-components'
 
 const StyledMobileNav = styled.div`
-  height: 70px;
+  height: calc(70px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   width: 100%;
   border-top: 1px solid var(--border-subtle);
   position: fixed;
@@ -12,7 +13,7 @@ const StyledMobileNav = styled.div`
   -webkit-backdrop-filter: blur(16px) saturate(1.5);
   display: none;
 
-  @media (max-width: 600px) {
+  @media (max-width: 1024px) {
     display: flex;
     align-items: center;
     justify-content: space-around;

@@ -75,7 +75,7 @@ const HudTop = styled.div`
     margin-top: 6px;
   }
 
-  @media (max-width: 600px) {
+  @media (max-width: 900px) {
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     grid-template-rows: auto auto;
 

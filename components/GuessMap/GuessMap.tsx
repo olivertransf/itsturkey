@@ -1,5 +1,5 @@
 import GoogleMapReact from 'google-map-react'
-import { FC, useEffect, useRef, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
 import Game from '@backend/models/game'
 import { Marker } from '@components/Marker'
 import { Button } from '@components/system'
@@ -53,14 +53,20 @@ const GuessMap: FC<Props> = ({
     mapWidth,
     hovering,
     isPinned,
+    chromeMode,
     setHovering,
     setIsPinned,
     handleMapHover,
     handleMapLeave,
+    expandAndPin,
     changeMapSize,
     resetGuessMapDimensions,
   } = useGuessMap()
   const user = useAppSelector((state) => state.user)
+
+  const mapExpanded = hovering || isPinned || Boolean(mobileMapOpen)
+  const tabletTouch = chromeMode === 'tabletTouch'
+  const showDesktopControls = mapExpanded && chromeMode !== 'phone' && !guessLocked
 
   useEffect(() => {
     handleSetupMap()
@@ -69,6 +75,13 @@ const GuessMap: FC<Props> = ({
   useEffect(() => {
     handleResetMapState()
   }, [resetMap, googleMapsConfig, gameData])
+
+  useEffect(() => {
+    if (!googleMapsConfig?.map || !googleMapsConfig.mapsApi) return
+
+    const { map, mapsApi } = googleMapsConfig
+    mapsApi.event.trigger(map, 'resize')
+  }, [googleMapsConfig, mapWidth, mapHeight, mapExpanded, mobileMapOpen])
 
   const handleSetupMap = () => {
     if (!googleMapsConfig) return
@@ -88,7 +101,6 @@ const GuessMap: FC<Props> = ({
     const isVirtualCountryOrContinentMap =
       parseEquitableCountryMapKey(mapIdStr) !== null || parseEquitableContinentMapKey(mapIdStr) !== null
 
-    // Regional / custom maps: fit bounds. Virtual country/continent maps ship bounds + world scoreFactor.
     const shouldFitBounds =
       bounds &&
       ((typeof scoreFactor === 'number' && scoreFactor > 0 && scoreFactor < 1000) || isVirtualCountryOrContinentMap)
@@ -126,6 +138,13 @@ const GuessMap: FC<Props> = ({
     setMarker(location)
   }
 
+  const nudgeZoom = (delta: number) => {
+    if (!googleMapsConfig?.map || guessLocked) return
+    const map = googleMapsConfig.map
+    const next = Math.min(21, Math.max(1, (map.getZoom() ?? 1) + delta))
+    map.setZoom(next)
+  }
+
   return (
     <StyledGuessMap
       mapHeight={mapHeight}
@@ -133,14 +152,16 @@ const GuessMap: FC<Props> = ({
       mobileMapOpen={mobileMapOpen}
       mapDimmed={!mobileMapOpen && !hovering && !isPinned}
       duelLayout={duelLayout}
+      tabletTouch={tabletTouch}
+      mapExpanded={mapExpanded}
     >
       <div
         className="guessMapWrapper"
-        onMouseOver={guessLocked ? undefined : handleMapHover}
-        onMouseLeave={guessLocked ? undefined : handleMapLeave}
+        onMouseOver={guessLocked || tabletTouch ? undefined : handleMapHover}
+        onMouseLeave={guessLocked || tabletTouch ? undefined : handleMapLeave}
         style={{ pointerEvents: guessLocked ? 'none' : undefined }}
       >
-        {hovering && !guessLocked && (
+        {showDesktopControls && (
           <div className="controls">
             <button
               type="button"
@@ -166,11 +187,29 @@ const GuessMap: FC<Props> = ({
               {duelLayout ? '−' : <ArrowRightIcon />}
             </button>
 
+            {tabletTouch && (
+              <>
+                <button type="button" className="controlBtn zoom-glyph" onClick={() => nudgeZoom(1)} aria-label="Zoom in">
+                  +
+                </button>
+                <button type="button" className="controlBtn zoom-glyph" onClick={() => nudgeZoom(-1)} aria-label="Zoom out">
+                  −
+                </button>
+              </>
+            )}
+
             <button
               type="button"
               className={`controlBtn ${duelLayout ? 'duel-glyph' : ''}`}
-              onClick={() => setIsPinned(!isPinned)}
-              aria-label={isPinned ? 'Unpin map' : 'Pin map'}
+              onClick={() => {
+                if (tabletTouch && isPinned) {
+                  setIsPinned(false)
+                  setHovering(false)
+                  return
+                }
+                setIsPinned(!isPinned)
+              }}
+              aria-label={isPinned ? 'Collapse map' : 'Pin map'}
             >
               {duelLayout ? (isPinned ? '●' : '○') : isPinned ? <LockClosedIcon /> : <LockOpenIcon />}
             </button>
@@ -191,6 +230,10 @@ const GuessMap: FC<Props> = ({
               <Marker lat={marker.lat} lng={marker.lng} type="guess" userAvatar={user.avatar} isFinalResults={false} />
             )}
           </GoogleMapReact>
+
+          {tabletTouch && !mapExpanded && !guessLocked && (
+            <button type="button" className="expand-map-hit" onClick={expandAndPin} aria-label="Expand map" />
+          )}
         </div>
 
         <button className="close-map-button" onClick={closeMobileMap}>

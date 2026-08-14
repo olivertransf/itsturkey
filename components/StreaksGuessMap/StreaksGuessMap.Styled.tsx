@@ -1,10 +1,13 @@
 import styled, { css, keyframes } from 'styled-components'
+import { PHONE_GUESS_MAP_MQ } from '@utils/constants/breakpoints'
 
 type StyledProps = {
   mapHeight: number
   mapWidth: number
   mobileMapOpen?: boolean
   mapDimmed?: boolean
+  tabletTouch?: boolean
+  mapExpanded?: boolean
 }
 
 const slideUpAnim = keyframes`
@@ -16,51 +19,29 @@ const slideUpAnim = keyframes`
 const StyledStreaksGuessMap = styled.div<StyledProps>`
   .guessMapWrapper {
     position: absolute;
-    bottom: 20px;
-    right: 20px;
+    bottom: max(20px, env(safe-area-inset-bottom, 0px));
+    right: max(20px, env(safe-area-inset-right, 0px));
     z-index: 3;
-    /* Match standard GuessMap width behavior */
     width: min(
       calc(${({ mapWidth }) => mapWidth}vmin * 1.18),
       calc(100vw - 32px)
     );
     min-width: 0;
     max-width: calc(100vw - 24px);
+    touch-action: manipulation;
 
-    @media (max-width: 720px) and (min-width: 601px) {
-      width: min(
-        calc(${({ mapWidth }) => mapWidth}vmin * 1.7),
-        min(352px, calc(100vw - 24px))
-      );
-    }
+    ${({ tabletTouch }) =>
+      tabletTouch &&
+      css`
+        max-width: min(860px, calc(100vw - 28px));
+      `}
 
-    @media (max-width: 780px) and (min-width: 721px) {
-      width: min(
-        calc(${({ mapWidth }) => mapWidth}vmin * 1.53),
-        min(344px, calc(100vw - 24px))
-      );
-    }
-
-    @media (max-width: 840px) and (min-width: 781px) {
-      width: min(
-        calc(${({ mapWidth }) => mapWidth}vmin * 1.36),
-        min(356px, calc(100vw - 26px))
-      );
-    }
-
-    @media (max-width: 900px) and (min-width: 841px) {
-      width: min(
-        calc(${({ mapWidth }) => mapWidth}vmin * 1.24),
-        min(368px, calc(100vw - 28px))
-      );
-    }
-
-    @media (max-width: 600px) {
+    @media ${PHONE_GUESS_MAP_MQ} {
       display: flex;
       flex-direction: column;
-      height: 60vh;
-      height: 60dvh;
+      height: min(62dvh, 720px);
       width: 100%;
+      max-width: 100%;
       bottom: -100%;
       right: 0;
       background-color: var(--background1);
@@ -80,16 +61,19 @@ const StyledStreaksGuessMap = styled.div<StyledProps>`
     aspect-ratio: ${({ mapWidth, mapHeight }) => `${mapWidth} / ${mapHeight}`};
     opacity: ${({ mapDimmed, mobileMapOpen }) => (mobileMapOpen || !mapDimmed ? 1 : 0.63)};
     border-radius: 4px;
-    transition: opacity 0.15s ease, width 0.15s ease;
+    transition: opacity 0.15s ease, width 0.15s ease, aspect-ratio 0.15s ease;
     position: relative;
     margin-bottom: 10px;
+    overflow: hidden;
+    touch-action: none;
 
-    @media (max-width: 600px) {
+    @media ${PHONE_GUESS_MAP_MQ} {
       aspect-ratio: unset;
       height: 100%;
       width: 100%;
       border-radius: 0;
       opacity: 1;
+      margin-bottom: 0;
     }
 
     .selected-country {
@@ -103,6 +87,7 @@ const StyledStreaksGuessMap = styled.div<StyledProps>`
       align-items: center;
       gap: 6px;
       font-size: 14px;
+      z-index: 2;
 
       img {
         height: 14px;
@@ -114,28 +99,41 @@ const StyledStreaksGuessMap = styled.div<StyledProps>`
     }
   }
 
+  .expand-map-hit {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
   .controls {
     display: flex;
     align-items: center;
-    gap: 6px;
-    background-color: rgba(0, 0, 0, 0.5);
+    gap: 8px;
+    background-color: rgba(0, 0, 0, 0.55);
     width: fit-content;
-    padding: 6px;
+    padding: 8px;
     border-radius: 4px 4px 0 0;
 
-    @media (max-width: 1100px) {
+    @media ${PHONE_GUESS_MAP_MQ} {
       display: none;
     }
   }
 
   .controlBtn {
-    height: 20px;
-    width: 20px;
+    height: 28px;
+    width: 28px;
     background-color: #fff;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    -webkit-tap-highlight-color: transparent;
 
     &.increase {
       transform: rotate(-135deg);
@@ -151,11 +149,22 @@ const StyledStreaksGuessMap = styled.div<StyledProps>`
     }
 
     svg {
-      height: 12px;
+      height: 14px;
       color: var(--background1);
 
       path {
         stroke-width: 3;
+      }
+    }
+
+    &.zoom-glyph {
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--background1);
+
+      svg {
+        display: none;
       }
     }
   }
@@ -163,31 +172,33 @@ const StyledStreaksGuessMap = styled.div<StyledProps>`
   .close-map-button {
     display: none;
 
-    @media (max-width: 600px) {
+    @media ${PHONE_GUESS_MAP_MQ} {
       display: flex;
       align-items: center;
       justify-content: center;
       position: absolute;
-      top: 10px;
-      right: 10px;
+      top: max(10px, env(safe-area-inset-top, 0px));
+      right: max(10px, env(safe-area-inset-right, 0px));
       background-color: var(--background2);
-      height: 32px;
-      width: 32px;
+      height: 44px;
+      width: 44px;
       border-radius: 50%;
       border: 1px solid var(--background1);
+      z-index: 2;
 
       ${({ mobileMapOpen }) => !mobileMapOpen && 'display: none'};
     }
 
     svg {
-      height: 20px;
+      height: 22px;
       color: var(--color2);
     }
   }
 
   .submit-button-wrapper {
-    @media (max-width: 600px) {
-      padding: 6px 16px 16px 16px;
+    @media ${PHONE_GUESS_MAP_MQ} {
+      padding: 10px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+      flex-shrink: 0;
 
       ${({ mobileMapOpen }) => !mobileMapOpen && 'display: none'};
     }

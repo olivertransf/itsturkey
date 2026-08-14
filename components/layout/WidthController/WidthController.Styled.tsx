@@ -13,7 +13,7 @@ const StyledWidthController = styled.div<StyledProps>`
   margin: 0 auto;
   min-height: 100%;
 
-  @media (max-width: 600px) {
+  @media (max-width: 1024px) {
     padding: ${({ mobilePadding }) => {
       if (mobilePadding === '0px') {
         return '0 var(--page-gutter)'

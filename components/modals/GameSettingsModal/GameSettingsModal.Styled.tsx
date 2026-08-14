@@ -341,7 +341,7 @@ const StyledGameSettingsModal = styled.div`
     width: 100%;
   }
 
-  @media (max-width: 600px) {
+  @media (max-width: 900px) {
     &.map-play-inline-inner .mainContent {
       padding: var(--stack-gap-md) var(--page-gutter) var(--stack-gap-sm);
       gap: var(--stack-gap-md);

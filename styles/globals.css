@@ -247,6 +247,11 @@
   border-bottom: 1px solid var(--divider-line);
 }
 
+html {
+  height: 100%;
+  height: 100dvh;
+}
+
 body {
   padding: 0;
   margin: 0;
@@ -255,12 +260,11 @@ body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   overflow: hidden;
-  /* display: flex;
-  flex-direction: column; */
-  height: 100vh;
+  height: 100%;
+  height: 100dvh;
   position: relative;
-  /* width: 100%; */
-  /* overflow-y: auto; */
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 
 a {
@@ -316,9 +320,10 @@ textarea {
   background: rgba(255, 255, 255, 0.18);
 }
 
-@media (max-width: 600px) {
+@media (max-width: 1024px) {
   body {
     height: auto;
+    min-height: 100dvh;
     overflow: auto;
   }
 }

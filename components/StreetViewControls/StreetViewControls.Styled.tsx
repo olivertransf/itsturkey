@@ -1,4 +1,5 @@
 import styled, { css } from 'styled-components'
+import { PHONE_GUESS_MAP_MQ } from '@utils/constants/breakpoints'
 
 const StyledStreetViewControls = styled.div<{ $hudPrimaryStyle?: boolean }>`
   position: absolute;
@@ -13,6 +14,10 @@ const StyledStreetViewControls = styled.div<{ $hudPrimaryStyle?: boolean }>`
     display: grid;
     gap: 8px;
     pointer-events: auto;
+
+    @media ${PHONE_GUESS_MAP_MQ} {
+      bottom: max(120px, calc(100px + env(safe-area-inset-bottom)));
+    }
 
     ${({ $hudPrimaryStyle }) =>
       $hudPrimaryStyle
@@ -31,8 +36,8 @@ const StyledStreetViewControls = styled.div<{ $hudPrimaryStyle?: boolean }>`
 
   .exit-control {
     position: absolute;
-    top: 10px;
-    left: 10px;
+    top: max(10px, env(safe-area-inset-top, 0px));
+    left: max(10px, env(safe-area-inset-left, 0px));
     pointer-events: auto;
   }
 

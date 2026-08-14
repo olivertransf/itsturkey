@@ -28,15 +28,16 @@ export function isPanZoomEnabled(settings: Pick<GameSettingsType, 'canPan' | 'ca
   return settings.canPan || settings.canZoom
 }
 
-export const getGuessMapOptions = (gameSettings: Pick<GameSettingsType, 'canPan' | 'canZoom'>) => {
-  const panEnabled = isPanZoomEnabled(gameSettings)
-
+export const getGuessMapOptions = (_gameSettings?: Pick<GameSettingsType, 'canPan' | 'canZoom'>) => {
+  // Guess-map pan/zoom is always on (including NMPZ). Street View restrictions
+  // only apply via getStreetviewOptions / interaction blockers.
   return {
     ...GUESS_MAP_OPTIONS,
-    draggable: panEnabled,
-    gestureHandling: panEnabled ? 'greedy' : 'none',
-    scrollwheel: panEnabled,
-    disableDoubleClickZoom: !panEnabled,
+    draggable: true,
+    gestureHandling: 'greedy' as const,
+    scrollwheel: true,
+    disableDoubleClickZoom: false,
+    keyboardShortcuts: false,
   }
 }
 

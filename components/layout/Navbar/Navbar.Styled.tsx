@@ -163,8 +163,11 @@ const StyledNavbar = styled.div`
     border-radius: 5px;
   }
 
-  @media (max-width: 600px) {
-    position: fixed;
+  @media (max-width: 1024px) {
+    position: sticky;
+    top: 0;
+    padding-left: max(1rem, env(safe-area-inset-left, 0px));
+    padding-right: max(1rem, env(safe-area-inset-right, 0px));
     background-color: rgba(16, 16, 18, 0.94);
   }
 `
