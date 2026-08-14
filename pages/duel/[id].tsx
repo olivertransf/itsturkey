@@ -59,6 +59,7 @@ const DuelRoomPage: PageType = () => {
   const [recapView, setRecapView] = useState<DuelMatchRecapView>('all')
   const [endPhase, setEndPhase] = useState<'final_damage' | 'summary'>('final_damage')
   const [watchers, setWatchers] = useState<WatcherChip[]>([])
+  const prevGuestJoined = useRef<boolean | null>(null)
 
   const isAuthenticated = status === 'authenticated'
   const loginHref =
@@ -165,8 +166,18 @@ const DuelRoomPage: PageType = () => {
     payload?.guestJoined,
   ])
 
-  usePusherSubscription(duelPushChannel, 'duel.updated', () => void refresh(), !!duelPushChannel)
-  usePusherSubscription(duelAltPushChannel, 'duel.updated', () => void refresh(), !!duelAltPushChannel)
+  const roomPushEnabled = Boolean(duelPushChannel)
+  const altRoomPushEnabled = Boolean(duelAltPushChannel)
+  const hostJoinPushEnabled = useMemo(() => {
+    if (!hostUserChannel) return false
+    if (!payload) return false
+    if (payload.status !== 'waiting') return false
+    if (payload.guestJoined) return false
+    return true
+  }, [hostUserChannel, payload])
+
+  usePusherSubscription(duelPushChannel, 'duel.updated', () => void refresh(), roomPushEnabled)
+  usePusherSubscription(duelAltPushChannel, 'duel.updated', () => void refresh(), altRoomPushEnabled)
 
   usePusherSubscription(
     hostUserChannel,
@@ -175,16 +186,17 @@ const DuelRoomPage: PageType = () => {
       const row = data as { inviteSegment?: string; duelObjectId?: string; guestName?: string }
       const seg = typeof row?.inviteSegment === 'string' ? row.inviteSegment.trim() : ''
       const oid = typeof row?.duelObjectId === 'string' ? row.duelObjectId.trim() : ''
-      const matches =
-        (seg && (seg === duelId || seg === payload?.shortCode)) ||
-        (oid && (oid === duelId || oid === payload?.shortCode))
-      if (!matches) return
+      const matchesThisDuel =
+        seg === duelId ||
+        seg === payload?.shortCode ||
+        oid === duelId ||
+        oid === payload?.shortCode
+      if (!matchesThisDuel) return
       void refresh()
     },
-    !!hostUserChannel && payload?.status === 'waiting' && !payload?.guestJoined
+    hostJoinPushEnabled
   )
 
-  const prevGuestJoined = useRef<boolean | null>(null)
   useEffect(() => {
     if (payload?.viewerRole !== 'host' || payload.status !== 'waiting') {
       prevGuestJoined.current = payload?.guestJoined ?? null
