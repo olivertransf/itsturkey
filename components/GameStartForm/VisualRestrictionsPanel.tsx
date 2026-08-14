@@ -20,6 +20,8 @@ type Props = {
   disabled?: boolean
   /** Constrain chip list height so create lobbies stay compact. */
   listMaxHeight?: number
+  /** Hide the inner "Wacky filters" title when the accordion already says it. */
+  embedded?: boolean
 }
 
 const Root = styled.section`
@@ -28,10 +30,10 @@ const Root = styled.section`
   gap: 12px;
 `
 
-const TitleRow = styled.div`
+const TitleRow = styled.div<{ $embedded?: boolean }>`
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
+  justify-content: ${({ $embedded }) => ($embedded ? 'flex-end' : 'space-between')};
   gap: 12px;
 `
 
@@ -63,10 +65,6 @@ const IntensityRow = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid var(--border-subtle);
-  background: rgba(255, 255, 255, 0.03);
 
   .intensity-label {
     display: flex;
@@ -139,10 +137,6 @@ const PixelRow = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid var(--border-subtle);
-  background: rgba(255, 255, 255, 0.03);
 
   .pixel-label {
     display: flex;
@@ -159,7 +153,7 @@ const PixelRow = styled.div`
   }
 `
 
-const VisualRestrictionsPanel: FC<Props> = ({ value, onChange, disabled, listMaxHeight }) => {
+const VisualRestrictionsPanel: FC<Props> = ({ value, onChange, disabled, listMaxHeight, embedded }) => {
   const normalized = useMemo(() => normalizeVisualRestrictions(value), [value])
   const anyOn = VISUAL_RESTRICTION_CATALOG.some(({ key }) => Boolean(normalized[key]))
   const intensity = clampVisualIntensity(
@@ -193,8 +187,8 @@ const VisualRestrictionsPanel: FC<Props> = ({ value, onChange, disabled, listMax
 
   return (
     <Root aria-label="Visual restrictions">
-      <TitleRow>
-        <Title>Wacky filters</Title>
+      <TitleRow $embedded={embedded}>
+        {embedded ? null : <Title>Filters</Title>}
         <ClearBtn
           type="button"
           disabled={disabled || !anyOn}
@@ -219,7 +213,7 @@ const VisualRestrictionsPanel: FC<Props> = ({ value, onChange, disabled, listMax
           disabled={disabled}
         />
         <p className="intensity-hint">
-          1 is the normal look. Drag up toward Impossible for extreme distortion.
+          1 is the normal look.
         </p>
       </IntensityRow>
 
