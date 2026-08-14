@@ -1,9 +1,11 @@
-import { FC } from 'react'
+import { FC, useCallback, useMemo } from 'react'
 import Game from '@backend/models/game'
 import { StreakContinueCard, StreakEndedCard } from '@components/resultCards'
 import { StreaksResultMap } from '@components/StreaksResultMap'
 import { StreetView } from '@components/StreetView'
 import { GameViewType } from '@types'
+import { mailman, normalizeStreetViewLiveView } from '@utils/helpers'
+import type { StreetViewLiveView } from '@utils/helpers/streetViewLiveView'
 import { StyledGameView } from './'
 
 type Props = {
@@ -11,13 +13,35 @@ type Props = {
   setGameData: (gameData: Game) => void
   view: GameViewType
   setView: (view: GameViewType) => void
+  isSpectator?: boolean
 }
 
-const StreakGameView: FC<Props> = ({ gameData, setGameData, view, setView }) => {
+const StreakGameView: FC<Props> = ({ gameData, setGameData, view, setView, isSpectator = false }) => {
+  const followLiveView = useMemo(
+    () => (isSpectator ? normalizeStreetViewLiveView(gameData.liveView) : null),
+    [isSpectator, gameData.liveView]
+  )
+
+  const onLiveViewChange = useCallback(
+    (liveView: StreetViewLiveView) => {
+      if (isSpectator || !gameData._id) return
+      void mailman(`games/${gameData._id}`, 'PUT', JSON.stringify({ liveView }))
+    },
+    [gameData._id, isSpectator]
+  )
+
   return (
     <StyledGameView>
       <div className="play-wrapper" style={{ display: view === 'Game' ? 'block' : 'none' }}>
-        <StreetView gameData={gameData} setGameData={setGameData} view={view} setView={setView} />
+        <StreetView
+          gameData={gameData}
+          setGameData={setGameData}
+          view={view}
+          setView={setView}
+          isSpectator={isSpectator}
+          onLiveViewChange={isSpectator ? undefined : onLiveViewChange}
+          followLiveView={followLiveView}
+        />
       </div>
 
       <div
@@ -28,11 +52,22 @@ const StreakGameView: FC<Props> = ({ gameData, setGameData, view, setView }) => 
 
         <div className="results-card-wrapper">
           {view === 'Result' && gameData.state === 'started' && (
-            <StreakContinueCard gameData={gameData} view={view} setView={setView} />
+            <StreakContinueCard
+              gameData={gameData}
+              view={view}
+              setView={setView}
+              nextLabel={isSpectator ? 'Continue watching' : undefined}
+            />
           )}
 
           {view === 'Result' && gameData.state === 'finished' && (
-            <StreakEndedCard gameData={gameData} setGameData={setGameData} view={view} setView={setView} />
+            <StreakEndedCard
+              gameData={gameData}
+              setGameData={setGameData}
+              view={view}
+              setView={setView}
+              isSpectator={isSpectator}
+            />
           )}
         </div>
       </div>

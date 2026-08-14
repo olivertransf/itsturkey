@@ -11,6 +11,8 @@ type User = {
   friendCode?: string
   lastSeenAt?: Date
   presenceActivity?: 'idle' | 'browsing' | 'in_game' | 'in_duel'
+  /** Optional live session pointer for friends Watch (cleared when not in a match). */
+  presenceSession?: { kind: 'duel' | 'game' | 'multi'; id: string }
   createdAt?: Date
   isAdmin?: boolean
   mapsAPIKey?: string

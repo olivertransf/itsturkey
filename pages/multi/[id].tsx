@@ -21,7 +21,11 @@ const MultiGamePage: PageType = () => {
   const router = useRouter()
   const sessionId = router.query.id as string
 
-  usePresenceHeartbeat('in_game', Boolean(multiData && multiData.session.state === 'started'))
+  usePresenceHeartbeat(
+    'in_game',
+    Boolean(multiData && multiData.session.state === 'started'),
+    sessionId ? { kind: 'multi', id: sessionId } : null
+  )
 
   useEffect(() => {
     if (!sessionId) {

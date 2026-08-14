@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { collections, getUserId, throwError } from '@backend/utils'
+import { normalizePresenceSession } from '@utils/friends/friendPresence'
 
 const ALLOWED_ACTIVITIES = new Set(['idle', 'browsing', 'in_game', 'in_duel'])
 
@@ -10,11 +11,30 @@ const postUserPresence = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const raw = typeof req.body?.activity === 'string' ? req.body.activity.trim() : 'idle'
   const activity = ALLOWED_ACTIVITIES.has(raw) ? raw : 'idle'
+  const session = normalizePresenceSession(req.body?.presenceSession)
+  const inMatch = activity === 'in_game' || activity === 'in_duel'
+  const persistSession = inMatch && session ? session : undefined
 
-  await collections.users?.updateOne(
-    { _id: new ObjectId(userId) },
-    { $set: { lastSeenAt: new Date(), presenceActivity: activity } }
-  )
+  if (persistSession) {
+    await collections.users?.updateOne(
+      { _id: new ObjectId(userId) },
+      {
+        $set: {
+          lastSeenAt: new Date(),
+          presenceActivity: activity,
+          presenceSession: persistSession,
+        },
+      }
+    )
+  } else {
+    await collections.users?.updateOne(
+      { _id: new ObjectId(userId) },
+      {
+        $set: { lastSeenAt: new Date(), presenceActivity: activity },
+        $unset: { presenceSession: '' },
+      }
+    )
+  }
 
   res.status(200).send({ ok: true })
 }

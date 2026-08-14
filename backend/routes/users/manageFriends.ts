@@ -2,6 +2,7 @@ import { ObjectId } from 'mongodb'
 import { NextApiRequest, NextApiResponse } from 'next'
 import type FriendshipEdge from '@backend/models/friendship'
 import { collections, getUserId, throwError } from '@backend/utils'
+import { normalizePresenceSession } from '@utils/friends/friendPresence'
 
 function sortedPair(a: ObjectId, b: ObjectId): { low: ObjectId; high: ObjectId } {
   const as = a.toHexString()
@@ -31,7 +32,7 @@ export const listFriends = async (req: NextApiRequest, res: NextApiResponse) => 
   const users =
     (await collections.users
       ?.find({ _id: { $in: peerIds } })
-      .project({ name: 1, friendCode: 1, lastSeenAt: 1, presenceActivity: 1 })
+      .project({ name: 1, friendCode: 1, lastSeenAt: 1, presenceActivity: 1, presenceSession: 1 })
       .toArray()) ?? []
 
   const now = Date.now()
@@ -60,6 +61,11 @@ export const listFriends = async (req: NextApiRequest, res: NextApiResponse) => 
       presenceActivity = 'browsing'
     }
 
+    const presenceSession =
+      online && (presenceActivity === 'in_game' || presenceActivity === 'in_duel')
+        ? normalizePresenceSession((u as { presenceSession?: unknown }).presenceSession)
+        : undefined
+
     return {
       id,
       name: u.name,
@@ -67,6 +73,7 @@ export const listFriends = async (req: NextApiRequest, res: NextApiResponse) => 
       lastSeenAt,
       presenceActivity,
       online,
+      ...(presenceSession ? { presenceSession } : {}),
     }
   })
 

@@ -33,6 +33,16 @@ type Game = {
   mode: 'standard' | 'streak'
   streak: number
   isDailyChallenge?: boolean
+  /** Latest Street View pose for friend spectate follow. */
+  liveView?: {
+    heading: number
+    pitch: number
+    zoom: number
+    panoId?: string
+    lat?: number
+    lng?: number
+    updatedAt?: Date | string
+  }
 }
 
 export default Game

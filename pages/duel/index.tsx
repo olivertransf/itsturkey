@@ -12,9 +12,9 @@ import ToggleSwitch from '@components/system/ToggleSwitch/ToggleSwitch'
 import StyledMultiGamePage from '@styles/MultiGamePage.Styled'
 import {
   GamifiedCenterStage,
-  GamifiedDuelGrid,
+  GamifiedDuelCreateGrid,
+  GamifiedDuelCreatePanel,
   GamifiedDuelMapColumn,
-  GamifiedDuelSettingsColumn,
   GamifiedFormCardWide,
 } from '@styles/GamifiedHubShell.Styled'
 import { isMapExcludedFromPicker } from '@utils/constants/mapPicker'
@@ -32,11 +32,21 @@ import {
 import type { VisualRestrictions } from '@utils/constants/visualRestrictions'
 import styled from 'styled-components'
 
+const PageHead = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+`
+
 const CardHero = styled.div`
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  margin-bottom: 16px;
+  min-width: 0;
+  flex: 1;
 
   .glyph {
     width: 48px;
@@ -58,7 +68,7 @@ const CardHero = styled.div`
 
   h1 {
     margin: 0;
-    font-size: clamp(1.35rem, 4vw, 1.65rem);
+    font-size: clamp(1.4rem, 3.2vw, 1.85rem);
     font-weight: 800;
     letter-spacing: -0.03em;
     line-height: 1.15;
@@ -68,19 +78,24 @@ const CardHero = styled.div`
   .tag {
     margin: 6px 0 0;
     font-size: 13px;
-    line-height: 1.4;
+    line-height: 1.45;
     color: var(--text-muted);
+    max-width: 52ch;
   }
 `
 
 const FieldLabel = styled.label`
   display: block;
-  margin: 14px 0 7px;
+  margin: 12px 0 7px;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #94a3b8;
+
+  &:first-child {
+    margin-top: 0;
+  }
 `
 
 const FieldInput = styled.input`
@@ -103,7 +118,7 @@ const ModeStrip = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: 6px;
+  margin-top: 2px;
   padding: 12px 14px;
   border-radius: var(--radius-lg);
   background: rgba(255, 255, 255, 0.04);
@@ -111,15 +126,18 @@ const ModeStrip = styled.div`
 
   span.mode-copy {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 8px;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
+    line-height: 1.35;
     color: var(--text-primary);
 
     svg {
       width: 18px;
       height: 18px;
+      flex-shrink: 0;
+      margin-top: 1px;
       opacity: 0.9;
     }
   }
@@ -127,14 +145,38 @@ const ModeStrip = styled.div`
 
 const Row = styled.div`
   display: flex;
-  gap: 14px;
+  gap: 12px;
   flex-wrap: wrap;
   align-items: flex-end;
 `
 
 const FieldGrow = styled.div`
   flex: 1;
-  min-width: 140px;
+  min-width: 120px;
+`
+
+const MapPanel = styled(GamifiedDuelMapColumn)`
+  padding: 14px 14px 16px;
+  border-radius: var(--radius-lg);
+  background-color: var(--bg-surface);
+  border: var(--border-default);
+  min-height: 0;
+
+  @media (min-width: 900px) {
+    position: sticky;
+    top: 12px;
+    max-height: calc(100dvh - 48px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+`
+
+const MapPickerWrap = styled.div`
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 `
 
 /** Same pool duels already draw rounds from (`DUEL_ROUND_LOCATION_POOL_ID`); default scoring/UI map matches. */
@@ -269,11 +311,11 @@ const DuelLobbyPage: NextPage = () => {
     <StyledMultiGamePage>
       <Meta title="Create Duel" />
 
-      <GamifiedCenterStage>
+      <GamifiedCenterStage style={{ alignItems: 'stretch', justifyContent: 'flex-start' }}>
         <GamifiedFormCardWide>
-          <div style={{ marginBottom: 18 }}>
+          <PageHead>
             <PageBackLink href="/" label="Home" />
-          </div>
+          </PageHead>
 
           <CardHero>
             <div className="glyph">
@@ -281,110 +323,132 @@ const DuelLobbyPage: NextPage = () => {
             </div>
             <div>
               <h1>Create duel room</h1>
-              <p className="tag">1v1 invite — share the link or code. Sign in for your name on profile and friends.</p>
+              <p className="tag">
+                1v1 invite — share the link or code. Sign in for your name on profile and friends.
+              </p>
             </div>
           </CardHero>
 
-          <GamifiedDuelGrid>
-            <GamifiedDuelMapColumn>
-              <FieldLabel>Map</FieldLabel>
-              <MapPickerGrid
-                options={selectOptions}
-                value={mapField}
-                onChange={setMapField}
-                loading={mapsLoading}
-                maxHeight={440}
-                showDescriptions={false}
-              />
-            </GamifiedDuelMapColumn>
+          <GamifiedDuelCreateGrid>
+            <MapPanel className="duel-create-map">
+              <FieldLabel as="div" style={{ marginTop: 0 }}>
+                Map
+              </FieldLabel>
+              <MapPickerWrap>
+                <MapPickerGrid
+                  options={selectOptions}
+                  value={mapField}
+                  onChange={setMapField}
+                  loading={mapsLoading}
+                  maxHeight={560}
+                  showDescriptions={false}
+                />
+              </MapPickerWrap>
+            </MapPanel>
 
-            <GamifiedDuelSettingsColumn>
-              {status !== 'authenticated' && status !== 'loading' && (
-                <>
-                  <FieldLabel htmlFor="hostNick">Your name (guests)</FieldLabel>
-                  <FieldInput
-                    id="hostNick"
-                    type="text"
-                    maxLength={32}
-                    placeholder="Optional — lobby display"
-                    value={hostNickname}
-                    onChange={(e) => setHostNickname(e.target.value)}
-                    style={{ marginBottom: 12 }}
-                  />
-                </>
-              )}
-
-              <FieldLabel>Mode</FieldLabel>
-              <ModeStrip>
-                <ToggleSwitch isActive={mode === 'points'} setIsActive={(on) => setMode(on ? 'points' : 'hp')} />
-                <span className="mode-copy">
-                  {mode === 'hp' ? (
-                    <>
-                      <HeartIcon /> HP · until KO
-                    </>
-                  ) : (
-                    <>
-                      <LightningBoltIcon /> Points · {rounds} rounds
-                    </>
-                  )}
-                </span>
-              </ModeStrip>
-
-              {mode === 'points' && (
-                <>
-                  <FieldLabel htmlFor="rounds">Rounds</FieldLabel>
-                  <FieldInput
-                    id="rounds"
-                    type="number"
-                    min={1}
-                    max={MAX_TOTAL_ROUNDS}
-                    value={rounds}
-                    onChange={(e) => setRounds(Number(e.target.value))}
-                  />
-                </>
-              )}
-
-              <Row>
-                <FieldGrow>
-                  <FieldLabel htmlFor="hpHost">Your HP</FieldLabel>
-                  <FieldInput
-                    id="hpHost"
-                    type="number"
-                    min={100}
-                    value={startingHpHost}
-                    onChange={(e) => setStartingHpHost(Number(e.target.value))}
-                  />
-                </FieldGrow>
-                <FieldGrow>
-                  <FieldLabel htmlFor="hpGuest">Opponent HP</FieldLabel>
-                  <FieldInput
-                    id="hpGuest"
-                    type="number"
-                    min={100}
-                    value={startingHpGuest}
-                    onChange={(e) => setStartingHpGuest(Number(e.target.value))}
-                  />
-                </FieldGrow>
-              </Row>
-
-              {mode === 'hp' && (
-                <>
-                  <FieldLabel>Damage multiplier</FieldLabel>
-                  <ModeStrip style={{ marginTop: 4, marginBottom: 8 }}>
-                    <ToggleSwitch
-                      isActive={multiplierMode === 'win_streak'}
-                      setIsActive={(on) => setMultiplierMode(on ? 'win_streak' : 'round_ramp')}
+            <GamifiedDuelCreatePanel className="duel-create-match" aria-label="Match settings">
+              <h2 className="panel-title">Match</h2>
+              <div className="panel-body">
+                {status !== 'authenticated' && status !== 'loading' && (
+                  <>
+                    <FieldLabel htmlFor="hostNick">Your name (guests)</FieldLabel>
+                    <FieldInput
+                      id="hostNick"
+                      type="text"
+                      maxLength={32}
+                      placeholder="Optional — lobby display"
+                      value={hostNickname}
+                      onChange={(e) => setHostNickname(e.target.value)}
                     />
-                    <span className="mode-copy">
-                      {multiplierMode === 'round_ramp'
-                        ? 'Round ramp — shared mult by round (1× r1–4, 1.5× r5, +0.5× after)'
-                        : 'Win streak — winner’s mult +0.5× each round won'}
-                    </span>
-                  </ModeStrip>
-                </>
-              )}
+                  </>
+                )}
 
-              <div style={{ marginTop: 12 }}>
+                <FieldLabel>Mode</FieldLabel>
+                <ModeStrip>
+                  <ToggleSwitch isActive={mode === 'points'} setIsActive={(on) => setMode(on ? 'points' : 'hp')} />
+                  <span className="mode-copy">
+                    {mode === 'hp' ? (
+                      <>
+                        <HeartIcon /> HP · until KO
+                      </>
+                    ) : (
+                      <>
+                        <LightningBoltIcon /> Points · {rounds} rounds
+                      </>
+                    )}
+                  </span>
+                </ModeStrip>
+
+                {mode === 'points' && (
+                  <>
+                    <FieldLabel htmlFor="rounds">Rounds</FieldLabel>
+                    <FieldInput
+                      id="rounds"
+                      type="number"
+                      min={1}
+                      max={MAX_TOTAL_ROUNDS}
+                      value={rounds}
+                      onChange={(e) => setRounds(Number(e.target.value))}
+                    />
+                  </>
+                )}
+
+                <Row>
+                  <FieldGrow>
+                    <FieldLabel htmlFor="hpHost">Your HP</FieldLabel>
+                    <FieldInput
+                      id="hpHost"
+                      type="number"
+                      min={100}
+                      value={startingHpHost}
+                      onChange={(e) => setStartingHpHost(Number(e.target.value))}
+                    />
+                  </FieldGrow>
+                  <FieldGrow>
+                    <FieldLabel htmlFor="hpGuest">Opponent HP</FieldLabel>
+                    <FieldInput
+                      id="hpGuest"
+                      type="number"
+                      min={100}
+                      value={startingHpGuest}
+                      onChange={(e) => setStartingHpGuest(Number(e.target.value))}
+                    />
+                  </FieldGrow>
+                </Row>
+
+                {mode === 'hp' && (
+                  <>
+                    <FieldLabel>Damage multiplier</FieldLabel>
+                    <ModeStrip>
+                      <ToggleSwitch
+                        isActive={multiplierMode === 'win_streak'}
+                        setIsActive={(on) => setMultiplierMode(on ? 'win_streak' : 'round_ramp')}
+                      />
+                      <span className="mode-copy">
+                        {multiplierMode === 'round_ramp'
+                          ? 'Round ramp — 1× early, then climbs each round'
+                          : 'Win streak — winner’s mult +0.5× each round won'}
+                      </span>
+                    </ModeStrip>
+                  </>
+                )}
+              </div>
+
+              <div className="panel-footer">
+                <Button
+                  variant="primary"
+                  style={{ width: '100%' }}
+                  disabled={submitting || status === 'loading'}
+                  onClick={() => void create()}
+                >
+                  {submitting ? 'Creating…' : 'Create room'}
+                </Button>
+              </div>
+            </GamifiedDuelCreatePanel>
+
+            <GamifiedDuelCreatePanel className="duel-create-filters" aria-label="Round and visual settings">
+              <h2 className="panel-title">Round & filters</h2>
+              <div className="panel-body">
                 <LobbyGameSettings
                   defaultsLocked={defaultsLocked}
                   onToggleDefaults={onToggleDefaults}
@@ -400,17 +464,8 @@ const DuelLobbyPage: NextPage = () => {
                   setVisualRestrictions={setVisualRestrictions}
                 />
               </div>
-
-              <Button
-                variant="primary"
-                style={{ marginTop: 20, width: '100%' }}
-                disabled={submitting || status === 'loading'}
-                onClick={() => void create()}
-              >
-                {submitting ? 'Creating…' : 'Create room'}
-              </Button>
-            </GamifiedDuelSettingsColumn>
-          </GamifiedDuelGrid>
+            </GamifiedDuelCreatePanel>
+          </GamifiedDuelCreateGrid>
         </GamifiedFormCardWide>
       </GamifiedCenterStage>
     </StyledMultiGamePage>

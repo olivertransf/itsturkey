@@ -179,6 +179,13 @@ const StyledHomeFriendsCard = styled.div`
     color: var(--text-muted);
   }
 
+  .friends-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
   .friends-invite-label {
     display: inline-flex;
     align-items: center;

@@ -10,6 +10,8 @@ import { DuelForfeitModal } from '@components/duel/DuelRoomPanels'
 import { updateStartTime } from '@redux/slices'
 import type { GameViewType, LocationType } from '@types'
 import { mailman, showToast } from '@utils/helpers'
+import type { StreetViewLiveView } from '@utils/helpers/streetViewLiveView'
+import { normalizeStreetViewLiveView } from '@utils/helpers/streetViewLiveView'
 import { useVisibleInterval } from '@utils/useVisibleInterval'
 import styled, { keyframes } from 'styled-components'
 import { duelRoundDamageMultiplier } from '@backend/utils/duelConstants'
@@ -656,6 +658,7 @@ type StreetSectionProps = {
   onRefresh: () => Promise<void>
   /** Force a provisional pin PATCH so timeout resolve has latest coords. */
   forcePinFlush?: boolean
+  followLiveView?: StreetViewLiveView | null
 }
 
 const DuelStreetSection = memo(
@@ -674,6 +677,7 @@ const DuelStreetSection = memo(
     viewerRole,
     onRefresh,
     forcePinFlush = false,
+    followLiveView = null,
   }: StreetSectionProps) {
     const [view, setView] = useState<GameViewType>('Game')
     const pinRef = useRef<{ lat: number; lng: number } | null>(null)
@@ -714,6 +718,14 @@ const DuelStreetSection = memo(
       [readOnly, youLocked]
     )
 
+    const onLiveViewChange = useCallback(
+      (liveView: StreetViewLiveView) => {
+        if (readOnly || (viewerRole !== 'host' && viewerRole !== 'guest')) return
+        void mailman(`duels/${duelId}/live-view`, 'POST', JSON.stringify({ liveView }))
+      },
+      [duelId, readOnly, viewerRole]
+    )
+
     const streetChatDock =
       viewerRole === 'host' || viewerRole === 'guest' || viewerRole === 'spectator' ? (
         <DuelStreetChatDock
@@ -740,10 +752,13 @@ const DuelStreetSection = memo(
             view={view}
             setView={setView}
             isDuel
+            isSpectator={readOnly}
             duelGuessSubmit={readOnly ? undefined : duelGuessSubmit}
             duelGuessLocked={readOnly || youLocked}
             onGuessCoordinateChange={onGuessCoordinateChange}
             primaryControlsLeading={streetChatDock}
+            onLiveViewChange={readOnly ? undefined : onLiveViewChange}
+            followLiveView={readOnly ? followLiveView : null}
           />
         </PanoStretch>
       </StreetOverlayWrap>
@@ -760,7 +775,8 @@ const DuelStreetSection = memo(
     prev.chatMessages === next.chatMessages &&
     prev.playerAvatars === next.playerAvatars &&
     prev.viewerRole === next.viewerRole &&
-    prev.forcePinFlush === next.forcePinFlush
+    prev.forcePinFlush === next.forcePinFlush &&
+    prev.followLiveView === next.followLiveView
 )
 
 type Props = {
@@ -831,6 +847,24 @@ const DuelPlaySurface: FC<Props> = ({
   const [forfeitOpen, setForfeitOpen] = useState(false)
   const [forfeitSubmitting, setForfeitSubmitting] = useState(false)
   const [chatOpen, setChatOpen] = useState(false)
+
+  const followSide = useMemo((): 'host' | 'guest' => {
+    if (!spectating) return 'host'
+    const raw = router.query.follow
+    const follow = typeof raw === 'string' ? raw : Array.isArray(raw) ? raw[0] : ''
+    if (follow === 'guest') return 'guest'
+    if (follow === 'host') return 'host'
+    const ids = payload.playerUserIds
+    if (follow && ids?.guest === follow) return 'guest'
+    if (follow && ids?.host === follow) return 'host'
+    return 'host'
+  }, [spectating, router.query.follow, payload.playerUserIds])
+
+  const followLiveView = useMemo(() => {
+    if (!spectating) return null
+    const raw = followSide === 'guest' ? payload.liveViews?.guest : payload.liveViews?.host
+    return normalizeStreetViewLiveView(raw)
+  }, [spectating, followSide, payload.liveViews])
 
   const lr = payload.lastRoundResult
   const revealActual = payload.lastRoundActualLocation
@@ -1161,6 +1195,7 @@ const DuelPlaySurface: FC<Props> = ({
             playerAvatars={payload.playerAvatars}
             viewerRole={role}
             onRefresh={onRefresh}
+            followLiveView={followLiveView}
             forcePinFlush={
               !spectating &&
               !payload.flags.youLocked &&

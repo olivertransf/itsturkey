@@ -39,6 +39,6 @@ describe('visualRestrictions', () => {
     expect(filter).toContain('grayscale(1)')
     expect(filter).toContain('invert(1)')
     expect(filter).toContain('hue-rotate(var(--sv-hue, 0deg))')
-    expect(filter).toContain('blur(3.6px)')
+    expect(filter).toContain('blur(7px)')
   })
 })

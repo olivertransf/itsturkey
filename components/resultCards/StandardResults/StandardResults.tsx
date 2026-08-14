@@ -22,6 +22,7 @@ type Props = {
   onEndUnlimitedSession?: () => Promise<void>
   plonkitCountryIso?: string | null
   plonkitMapLabel?: string
+  nextLabel?: string
 }
 
 const StandardResults: FC<Props> = ({
@@ -36,6 +37,7 @@ const StandardResults: FC<Props> = ({
   onEndUnlimitedSession,
   plonkitCountryIso,
   plonkitMapLabel,
+  nextLabel: nextLabelProp,
 }) => {
   const dispatch = useAppDispatch()
   const user = useAppSelector((state) => state.user)
@@ -87,7 +89,8 @@ const StandardResults: FC<Props> = ({
   }
 
   const nextLabel =
-    !unlimited && round > effectiveTotal ? 'View Results' : 'Next Round'
+    nextLabelProp ??
+    (!unlimited && round > effectiveTotal ? 'View Results' : 'Next Round')
 
   return (
     <StyledStandardResults>

@@ -75,6 +75,13 @@ export const clampPixelateLevel = (n: unknown): number => {
   return Math.min(16, Math.max(2, Math.round(v)))
 }
 
+/** Mosaic cell radius for the SVG pixelate filter (higher level → chunkier). */
+export const pixelateFilterCellSize = (level: unknown): number => {
+  const n = clampPixelateLevel(level)
+  // Bias toward chunkier tiles so mid levels read clearly on Street View.
+  return Math.round(3 + ((n - 2) * 18) / 14)
+}
+
 export const normalizeVisualRestrictions = (
   raw?: VisualRestrictions | null
 ): VisualRestrictions => {
@@ -98,19 +105,22 @@ export const buildStreetViewCssFilter = (v: VisualRestrictions): string => {
   const parts: string[] = []
   if (v.grayscale) parts.push('grayscale(1)')
   if (v.invert) parts.push('invert(1)')
-  if (v.sepia) parts.push('sepia(0.85)')
-  if (v.blur && v.drunk) parts.push('blur(3.6px)')
-  else if (v.drunk) parts.push('blur(2.2px)')
-  else if (v.blur) parts.push('blur(3.2px)')
-  if (v.posterize) parts.push('contrast(1.85) saturate(1.65) brightness(1.05)')
-  if (v.comic) parts.push('contrast(2.1) saturate(1.8) brightness(1.08)')
-  if (v.nightVision) parts.push('grayscale(0.35) sepia(0.4) hue-rotate(70deg) saturate(2.4) brightness(1.15) contrast(1.25)')
-  if (v.deepFry) parts.push('contrast(2.4) saturate(2.8) brightness(1.15) hue-rotate(15deg)')
+  if (v.sepia) parts.push('sepia(1) contrast(1.15) brightness(0.95)')
+  if (v.blur && v.drunk) parts.push('blur(7px)')
+  else if (v.drunk) parts.push('blur(4.5px)')
+  else if (v.blur) parts.push('blur(6.5px)')
+  if (v.posterize) parts.push('contrast(2.4) saturate(2.1) brightness(1.08)')
+  if (v.comic) parts.push('contrast(2.8) saturate(2.4) brightness(1.12)')
+  if (v.nightVision)
+    parts.push(
+      'grayscale(0.2) sepia(0.65) hue-rotate(75deg) saturate(3.2) brightness(1.35) contrast(1.55)'
+    )
+  if (v.deepFry) parts.push('contrast(3.2) saturate(3.6) brightness(1.25) hue-rotate(22deg)')
   if (v.rgbSplit) {
     parts.push(
-      'drop-shadow(-3px 0 0 rgba(255,0,80,0.55)) drop-shadow(3px 0 0 rgba(0,220,255,0.5))'
+      'drop-shadow(-7px 0 0 rgba(255,0,80,0.85)) drop-shadow(7px 0 0 rgba(0,220,255,0.8))'
     )
   }
-  if (v.hueShift) parts.push('hue-rotate(var(--sv-hue, 0deg))')
+  if (v.hueShift) parts.push('hue-rotate(var(--sv-hue, 0deg)) saturate(1.35)')
   return parts.join(' ')
 }

@@ -66,5 +66,26 @@ export type DuelClientPayload = {
   rematchReady: { host: boolean; guest: boolean }
   playerNames: { host: string; guest: string }
   playerAvatars: { host: DuelGuessAvatar; guest: DuelGuessAvatar }
+  playerUserIds?: { host: string | null; guest: string | null }
+  liveViews?: {
+    host: {
+      heading: number
+      pitch: number
+      zoom: number
+      panoId?: string
+      lat?: number
+      lng?: number
+      updatedAt?: string
+    } | null
+    guest: {
+      heading: number
+      pitch: number
+      zoom: number
+      panoId?: string
+      lat?: number
+      lng?: number
+      updatedAt?: string
+    } | null
+  }
   chatMessages?: DuelChatMessageClient[]
 }

@@ -91,6 +91,27 @@ export type DuelSession = {
   rematchReadyHost?: boolean
   rematchReadyGuest?: boolean
   chatMessages?: { senderRole: DuelSide; text: string; createdAt: Date }[]
+  /** Latest Street View pose per side for friend spectate follow. */
+  liveViews?: {
+    host?: {
+      heading: number
+      pitch: number
+      zoom: number
+      panoId?: string
+      lat?: number
+      lng?: number
+      updatedAt?: Date
+    }
+    guest?: {
+      heading: number
+      pitch: number
+      zoom: number
+      panoId?: string
+      lat?: number
+      lng?: number
+      updatedAt?: Date
+    }
+  }
 }
 
 export default DuelSession

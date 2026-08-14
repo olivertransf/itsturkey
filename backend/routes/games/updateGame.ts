@@ -16,6 +16,7 @@ import {
 import { ChallengeType, DistanceType, GuessType } from '@types'
 import { DEFAULT_TOTAL_ROUNDS } from '@utils/constants/gameModes'
 import { getRealCountryCode } from '@utils/helpers/getRealCountryCode'
+import { normalizeStreetViewLiveView } from '@utils/helpers/streetViewLiveView'
 
 const triggerScoresUpdate = async (req: NextApiRequest, game: Game) => {
   const secret = process.env.INTERNAL_API_SECRET
@@ -72,6 +73,24 @@ const updateGame = async (req: NextApiRequest, res: NextApiResponse) => {
     )
   ) {
     return throwError(res, 401, 'You are not authorized to modify this game')
+  }
+
+  if (req.body?.liveView != null) {
+    const liveView = normalizeStreetViewLiveView(req.body.liveView)
+    if (!liveView) {
+      return throwError(res, 400, 'Invalid live view')
+    }
+
+    await collections.games?.updateOne(getGameQuery, {
+      $set: {
+        liveView: {
+          ...liveView,
+          updatedAt: new Date(),
+        },
+      },
+    })
+
+    return res.status(200).send({ ok: true })
   }
 
   // End unlimited standard games early (no new guess)

@@ -8,32 +8,32 @@ import { StyledGameStatus } from './'
 type Props = {
   gameData: Game
   handleSubmitGuess: (timedOut?: boolean) => void
+  readOnly?: boolean
 }
 
-const GameStatus: FC<Props> = ({ gameData, handleSubmitGuess }) => {
+const GameStatus: FC<Props> = ({ gameData, handleSubmitGuess, readOnly = false }) => {
   const timeLimit = gameData.gameSettings?.timeLimit
   const hasTimeLimit = gameData.gameSettings.timeLimit !== 0
 
   const [timeLeft, setTimeLeft] = useState(timeLimit)
 
   useEffect(() => {
-    if (!hasTimeLimit) return
+    if (!hasTimeLimit || readOnly) return
     setTimeLeft(timeLimit)
-  }, [gameData.round, hasTimeLimit, timeLimit])
+  }, [gameData.round, hasTimeLimit, timeLimit, readOnly])
 
   useEffect(() => {
-    if (hasTimeLimit) {
-      if (timeLeft === 0) {
-        return handleSubmitGuess(true)
-      }
-
-      const timer = setTimeout(() => {
-        setTimeLeft((prev) => (prev as number) - 1)
-      }, 1000)
-
-      return () => clearTimeout(timer)
+    if (!hasTimeLimit || readOnly) return
+    if (timeLeft === 0) {
+      return handleSubmitGuess(true)
     }
-  }, [hasTimeLimit, timeLeft])
+
+    const timer = setTimeout(() => {
+      setTimeLeft((prev) => (prev as number) - 1)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [hasTimeLimit, timeLeft, readOnly])
 
   const finiteTotal =
     gameData.mode === 'standard' && !gameData.unlimited
@@ -73,7 +73,7 @@ const GameStatus: FC<Props> = ({ gameData, handleSubmitGuess }) => {
             </div>
           </div>
 
-          {hasTimeLimit && (
+          {hasTimeLimit && !readOnly && (
             <div className="infoSection">
               <div className="label">
                 <span>Time</span>
@@ -93,7 +93,7 @@ const GameStatus: FC<Props> = ({ gameData, handleSubmitGuess }) => {
             {gameData.streak}
           </div>
 
-          {hasTimeLimit && (
+          {hasTimeLimit && !readOnly && (
             <div className="infoSection">
               <div className="label">
                 <span>Time</span>

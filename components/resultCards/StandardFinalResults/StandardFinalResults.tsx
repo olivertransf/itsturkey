@@ -19,6 +19,7 @@ type Props = {
   setView: (view: GameViewType) => void
   plonkitCountryIso?: string | null
   plonkitMapLabel?: string
+  isSpectator?: boolean
 }
 
 const StandardFinalResults: FC<Props> = ({
@@ -28,6 +29,7 @@ const StandardFinalResults: FC<Props> = ({
   setView,
   plonkitCountryIso,
   plonkitMapLabel,
+  isSpectator = false,
 }) => {
   const [isLoading, setIsLoading] = useState(false)
 
@@ -49,6 +51,10 @@ const StandardFinalResults: FC<Props> = ({
     const actionKeys = [KEY_CODES.SPACE, KEY_CODES.SPACE_IE11, KEY_CODES.ENTER]
 
     if (actionKeys.includes(e.key)) {
+      if (isSpectator) {
+        navigateToMapsPage()
+        return
+      }
       IS_CHALLENGE ? navigateToResults() : playAgain()
     }
   }
@@ -134,6 +140,22 @@ const StandardFinalResults: FC<Props> = ({
                 <MapIcon />
               </button>
               <span>Exit</span>
+            </div>
+          </div>
+        ) : isSpectator ? (
+          <div className="buttons-wrapper">
+            <div className="side-button">
+              <button className="results-btn" onClick={() => setView('Leaderboard')}>
+                <ChartPieIcon />
+              </button>
+              <span>Breakdown</span>
+            </div>
+
+            <div className="side-button">
+              <button className="map-btn" onClick={() => navigateToMapsPage()}>
+                <MapIcon />
+              </button>
+              <span>Done</span>
             </div>
           </div>
         ) : (

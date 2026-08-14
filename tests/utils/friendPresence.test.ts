@@ -1,6 +1,8 @@
 import {
   friendIsInGame,
   friendPresenceLabel,
+  friendWatchHref,
+  normalizePresenceSession,
   sortFriendsByPresence,
 } from '@utils/friends/friendPresence'
 import type { FriendRow } from '@utils/friends/friendPresence'
@@ -27,6 +29,59 @@ describe('friendIsInGame', () => {
     expect(friendIsInGame(base({ online: true, presenceActivity: 'in_game' }))).toBe(true)
     expect(friendIsInGame(base({ online: false, presenceActivity: 'in_game' }))).toBe(false)
     expect(friendIsInGame(base({ online: true, presenceActivity: 'browsing' }))).toBe(false)
+  })
+})
+
+describe('friendWatchHref', () => {
+  test('returns duel and solo spectate links for live sessions', () => {
+    expect(
+      friendWatchHref(
+        base({
+          online: true,
+          presenceActivity: 'in_duel',
+          presenceSession: { kind: 'duel', id: 'ABC12' },
+        })
+      )
+    ).toBe('/duel/ABC12?spectate=1&follow=1')
+
+    expect(
+      friendWatchHref(
+        base({
+          online: true,
+          presenceActivity: 'in_game',
+          presenceSession: { kind: 'game', id: 'aaaaaaaaaaaaaaaaaaaaaaaa' },
+        })
+      )
+    ).toBe('/game/aaaaaaaaaaaaaaaaaaaaaaaa?spectate=1')
+
+    expect(
+      friendWatchHref(
+        base({
+          online: true,
+          presenceActivity: 'in_game',
+          presenceSession: { kind: 'multi', id: 'm1' },
+        })
+      )
+    ).toBeNull()
+
+    expect(
+      friendWatchHref(
+        base({
+          online: false,
+          presenceActivity: 'in_duel',
+          presenceSession: { kind: 'duel', id: 'ABC12' },
+        })
+      )
+    ).toBeNull()
+  })
+})
+
+describe('normalizePresenceSession', () => {
+  test('accepts duel/game/multi ids and rejects junk', () => {
+    expect(normalizePresenceSession({ kind: 'duel', id: ' x ' })).toEqual({ kind: 'duel', id: 'x' })
+    expect(normalizePresenceSession({ kind: 'game', id: 'abc' })).toEqual({ kind: 'game', id: 'abc' })
+    expect(normalizePresenceSession({ kind: 'nope', id: 'abc' })).toBeUndefined()
+    expect(normalizePresenceSession(null)).toBeUndefined()
   })
 })
 

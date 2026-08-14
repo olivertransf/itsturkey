@@ -3,10 +3,15 @@ import { useRouter } from 'next/router'
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { Button } from '@components/system'
-import { PaperAirplaneIcon } from '@heroicons/react/outline'
+import { EyeIcon, PaperAirplaneIcon } from '@heroicons/react/outline'
 import { defaultQuickDuelBody } from '@utils/defaultQuickDuelBody'
 import { mailman, showToast } from '@utils/helpers'
-import { friendIsInGame, friendPresenceLabel, sortFriendsByPresence } from '@utils/friends/friendPresence'
+import {
+  friendIsInGame,
+  friendPresenceLabel,
+  friendWatchHref,
+  sortFriendsByPresence,
+} from '@utils/friends/friendPresence'
 import type { FriendRow } from '@utils/friends/friendPresence'
 import { usePresenceHeartbeat } from '@utils/hooks/usePresenceHeartbeat'
 import { useVisibleInterval } from '@utils/useVisibleInterval'
@@ -129,6 +134,7 @@ const HomeFriendsCard: FC = () => {
         <ul className="friends-card-list">
           {preview?.map((friend) => {
             const inGame = friendIsInGame(friend)
+            const watchHref = friendWatchHref(friend)
             return (
               <li key={friend.id} className="friends-card-row">
                 <div className="friends-card-main">
@@ -151,19 +157,33 @@ const HomeFriendsCard: FC = () => {
                     </span>
                   </div>
                 </div>
-                <Button
-                  variant="solidGray"
-                  size="sm"
-                  disabled={invitingFriendId === friend.id}
-                  isLoading={invitingFriendId === friend.id}
-                  spinnerSize={16}
-                  onClick={() => void inviteFriend(friend)}
-                >
-                  <span className="friends-invite-label">
-                    <PaperAirplaneIcon />
-                    Invite
-                  </span>
-                </Button>
+                <div className="friends-card-actions">
+                  {watchHref ? (
+                    <Button
+                      variant="solidGray"
+                      size="sm"
+                      onClick={() => void router.push(watchHref)}
+                    >
+                      <span className="friends-invite-label">
+                        <EyeIcon />
+                        Watch
+                      </span>
+                    </Button>
+                  ) : null}
+                  <Button
+                    variant="solidGray"
+                    size="sm"
+                    disabled={invitingFriendId === friend.id}
+                    isLoading={invitingFriendId === friend.id}
+                    spinnerSize={16}
+                    onClick={() => void inviteFriend(friend)}
+                  >
+                    <span className="friends-invite-label">
+                      <PaperAirplaneIcon />
+                      Invite
+                    </span>
+                  </Button>
+                </div>
               </li>
             )
           })}

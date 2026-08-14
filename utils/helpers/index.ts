@@ -33,6 +33,10 @@ export { default as getRandomAvatar } from './getRandomAvatar'
 export { openStreetViewLocation } from './openStreetViewLocation'
 export { default as mailman } from './mailman'
 export type { MailmanOptions } from './mailman'
+export {
+  normalizeStreetViewLiveView,
+} from './streetViewLiveView'
+export type { StreetViewLiveView } from './streetViewLiveView'
 export { default as parseJsonFile } from './parseJsonFile'
 export { default as randomElement } from './randomElement'
 export { default as randomInt } from './randomInt'

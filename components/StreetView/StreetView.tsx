@@ -11,10 +11,15 @@ import { useAppSelector } from '@redux/hook'
 import { GameViewType, GoogleMapsConfigType, LocationType } from '@types'
 import { getStreetviewOptions } from '@utils/constants/googleMapOptions'
 import { KEY_CODES } from '@utils/constants/keyCodes'
-import { mailman, showToast } from '@utils/helpers'
+import { getMapsKey, googleMapLoaderAsync, mailman, showToast } from '@utils/helpers'
+import type { StreetViewLiveView } from '@utils/helpers/streetViewLiveView'
 import { attachStreetViewPanZoomLock } from '@utils/helpers/lockStreetViewPanZoom'
 import type { LockedStreetViewPose } from '@utils/helpers/lockStreetViewPanZoom'
-import { normalizeVisualRestrictions } from '@utils/constants/visualRestrictions'
+import {
+  DEFAULT_PIXELATE_LEVEL,
+  normalizeVisualRestrictions,
+  pixelateFilterCellSize,
+} from '@utils/constants/visualRestrictions'
 import { StyledStreetView } from './'
 import { DailyQuotaModal } from '@components/modals/DailyQuotaModal'
 import { PlonkitGuideLauncher } from '@components/PlonkitCountryGuide'
@@ -51,6 +56,12 @@ type Props = {
   onGuessCoordinateChange?: (loc: LocationType | null) => void
   /** Duel: chat control rendered above back-to-start in the bottom-left stack. */
   primaryControlsLeading?: ReactNode
+  /** Friend spectating a solo/streak game — no guess submit. */
+  isSpectator?: boolean
+  /** Publish live camera pose for spectators (throttled). */
+  onLiveViewChange?: (view: StreetViewLiveView) => void
+  /** Spectator: force-follow this camera pose. */
+  followLiveView?: StreetViewLiveView | null
 }
 
 const Streetview: FC<Props> = ({
@@ -66,6 +77,9 @@ const Streetview: FC<Props> = ({
   duelGuessLocked = false,
   onGuessCoordinateChange,
   primaryControlsLeading,
+  isSpectator = false,
+  onLiveViewChange,
+  followLiveView = null,
 }) => {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
@@ -116,13 +130,17 @@ const Streetview: FC<Props> = ({
   const undoLocRef = useRef<LocationType[]>([])
   const canPan = Boolean(gameData.gameSettings.canPan)
   const canZoom = Boolean(gameData.gameSettings.canZoom)
-  const lockPan = !canPan
-  const lockZoom = !canZoom
-  const fullyFrozenView = lockPan && lockZoom
+  const lockPan = !canPan || isSpectator
+  const lockZoom = !canZoom || isSpectator
+  const fullyFrozenView = (lockPan && lockZoom) || isSpectator
   const visualFx = useMemo(
     () => normalizeVisualRestrictions(gameData.gameSettings.visualRestrictions),
     [gameData.gameSettings.visualRestrictions]
   )
+  const liveViewPublishTimerRef = useRef<number | null>(null)
+  const lastAppliedFollowKeyRef = useRef('')
+  const onLiveViewChangeRef = useRef(onLiveViewChange)
+  onLiveViewChangeRef.current = onLiveViewChange
 
   const lockPoseTo = useCallback((heading: number, pitch: number, zoom: number) => {
     if (lockPan || lockZoom) {
@@ -148,6 +166,27 @@ const Streetview: FC<Props> = ({
     }
   }, [googleMapsConfig])
 
+  // Spectators hide GuessMap, so bootstrap Maps JS here for Street View.
+  useEffect(() => {
+    if (!isSpectator || googleMapsConfig) return
+
+    let cancelled = false
+    void googleMapLoaderAsync({
+      ...getMapsKey(user.mapsAPIKey, { allowFallback: false }),
+    }).then((mapsApi) => {
+      if (cancelled) return
+      setGoogleMapsConfig({
+        isLoaded: true,
+        map: null as unknown as google.maps.Map,
+        mapsApi,
+      })
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [isSpectator, googleMapsConfig, user.mapsAPIKey])
+
   useEffect(() => {
     if (!googleMapsConfig) return
 
@@ -167,7 +206,87 @@ const Streetview: FC<Props> = ({
       ro.disconnect()
       window.removeEventListener('resize', onWinResize)
     }
-  }, [googleMapsConfig])
+  }, [googleMapsConfig, visualFx.pixelate, visualFx.pixelateLevel])
+
+  // Publish live camera for spectators (throttled).
+  useEffect(() => {
+    if (isSpectator || !onLiveViewChange || !googleMapsConfig) return
+    const pano = panoramaRef.current
+    if (!pano) return
+
+    const publish = () => {
+      const pov = pano.getPov()
+      const pos = pano.getPosition()
+      const zoom = pano.getZoom() ?? 0
+      const payload: StreetViewLiveView = {
+        heading: pov?.heading ?? 0,
+        pitch: pov?.pitch ?? 0,
+        zoom,
+      }
+      const panoId = pano.getPano()
+      if (panoId) payload.panoId = panoId
+      if (pos) {
+        payload.lat = pos.lat()
+        payload.lng = pos.lng()
+      }
+      onLiveViewChangeRef.current?.(payload)
+    }
+
+    const schedule = () => {
+      if (liveViewPublishTimerRef.current != null) return
+      liveViewPublishTimerRef.current = window.setTimeout(() => {
+        liveViewPublishTimerRef.current = null
+        publish()
+      }, 180)
+    }
+
+    const listeners = [
+      pano.addListener('pov_changed', schedule),
+      pano.addListener('zoom_changed', schedule),
+      pano.addListener('position_changed', schedule),
+    ]
+    publish()
+
+    return () => {
+      listeners.forEach((l) => l.remove())
+      if (liveViewPublishTimerRef.current != null) {
+        window.clearTimeout(liveViewPublishTimerRef.current)
+        liveViewPublishTimerRef.current = null
+      }
+    }
+  }, [isSpectator, onLiveViewChange, googleMapsConfig, view, gameData.round])
+
+  // Spectator: force-follow the player's camera.
+  useEffect(() => {
+    if (!isSpectator || !followLiveView || !panoramaRef.current) return
+    const pano = panoramaRef.current
+    const key = [
+      followLiveView.heading,
+      followLiveView.pitch,
+      followLiveView.zoom,
+      followLiveView.panoId ?? '',
+      followLiveView.lat ?? '',
+      followLiveView.lng ?? '',
+      followLiveView.updatedAt ?? '',
+    ].join('|')
+    if (key === lastAppliedFollowKeyRef.current) return
+    lastAppliedFollowKeyRef.current = key
+
+    if (followLiveView.panoId && pano.getPano() !== followLiveView.panoId) {
+      pano.setPano(followLiveView.panoId)
+    } else if (
+      followLiveView.lat != null &&
+      followLiveView.lng != null &&
+      Number.isFinite(followLiveView.lat) &&
+      Number.isFinite(followLiveView.lng)
+    ) {
+      pano.setPosition({ lat: followLiveView.lat, lng: followLiveView.lng })
+    }
+
+    pano.setPov({ heading: followLiveView.heading, pitch: followLiveView.pitch })
+    pano.setZoom(followLiveView.zoom)
+    lockPoseTo(followLiveView.heading, followLiveView.pitch, followLiveView.zoom)
+  }, [isSpectator, followLiveView, lockPoseTo, googleMapsConfig])
 
   // Loads all subsequent panos
   useEffect(() => {
@@ -306,6 +425,7 @@ const Streetview: FC<Props> = ({
   }
 
   const handleSubmitGuess = async (timedOut?: boolean) => {
+    if (isSpectator) return
     if (duelGuessLocked) return
 
     if (currGuess || countryStreakGuess || timedOut) {
@@ -357,6 +477,11 @@ const Streetview: FC<Props> = ({
   }
 
   const handleExitGame = async () => {
+    if (isSpectator) {
+      await router.push('/')
+      return
+    }
+
     const mapId = gameData.mapDetails?._id?.toString?.() ?? gameData.mapId
 
     if (typeof window !== 'undefined' && window.history.length > 1) {
@@ -426,14 +551,14 @@ const Streetview: FC<Props> = ({
   }
 
   useEffect(() => {
-    if (view !== 'Game' || !enableGlobalShortcuts) return
+    if (view !== 'Game' || !enableGlobalShortcuts || isSpectator) return
 
     document.addEventListener('keydown', handleSubmitGuessKeys, { once: true })
 
     return () => {
       document.removeEventListener('keydown', handleSubmitGuessKeys)
     }
-  }, [currGuess, countryStreakGuess, view, enableGlobalShortcuts, duelGuessLocked])
+  }, [currGuess, countryStreakGuess, view, enableGlobalShortcuts, duelGuessLocked, isSpectator])
 
   const handleRestrictedViewKeys = (e: KeyboardEvent) => {
     const movingKeys = [
@@ -518,12 +643,28 @@ const Streetview: FC<Props> = ({
     }
   }, [fullyFrozenView, view, googleMapsConfig])
 
+  const pixelFilterId = `${panoElementId}-pixelate`
+  const pixelCell = visualFx.pixelate
+    ? pixelateFilterCellSize(visualFx.pixelateLevel ?? DEFAULT_PIXELATE_LEVEL)
+    : 0
+
   return (
     <>
       <StyledStreetView showMap={!loading} $fx={visualFx}>
         {loading && <LoadingPage />}
 
         <div className="streetview-pano">
+          {visualFx.pixelate ? (
+            <svg className="sv-pixelate-defs" aria-hidden>
+              <filter id={pixelFilterId} x="0%" y="0%" width="100%" height="100%">
+                <feFlood x={pixelCell} y={pixelCell} height="2" width="2" />
+                <feComposite width={pixelCell * 2} height={pixelCell * 2} />
+                <feTile result="a" />
+                <feComposite in="SourceGraphic" in2="a" operator="in" />
+                <feMorphology operator="dilate" radius={pixelCell} />
+              </filter>
+            </svg>
+          ) : null}
           <div className="streetview-fx-stack">
             <div className="fx-layer-spin">
               <div className="fx-layer-wander">
@@ -533,10 +674,19 @@ const Streetview: FC<Props> = ({
                       <div className="fx-layer-bubble">
                         <div className="fx-layer-static">
                           <div
-                            ref={panoContainerRef}
-                            id={panoElementId}
-                            className="streetview-fx-target"
-                          />
+                            className="fx-layer-pixelate"
+                            style={
+                              visualFx.pixelate
+                                ? { filter: `url(#${pixelFilterId})` }
+                                : undefined
+                            }
+                          >
+                            <div
+                              ref={panoContainerRef}
+                              id={panoElementId}
+                              className="streetview-fx-target"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -568,18 +718,28 @@ const Streetview: FC<Props> = ({
               hideExit={isDuel}
               hudPrimaryStyle={isDuel}
               handleUndoLastMove={
-                !isDuel && gameData.gameSettings.canMove ? handleUndoLastMove : undefined
+                !isDuel && !isSpectator && gameData.gameSettings.canMove ? handleUndoLastMove : undefined
               }
               leadingPrimaryControls={primaryLeadingControls}
             />
           </div>
+          {isSpectator ? (
+            <div className="spectator-banner" data-streetview-ui>
+              Spectating
+              {typeof gameData.userDetails?.name === 'string' ? ` · ${gameData.userDetails.name}` : ''}
+            </div>
+          ) : null}
           {view === 'Game' && !isDuel && (
             <div data-streetview-ui>
-              <GameStatus gameData={gameData} handleSubmitGuess={handleSubmitGuess} />
+              <GameStatus
+                gameData={gameData}
+                handleSubmitGuess={handleSubmitGuess}
+                readOnly={isSpectator}
+              />
             </div>
           )}
 
-          {gameData.mode === 'standard' && (
+          {gameData.mode === 'standard' && !(isSpectator && !isDuel) && (
             <div data-streetview-ui>
               <GuessMap
                 currGuess={currGuess}
@@ -598,7 +758,7 @@ const Streetview: FC<Props> = ({
             </div>
           )}
 
-          {gameData.mode === 'streak' && (
+          {gameData.mode === 'streak' && !isSpectator && (
             <div data-streetview-ui>
               <StreaksGuessMap
                 countryStreakGuess={countryStreakGuess}
@@ -614,13 +774,15 @@ const Streetview: FC<Props> = ({
             </div>
           )}
 
-          <button
-            data-streetview-ui
-            className="toggle-map-button"
-            onClick={() => setMobileMapOpen(true)}
-          >
-            <MapIcon />
-          </button>
+          {!isSpectator ? (
+            <button
+              data-streetview-ui
+              className="toggle-map-button"
+              onClick={() => setMobileMapOpen(true)}
+            >
+              <MapIcon />
+            </button>
+          ) : null}
         </div>
       </StyledStreetView>
 

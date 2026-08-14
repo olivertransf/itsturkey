@@ -22,9 +22,10 @@ type Props = {
   setGameData: (gameData: Game) => void
   view: GameViewType
   setView: (view: GameViewType) => void
+  isSpectator?: boolean
 }
 
-const StreakEndedCard: FC<Props> = ({ gameData, setGameData, view, setView }) => {
+const StreakEndedCard: FC<Props> = ({ gameData, setGameData, view, setView, isSpectator = false }) => {
   const [isLoading, setIsLoading] = useState(false)
   const [showSummary, setShowSummary] = useState(false)
 
@@ -58,6 +59,10 @@ const StreakEndedCard: FC<Props> = ({ gameData, setGameData, view, setView }) =>
     const actionKeys = [KEY_CODES.SPACE, KEY_CODES.SPACE_IE11, KEY_CODES.ENTER]
 
     if (actionKeys.includes(e.key)) {
+      if (isSpectator) {
+        navigateToStreaksPage()
+        return
+      }
       IS_CHALLENGE ? navigateToResults() : playAgain()
     }
   }
@@ -122,9 +127,15 @@ const StreakEndedCard: FC<Props> = ({ gameData, setGameData, view, setView }) =>
           ) : null}
 
           <div className="buttons-wrapper">
-            <Button className="play-again-btn" onClick={() => playAgain()} isLoading={isLoading} spinnerSize={24}>
-              Play Again
-            </Button>
+            {isSpectator ? (
+              <Button className="play-again-btn" onClick={() => navigateToStreaksPage()}>
+                Done
+              </Button>
+            ) : (
+              <Button className="play-again-btn" onClick={() => playAgain()} isLoading={isLoading} spinnerSize={24}>
+                Play Again
+              </Button>
+            )}
             {IS_CHALLENGE ? (
               <Button className="alternate-action-btn" onClick={() => navigateToResults()}>
                 Show Highscore
@@ -174,12 +185,25 @@ const StreakEndedCard: FC<Props> = ({ gameData, setGameData, view, setView }) =>
           ) : null}
 
           <div className="buttons-wrapper">
-            <Button className="play-again-btn" onClick={() => playAgain()} isLoading={isLoading} spinnerSize={24}>
-              Play Again
-            </Button>
-            <Button className="alternate-action-btn" onClick={() => setShowSummary(true)}>
-              View Summary
-            </Button>
+            {isSpectator ? (
+              <>
+                <Button className="play-again-btn" onClick={() => navigateToStreaksPage()}>
+                  Done
+                </Button>
+                <Button className="alternate-action-btn" onClick={() => setShowSummary(true)}>
+                  View Summary
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button className="play-again-btn" onClick={() => playAgain()} isLoading={isLoading} spinnerSize={24}>
+                  Play Again
+                </Button>
+                <Button className="alternate-action-btn" onClick={() => setShowSummary(true)}>
+                  View Summary
+                </Button>
+              </>
+            )}
           </div>
         </div>
       )}

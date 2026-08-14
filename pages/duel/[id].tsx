@@ -104,6 +104,9 @@ const DuelRoomPage: PageType = () => {
 
   const pollTier = duelPollTier(payload ?? undefined)
   const pollMs = useMemo(() => {
+    if (payload?.viewerRole === 'spectator' && payload.status === 'in_progress') {
+      return 500
+    }
     if (pushConfigured && pushHealthy && pollTier === 'finished') return null
     if (pollTier === 'lobby' && payload?.viewerRole === 'host' && payload.status === 'waiting') {
       return 2500
@@ -128,15 +131,19 @@ const DuelRoomPage: PageType = () => {
       (payload.viewerRole === 'host' || payload.viewerRole === 'guest')
 
     const activity = inLiveDuel ? 'in_duel' : 'browsing'
-    void mailman('users/presence', 'POST', JSON.stringify({ activity }))
+    const presenceBody = inLiveDuel
+      ? { activity, presenceSession: { kind: 'duel' as const, id: duelId } }
+      : { activity }
+
+    void mailman('users/presence', 'POST', JSON.stringify(presenceBody))
     const id = window.setInterval(() => {
-      void mailman('users/presence', 'POST', JSON.stringify({ activity }))
+      void mailman('users/presence', 'POST', JSON.stringify(presenceBody))
     }, 45000)
     return () => {
       window.clearInterval(id)
       void mailman('users/presence', 'POST', JSON.stringify({ activity: 'browsing' }))
     }
-  }, [isAuthenticated, payload])
+  }, [isAuthenticated, payload, duelId])
 
   useEffect(() => {
     if (!isAuthenticated || !payload) return

@@ -1,4 +1,4 @@
-import { FC, useMemo } from 'react'
+import { FC, useCallback, useMemo } from 'react'
 import Game from '@backend/models/game'
 import { StandardFinalResults, StandardResults } from '@components/resultCards'
 import { ResultMap } from '@components/ResultMap'
@@ -7,7 +7,8 @@ import { StreetView } from '@components/StreetView'
 import { ChevronLeftIcon } from '@heroicons/react/outline'
 import { GameViewType, MapType } from '@types'
 import { DEFAULT_TOTAL_ROUNDS } from '@utils/constants/gameModes'
-import { mailman, showToast } from '@utils/helpers'
+import { mailman, normalizeStreetViewLiveView, showToast } from '@utils/helpers'
+import type { StreetViewLiveView } from '@utils/helpers/streetViewLiveView'
 import { lastCompletedRoundLocation, resolvePlonkitGuideCountryIso } from '@utils/helpers/resolvePlonkitGuideCountryIso'
 import { StyledGameView } from './'
 
@@ -16,11 +17,12 @@ type Props = {
   setGameData: (gameData: Game) => void
   view: GameViewType
   setView: (view: GameViewType) => void
+  isSpectator?: boolean
 }
 
 const RESULT_VIEWS = ['Result', 'FinalResults', 'Leaderboard']
 
-const StandardGameView: FC<Props> = ({ gameData, setGameData, view, setView }) => {
+const StandardGameView: FC<Props> = ({ gameData, setGameData, view, setView, isSpectator = false }) => {
   const totalRounds = gameData.totalRounds ?? gameData.rounds?.length ?? DEFAULT_TOTAL_ROUNDS
 
   const plonkLastRoundIso = useMemo(() => {
@@ -28,7 +30,21 @@ const StandardGameView: FC<Props> = ({ gameData, setGameData, view, setView }) =
     return resolvePlonkitGuideCountryIso(gameData.mapId, loc)
   }, [gameData.mapId, gameData.rounds, gameData.guesses])
 
+  const followLiveView = useMemo(
+    () => (isSpectator ? normalizeStreetViewLiveView(gameData.liveView) : null),
+    [isSpectator, gameData.liveView]
+  )
+
+  const onLiveViewChange = useCallback(
+    (liveView: StreetViewLiveView) => {
+      if (isSpectator || !gameData._id) return
+      void mailman(`games/${gameData._id}`, 'PUT', JSON.stringify({ liveView }))
+    },
+    [gameData._id, isSpectator]
+  )
+
   const handleEndUnlimitedSession = async () => {
+    if (isSpectator) return
     const res = await mailman(`games/${gameData._id}`, 'PUT', JSON.stringify({ endGame: true }))
 
     if (res.error) {
@@ -40,10 +56,20 @@ const StandardGameView: FC<Props> = ({ gameData, setGameData, view, setView }) =
     setView('FinalResults')
   }
 
+  const lastGuess = gameData.guesses[gameData.guesses.length - 1]
+
   return (
     <StyledGameView>
       <div className="play-wrapper" style={{ display: view === 'Game' ? 'block' : 'none' }}>
-        <StreetView gameData={gameData} setGameData={setGameData} view={view} setView={setView} />
+        <StreetView
+          gameData={gameData}
+          setGameData={setGameData}
+          view={view}
+          setView={setView}
+          isSpectator={isSpectator}
+          onLiveViewChange={isSpectator ? undefined : onLiveViewChange}
+          followLiveView={followLiveView}
+        />
       </div>
 
       <div className="results-wrapper" style={{ display: RESULT_VIEWS.includes(view) ? 'grid' : 'none' }}>
@@ -56,22 +82,22 @@ const StandardGameView: FC<Props> = ({ gameData, setGameData, view, setView }) =
         />
 
         <div className="results-card-wrapper">
-          {view === 'Result' && (
+          {view === 'Result' && lastGuess && (
             <StandardResults
               round={gameData.round}
               totalRounds={totalRounds}
               unlimited={!!gameData.unlimited}
-              onEndUnlimitedSession={gameData.unlimited ? handleEndUnlimitedSession : undefined}
-              distance={gameData.guesses[gameData.guesses.length - 1].distance}
-              points={gameData.guesses[gameData.guesses.length - 1].points}
-              noGuess={
-                gameData.guesses[gameData.guesses.length - 1].timedOut &&
-                !gameData.guesses[gameData.guesses.length - 1].timedOutWithGuess
+              onEndUnlimitedSession={
+                !isSpectator && gameData.unlimited ? handleEndUnlimitedSession : undefined
               }
+              distance={lastGuess.distance}
+              points={lastGuess.points}
+              noGuess={lastGuess.timedOut && !lastGuess.timedOutWithGuess}
               view={view}
               setView={setView}
               plonkitCountryIso={plonkLastRoundIso}
               plonkitMapLabel={gameData.mapDetails?.name}
+              nextLabel={isSpectator ? 'Continue watching' : undefined}
             />
           )}
 
@@ -83,6 +109,7 @@ const StandardGameView: FC<Props> = ({ gameData, setGameData, view, setView }) =
               setView={setView}
               plonkitCountryIso={plonkLastRoundIso}
               plonkitMapLabel={gameData.mapDetails?.name}
+              isSpectator={isSpectator}
             />
           )}
 

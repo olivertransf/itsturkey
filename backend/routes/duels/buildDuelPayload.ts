@@ -3,6 +3,19 @@ import type { LocationType, MapType } from '@types'
 import type { DuelSession, DuelSide } from '@backend/models/duelSession'
 import type { DuelGuessAvatar } from '@backend/utils/resolveDuelPlayerNames'
 import { resolveDuelPlayerAvatars, resolveDuelPlayerNames } from '@backend/utils/resolveDuelPlayerNames'
+import { normalizeStreetViewLiveView } from '@utils/helpers/streetViewLiveView'
+import type { StreetViewLiveView } from '@utils/helpers/streetViewLiveView'
+
+const serializeLiveView = (raw: unknown): (StreetViewLiveView & { updatedAt?: string }) | null => {
+  const view = normalizeStreetViewLiveView(raw)
+  if (!view) return null
+  if (raw && typeof raw === 'object' && 'updatedAt' in raw) {
+    const at = (raw as { updatedAt?: unknown }).updatedAt
+    if (at instanceof Date) view.updatedAt = at.toISOString()
+    else if (typeof at === 'string') view.updatedAt = at
+  }
+  return view
+}
 
 export type DuelClientPayload = {
   id: string
@@ -36,6 +49,11 @@ export type DuelClientPayload = {
   rematchReady: { host: boolean; guest: boolean }
   playerNames: { host: string; guest: string }
   playerAvatars: { host: DuelGuessAvatar; guest: DuelGuessAvatar }
+  playerUserIds: { host: string | null; guest: string | null }
+  liveViews: {
+    host: (StreetViewLiveView & { updatedAt?: string }) | null
+    guest: (StreetViewLiveView & { updatedAt?: string }) | null
+  }
   chatMessages?: { senderRole: DuelSide; text: string; createdAt: string }[]
 }
 
@@ -101,6 +119,14 @@ export const buildDuelPayload = (
     },
     playerNames,
     playerAvatars,
+    playerUserIds: {
+      host: duel.host.userId?.toString() ?? null,
+      guest: duel.guest.userId?.toString() ?? null,
+    },
+    liveViews: {
+      host: serializeLiveView(duel.liveViews?.host),
+      guest: serializeLiveView(duel.liveViews?.guest),
+    },
     ...(duel.chatMessages?.length
       ? {
           chatMessages: duel.chatMessages.map((m) => ({

@@ -8,10 +8,11 @@ import { PageHeader, WidthController } from '@components/layout'
 import { Meta } from '@components/Meta'
 import { Button, Input } from '@components/system'
 import { SkeletonCards } from '@components/skeletons'
-import { UserAddIcon } from '@heroicons/react/outline'
+import { EyeIcon, UserAddIcon } from '@heroicons/react/outline'
 import {
   friendIsInGame,
   friendPresenceLabel,
+  friendWatchHref,
   sortFriendsByPresence,
 } from '@utils/friends/friendPresence'
 import type { FriendRow } from '@utils/friends/friendPresence'
@@ -108,6 +109,13 @@ const StyledFriendsPage = styled.div`
   .status-text--active {
     color: #fbbf24;
     font-weight: 600;
+  }
+
+  .friend-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
   }
 
   .empty-hint {
@@ -217,6 +225,7 @@ const FriendsPage: NextPage = () => {
             <ul className="friends-list">
               {friends.map((friend) => {
                 const inGame = friendIsInGame(friend)
+                const watchHref = friendWatchHref(friend)
                 return (
                   <li key={friend.id} className="friend-row">
                     <div className="friend-info">
@@ -240,14 +249,28 @@ const FriendsPage: NextPage = () => {
                         {friend.friendCode ? <span>· {friend.friendCode}</span> : null}
                       </div>
                     </div>
-                    <Button
-                      variant="destroy"
-                      style={{ padding: '0 10px', fontSize: 12 }}
-                      disabled={busy}
-                      onClick={() => void handleRemove(friend.id)}
-                    >
-                      Remove
-                    </Button>
+                    <div className="friend-actions">
+                      {watchHref ? (
+                        <Button
+                          variant="solidGray"
+                          style={{ padding: '0 10px', fontSize: 12 }}
+                          onClick={() => void router.push(watchHref)}
+                        >
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                            <EyeIcon style={{ width: 14, height: 14 }} />
+                            Watch
+                          </span>
+                        </Button>
+                      ) : null}
+                      <Button
+                        variant="destroy"
+                        style={{ padding: '0 10px', fontSize: 12 }}
+                        disabled={busy}
+                        onClick={() => void handleRemove(friend.id)}
+                      >
+                        Remove
+                      </Button>
+                    </div>
                   </li>
                 )
               })}

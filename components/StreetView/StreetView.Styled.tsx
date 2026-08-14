@@ -1,7 +1,7 @@
 import styled, { css, keyframes } from 'styled-components'
 import { PHONE_GUESS_MAP_MQ } from '@utils/constants/breakpoints'
 import type { VisualRestrictions } from '@utils/constants/visualRestrictions'
-import { buildStreetViewCssFilter, clampPixelateLevel, DEFAULT_PIXELATE_LEVEL } from '@utils/constants/visualRestrictions'
+import { buildStreetViewCssFilter } from '@utils/constants/visualRestrictions'
 
 type StyledProps = {
   showMap?: boolean
@@ -25,29 +25,29 @@ const spinYaw = keyframes`
 `
 
 const wanderDrift = keyframes`
-  0% { transform: translate(0, 0) scale(1.12); }
-  25% { transform: translate(6%, -4%) scale(1.14); }
-  50% { transform: translate(-5%, 5%) scale(1.16); }
-  75% { transform: translate(4%, 3%) scale(1.13); }
-  100% { transform: translate(0, 0) scale(1.12); }
+  0% { transform: translate(0, 0) scale(1.22); }
+  25% { transform: translate(12%, -9%) scale(1.28); }
+  50% { transform: translate(-11%, 10%) scale(1.3); }
+  75% { transform: translate(9%, 7%) scale(1.25); }
+  100% { transform: translate(0, 0) scale(1.22); }
 `
 
 const drunkSway = keyframes`
-  0% { transform: rotate(-1.6deg) translateX(-1%) skewX(-1deg); }
-  50% { transform: rotate(1.8deg) translateX(1.5%) skewX(1.2deg); }
-  100% { transform: rotate(-1.6deg) translateX(-1%) skewX(-1deg); }
+  0% { transform: rotate(-4.5deg) translateX(-3.5%) skewX(-3deg); }
+  50% { transform: rotate(5deg) translateX(4%) skewX(3.5deg); }
+  100% { transform: rotate(-4.5deg) translateX(-3.5%) skewX(-3deg); }
 `
 
 const wobbleJelly = keyframes`
   0%, 100% { transform: scale(1) rotate(0deg); }
-  25% { transform: scale(1.03, 0.97) rotate(-0.8deg); }
-  50% { transform: scale(0.98, 1.04) rotate(0.9deg); }
-  75% { transform: scale(1.02, 0.98) rotate(-0.5deg); }
+  25% { transform: scale(1.08, 0.9) rotate(-2.4deg); }
+  50% { transform: scale(0.92, 1.1) rotate(2.6deg); }
+  75% { transform: scale(1.06, 0.94) rotate(-1.6deg); }
 `
 
 const zigzagSkew = keyframes`
-  0%, 100% { transform: skewX(-6deg) skewY(1deg); }
-  50% { transform: skewX(6deg) skewY(-1deg); }
+  0%, 100% { transform: skewX(-14deg) skewY(3deg); }
+  50% { transform: skewX(14deg) skewY(-3deg); }
 `
 
 const noiseScroll = keyframes`
@@ -56,15 +56,15 @@ const noiseScroll = keyframes`
 `
 
 const bubblePulse = keyframes`
-  0%, 100% { clip-path: ellipse(46% 46% at 50% 50%); }
-  50% { clip-path: ellipse(42% 50% at 50% 50%); }
+  0%, 100% { clip-path: ellipse(38% 38% at 50% 50%); }
+  50% { clip-path: ellipse(28% 48% at 50% 50%); }
 `
 
 const fxStaticTransforms = (fx: VisualRestrictions) => {
   const parts: string[] = []
   if (fx.upsideDown) parts.push('rotate(180deg)')
   if (fx.mirror) parts.push('scaleX(-1)')
-  if (fx.stretch) parts.push('scaleX(1.55) scaleY(0.72)')
+  if (fx.stretch) parts.push('scaleX(1.9) scaleY(0.55)')
   return parts.join(' ')
 }
 
@@ -90,7 +90,7 @@ const StyledStreetView = styled.div<StyledProps>`
   ${({ $fx }) =>
     $fx?.hueShift
       ? css`
-          animation: ${hueCycle} 7s linear infinite;
+          animation: ${hueCycle} 3.5s linear infinite;
         `
       : ''}
 
@@ -112,7 +112,7 @@ const StyledStreetView = styled.div<StyledProps>`
       $fx?.spin
         ? css`
             ${layerFill}
-            animation: ${spinYaw} 18s linear infinite;
+            animation: ${spinYaw} 9s linear infinite;
           `
         : inactiveLayer}
   }
@@ -122,7 +122,7 @@ const StyledStreetView = styled.div<StyledProps>`
       $fx?.wander
         ? css`
             ${layerFill}
-            animation: ${wanderDrift} 9s ease-in-out infinite;
+            animation: ${wanderDrift} 5.5s ease-in-out infinite;
           `
         : inactiveLayer}
   }
@@ -132,7 +132,7 @@ const StyledStreetView = styled.div<StyledProps>`
       $fx?.drunk
         ? css`
             ${layerFill}
-            animation: ${drunkSway} 2.4s ease-in-out infinite;
+            animation: ${drunkSway} 1.5s ease-in-out infinite;
           `
         : inactiveLayer}
   }
@@ -142,7 +142,7 @@ const StyledStreetView = styled.div<StyledProps>`
       $fx?.wobble
         ? css`
             ${layerFill}
-            animation: ${wobbleJelly} 1.1s ease-in-out infinite;
+            animation: ${wobbleJelly} 0.7s ease-in-out infinite;
           `
         : inactiveLayer}
   }
@@ -152,7 +152,7 @@ const StyledStreetView = styled.div<StyledProps>`
       $fx?.zigzag
         ? css`
             ${layerFill}
-            animation: ${zigzagSkew} 1.6s ease-in-out infinite;
+            animation: ${zigzagSkew} 0.95s ease-in-out infinite;
           `
         : inactiveLayer}
   }
@@ -162,9 +162,14 @@ const StyledStreetView = styled.div<StyledProps>`
       $fx?.bubble
         ? css`
             ${layerFill}
-            animation: ${bubblePulse} 5s ease-in-out infinite;
+            animation: ${bubblePulse} 2.8s ease-in-out infinite;
           `
         : inactiveLayer}
+  }
+
+  /* Pixelate via SVG mosaic filter on this layer — do not resize the Google pano. */
+  .fx-layer-pixelate {
+    ${({ $fx }) => ($fx?.pixelate ? layerFill : inactiveLayer)}
   }
 
   .fx-layer-static {
@@ -187,22 +192,14 @@ const StyledStreetView = styled.div<StyledProps>`
     inset: 0;
     z-index: 0;
     transform-origin: center center;
-    ${({ $fx }) => {
-      if (!$fx?.pixelate) return css``
-      const pixelLevel = clampPixelateLevel($fx.pixelateLevel ?? DEFAULT_PIXELATE_LEVEL)
-      return css`
-        image-rendering: pixelated;
-        image-rendering: crisp-edges;
-        transform: scale(${1 / pixelLevel});
-        width: ${pixelLevel * 100}%;
-        height: ${pixelLevel * 100}%;
-        left: 0;
-        top: 0;
-        right: auto;
-        bottom: auto;
-        transform-origin: 0 0;
-      `
-    }}
+  }
+
+  .sv-pixelate-defs {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    pointer-events: none;
   }
 
   .fx-blink-veil {
@@ -212,7 +209,7 @@ const StyledStreetView = styled.div<StyledProps>`
     z-index: 1;
     background: #000;
     pointer-events: none;
-    animation: ${blinkFade} 2.4s ease-in-out infinite;
+    animation: ${blinkFade} 1.6s ease-in-out infinite;
   }
 
   .fx-vignette-veil {
@@ -225,16 +222,16 @@ const StyledStreetView = styled.div<StyledProps>`
       const layers: string[] = []
       if ($fx?.flashlight) {
         layers.push(
-          'radial-gradient(circle 110px at 50% 48%, transparent 0 38%, rgba(0,0,0,0.55) 52%, #000 72%)'
+          'radial-gradient(circle 72px at 50% 48%, transparent 0 22%, rgba(0,0,0,0.75) 40%, #000 58%)'
         )
       }
       if ($fx?.tunnel) {
         layers.push(
-          'radial-gradient(circle at 50% 50%, transparent 0 28%, rgba(0,0,0,0.55) 48%, #000 70%)'
+          'radial-gradient(circle at 50% 50%, transparent 0 16%, rgba(0,0,0,0.7) 34%, #000 55%)'
         )
       }
       if ($fx?.vignette) {
-        layers.push('radial-gradient(circle at 50% 50%, transparent 35%, rgba(0,0,0,0.75) 100%)')
+        layers.push('radial-gradient(circle at 50% 50%, transparent 18%, rgba(0,0,0,0.55) 55%, #000 100%)')
       }
       return layers.length ? layers.join(', ') : 'none'
     }};
@@ -246,19 +243,19 @@ const StyledStreetView = styled.div<StyledProps>`
     inset: -20%;
     z-index: 1;
     pointer-events: none;
-    opacity: 0.28;
+    opacity: 0.55;
     mix-blend-mode: overlay;
     background-image: repeating-radial-gradient(
         circle at 20% 30%,
-        rgba(255, 255, 255, 0.35) 0 1px,
-        transparent 1px 3px
+        rgba(255, 255, 255, 0.55) 0 1.5px,
+        transparent 1.5px 3px
       ),
       repeating-linear-gradient(
         0deg,
-        rgba(0, 0, 0, 0.25) 0 1px,
+        rgba(0, 0, 0, 0.45) 0 1px,
         transparent 1px 2px
       );
-    animation: ${noiseScroll} 0.35s steps(2) infinite;
+    animation: ${noiseScroll} 0.22s steps(2) infinite;
   }
 
   .streetview-interaction-block {
@@ -317,6 +314,28 @@ const StyledStreetView = styled.div<StyledProps>`
       bottom: max(112px, calc(96px + env(safe-area-inset-bottom, 0px)));
       max-width: min(280px, calc(100vw - 100px));
     }
+  }
+
+  .spectator-banner {
+    position: absolute;
+    top: max(12px, env(safe-area-inset-top, 0px));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 4;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(12, 14, 18, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #fbbf24;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    pointer-events: none;
+    white-space: nowrap;
+    max-width: calc(100vw - 24px);
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   a[href^="https://maps.google.com/maps"]

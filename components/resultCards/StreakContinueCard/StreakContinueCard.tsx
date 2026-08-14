@@ -16,9 +16,10 @@ type Props = {
   gameData: Game
   view: GameViewType
   setView: (view: GameViewType) => void
+  nextLabel?: string
 }
 
-const StreakContinueCard: FC<Props> = ({ gameData, view, setView }) => {
+const StreakContinueCard: FC<Props> = ({ gameData, view, setView, nextLabel = 'Next Round' }) => {
   const dispatch = useAppDispatch()
 
   const plonkIso = useMemo(() => {
@@ -97,7 +98,7 @@ const StreakContinueCard: FC<Props> = ({ gameData, view, setView }) => {
 
       <div className="actionButton">
         <button className="next-round-btn" onClick={() => handleNextRound()}>
-          Next Round
+          {nextLabel}
         </button>
       </div>
     </StyledStreakContinueCard>
