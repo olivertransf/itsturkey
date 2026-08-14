@@ -11,7 +11,7 @@ const StyledMapPage = styled.div`
   }
 
   .mapPlayHead {
-    margin: var(--space-3) 0 var(--space-5);
+    margin: var(--space-2) 0 var(--space-4);
   }
 
   .mapPlayTitle {

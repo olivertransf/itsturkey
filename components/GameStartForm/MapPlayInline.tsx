@@ -49,87 +49,91 @@ const MapPlayInline: FC<Props> = ({ mapDetails, gameMode }) => {
 
   return (
     <StyledMapPlayInline>
-      {gameMode !== 'streak' ? (
-        <div className="play-block">
-          <h2 className="play-heading">Rounds</h2>
-          <StyledGameSettingsModal className="lobby-game-settings-inner">
-            <div className="mainContent">
-              <div className="roundsSection">
-                <div className="roundUnlimitedRow">
-                  <ToggleSwitch
-                    isActive={playMode === 'unlimited'}
-                    setIsActive={(on) => setPlayMode(on ? 'unlimited' : 'single')}
-                    disabled={defaultsLocked}
-                  />
-                  <span className="roundUnlimitedLabel">Unlimited</span>
-                </div>
-                {playMode === 'single' && (
-                  <>
-                    <span className="roundTimeLabel">
-                      <span className="roundLabelGroup">Count</span>
-                      <span className="timeLimit">
-                        {roundCount}
-                        <span className="labelHint"> / {MAX_TOTAL_ROUNDS}</span>
+      <div className="play-col play-col-main">
+        {gameMode !== 'streak' ? (
+          <div className="play-block">
+            <h2 className="play-heading">Rounds</h2>
+            <StyledGameSettingsModal className="lobby-game-settings-inner">
+              <div className="mainContent">
+                <div className="roundsSection">
+                  <div className="roundUnlimitedRow">
+                    <ToggleSwitch
+                      isActive={playMode === 'unlimited'}
+                      setIsActive={(on) => setPlayMode(on ? 'unlimited' : 'single')}
+                      disabled={defaultsLocked}
+                    />
+                    <span className="roundUnlimitedLabel">Unlimited</span>
+                  </div>
+                  {playMode === 'single' && (
+                    <>
+                      <span className="roundTimeLabel">
+                        <span className="roundLabelGroup">Count</span>
+                        <span className="timeLimit">
+                          {roundCount}
+                          <span className="labelHint"> / {MAX_TOTAL_ROUNDS}</span>
+                        </span>
                       </span>
-                    </span>
-                    <div className="time-slider">
-                      <Slider
-                        value={roundCount}
-                        min={1}
-                        max={MAX_TOTAL_ROUNDS}
-                        onChange={setRoundCount}
-                        disabled={defaultsLocked}
-                      />
-                    </div>
-                  </>
-                )}
+                      <div className="time-slider">
+                        <Slider
+                          value={roundCount}
+                          min={1}
+                          max={MAX_TOTAL_ROUNDS}
+                          onChange={setRoundCount}
+                          disabled={defaultsLocked}
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-          </StyledGameSettingsModal>
-        </div>
-      ) : null}
-
-      <div className="play-block">
-        <h2 className="play-heading">Time & movement</h2>
-        <LobbyGameSettings
-          defaultsLocked={defaultsLocked}
-          onToggleDefaults={handleCheck}
-          sliderVal={sliderVal}
-          setSliderVal={setSliderVal}
-          canMove={canMove}
-          canPan={canPan}
-          canZoom={canZoom}
-          setCanMove={setCanMove}
-          setCanPan={setCanPan}
-          setCanZoom={setCanZoom}
-          visualRestrictions={visualRestrictions}
-          setVisualRestrictions={setVisualRestrictions}
-          hideVisualRestrictions
-        />
-      </div>
-
-      <div className="play-block">
-        <h2 className="play-heading">Filters</h2>
-        <VisualRestrictionsPanel value={visualRestrictions} onChange={setVisualRestrictions} embedded />
-      </div>
-
-      <div className="play-footer">
-        {equitableCountryIso && gameMode !== 'streak' ? (
-          <PlonkitGuideLauncher
-            variant="compact"
-            countryIso={equitableCountryIso}
-            mapLabel={mapDetails.name}
-            compactAlign="start"
-          />
+            </StyledGameSettingsModal>
+          </div>
         ) : null}
-        <Button
-          variant="primary"
-          width="100%"
-          onClick={() => void primaryAction()}
-          isLoading={isSubmitting}
-        >
-          {footerMeta.actionLabel}
-        </Button>
+
+        <div className="play-block">
+          <h2 className="play-heading">Time & movement</h2>
+          <LobbyGameSettings
+            defaultsLocked={defaultsLocked}
+            onToggleDefaults={handleCheck}
+            sliderVal={sliderVal}
+            setSliderVal={setSliderVal}
+            canMove={canMove}
+            canPan={canPan}
+            canZoom={canZoom}
+            setCanMove={setCanMove}
+            setCanPan={setCanPan}
+            setCanZoom={setCanZoom}
+            visualRestrictions={visualRestrictions}
+            setVisualRestrictions={setVisualRestrictions}
+            hideVisualRestrictions
+          />
+        </div>
+
+        <div className="play-start">
+          {equitableCountryIso && gameMode !== 'streak' ? (
+            <PlonkitGuideLauncher
+              variant="compact"
+              countryIso={equitableCountryIso}
+              mapLabel={mapDetails.name}
+              compactAlign="start"
+            />
+          ) : null}
+          <Button
+            variant="primary"
+            width="100%"
+            onClick={() => void primaryAction()}
+            isLoading={isSubmitting}
+          >
+            {footerMeta.actionLabel}
+          </Button>
+        </div>
+      </div>
+
+      <div className="play-col play-col-filters">
+        <h2 className="play-heading">Filters</h2>
+        <div className="play-filters-scroll">
+          <VisualRestrictionsPanel value={visualRestrictions} onChange={setVisualRestrictions} embedded />
+        </div>
       </div>
     </StyledMapPlayInline>
   )
