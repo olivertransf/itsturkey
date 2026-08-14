@@ -177,6 +177,31 @@ export const StyledPlaySetup = styled.div`
     }
   }
 
+  .play-chip-row {
+    display: flex;
+    gap: var(--play-gap);
+    flex-wrap: wrap;
+  }
+
+  .play-chip {
+    flex: 1;
+    min-width: 64px;
+    height: var(--control-height-md);
+    border-radius: var(--radius-md);
+    border: var(--border-default);
+    background: var(--bg-surface);
+    color: var(--text-muted);
+    font-size: var(--font-body);
+    font-weight: 700;
+    cursor: pointer;
+
+    &.is-active {
+      border-color: rgba(47, 127, 255, 0.55);
+      background: rgba(47, 127, 255, 0.16);
+      color: var(--text-primary);
+    }
+  }
+
   .play-filter-grid-scroll {
     overflow-y: scroll;
     scrollbar-gutter: stable;

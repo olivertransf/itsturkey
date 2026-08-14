@@ -1,26 +1,24 @@
 import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { GlobeAltIcon } from '@heroicons/react/outline'
-import {
-  CreateAccordion,
-  CreateLobbyShell,
-  CreateStickyActions,
-} from '@components/CreateLobby'
 import { VisualRestrictionsPanel } from '@components/GameStartForm'
+import { StyledPlaySetup } from '@components/GameStartForm/PlaySetup.Styled'
 import { LobbyGameSettings } from '@components/LobbyGameSettings'
 import { MapPickerGrid } from '@components/MapPickerGrid'
 import { Meta } from '@components/Meta'
+import { PageBackLink } from '@components/PageBackLink'
 import { Button } from '@components/system'
+import { WidthController } from '@components/layout'
 import { useAppDispatch } from '@redux/hook'
 import { updateGameSettings, updateStartTime } from '@redux/slices'
-import StyledMultiGamePage from '@styles/MultiGamePage.Styled'
+import StyledMapPage from '@styles/MapPage.Styled'
 import {
   COUNTRY_STREAK_DETAILS,
   COUNTRY_STREAKS_ID,
   EQUITABLE_COUNTRY_STREAK_DETAILS,
   EQUITABLE_COUNTRY_STREAK_ID,
 } from '@utils/constants/random'
+import { SITE_NAME } from '@utils/constants/site'
 import { mailman, showToast } from '@utils/helpers'
 import type { MapPickerRow } from '@utils/loadMapPickerOptions'
 import {
@@ -82,9 +80,8 @@ const StreakLobbyPage: NextPage = () => {
     [selectOptions, mapField]
   )
 
-  const fxCount = useMemo(
-    () => VISUAL_RESTRICTION_CATALOG.filter(({ key }) => Boolean(visualRestrictions[key])).length,
-    [visualRestrictions]
+  const anyFilterOn = VISUAL_RESTRICTION_CATALOG.some(
+    ({ key }) => Boolean(normalizeVisualRestrictions(visualRestrictions)[key])
   )
 
   const onToggleDefaults = useCallback(() => {
@@ -159,71 +156,83 @@ const StreakLobbyPage: NextPage = () => {
   }
 
   return (
-    <StyledMultiGamePage>
-      <Meta title="Country streak" />
+    <StyledMapPage>
+      <WidthController customWidth="none">
+        <Meta title={`${SITE_NAME} — Country streak`} />
 
-      <CreateLobbyShell
-        title="Country streak"
-        tag="Keep guessing countries until you miss. Map choice and filters stay out of the way."
-        glyph={<GlobeAltIcon />}
-      >
-        <CreateAccordion title="Map" summary={mapNameForField || 'Choose a map'} defaultOpen>
-          <MapPickerGrid
-            options={selectOptions}
-            value={mapField}
-            onChange={setMapField}
-            loading={false}
-            maxHeight={280}
-            showDescriptions={false}
-          />
-        </CreateAccordion>
+        <section className="mapPlayCard">
+          <header className="mapPlayHead">
+            <PageBackLink href="/" label="Back" compact />
+            <h1 className="mapPlayTitle">Country streak</h1>
+          </header>
 
-        <CreateAccordion
-          title="Round & movement"
-          summary={defaultsLocked ? 'Default time & movement' : 'Custom time & movement'}
-          defaultOpen={false}
-        >
-          <LobbyGameSettings
-            defaultsLocked={defaultsLocked}
-            onToggleDefaults={onToggleDefaults}
-            sliderVal={sliderVal}
-            setSliderVal={setSliderVal}
-            canMove={canMove}
-            canPan={canPan}
-            canZoom={canZoom}
-            setCanMove={setCanMove}
-            setCanPan={setCanPan}
-            setCanZoom={setCanZoom}
-            visualRestrictions={visualRestrictions}
-            setVisualRestrictions={setVisualRestrictions}
-            hideVisualRestrictions
-          />
-        </CreateAccordion>
+          <StyledPlaySetup>
+            <div className="play-col play-col-main">
+              <section className="play-card">
+                <h2 className="play-heading">Map</h2>
+                <MapPickerGrid
+                  options={selectOptions}
+                  value={mapField}
+                  onChange={setMapField}
+                  loading={false}
+                  maxHeight={280}
+                  showDescriptions={false}
+                  scrollClassName="play-filter-grid-scroll"
+                />
+              </section>
 
-        <CreateAccordion
-          title="Wacky filters"
-          summary={fxCount > 0 ? `${fxCount} filter${fxCount === 1 ? '' : 's'} on` : 'None'}
-          defaultOpen={fxCount > 0}
-        >
-          <VisualRestrictionsPanel
-            value={visualRestrictions}
-            onChange={setVisualRestrictions}
-            listMaxHeight={220}
-          />
-        </CreateAccordion>
+              <section className="play-card">
+                <h2 className="play-heading">Time & movement</h2>
+                <LobbyGameSettings
+                  defaultsLocked={defaultsLocked}
+                  onToggleDefaults={onToggleDefaults}
+                  sliderVal={sliderVal}
+                  setSliderVal={setSliderVal}
+                  canMove={canMove}
+                  canPan={canPan}
+                  canZoom={canZoom}
+                  setCanMove={setCanMove}
+                  setCanPan={setCanPan}
+                  setCanZoom={setCanZoom}
+                  visualRestrictions={visualRestrictions}
+                  setVisualRestrictions={setVisualRestrictions}
+                  hideVisualRestrictions
+                />
+              </section>
 
-        <CreateStickyActions>
-          <Button
-            variant="primary"
-            style={{ width: '100%' }}
-            disabled={submitting}
-            onClick={() => void start()}
-          >
-            {submitting ? 'Starting…' : 'Start'}
-          </Button>
-        </CreateStickyActions>
-      </CreateLobbyShell>
-    </StyledMultiGamePage>
+              <div className="play-start">
+                <Button
+                  variant="primary"
+                  width="100%"
+                  disabled={submitting}
+                  isLoading={submitting}
+                  onClick={() => void start()}
+                >
+                  Start
+                </Button>
+              </div>
+            </div>
+
+            <div className="play-col play-col-filters">
+              <section className="play-card play-card-filters">
+                <div className="play-heading-row">
+                  <h2 className="play-heading">Filters</h2>
+                  <button
+                    type="button"
+                    className="play-clear"
+                    disabled={!anyFilterOn}
+                    onClick={() => setVisualRestrictions({})}
+                  >
+                    Clear all
+                  </button>
+                </div>
+                <VisualRestrictionsPanel value={visualRestrictions} onChange={setVisualRestrictions} embedded />
+              </section>
+            </div>
+          </StyledPlaySetup>
+        </section>
+      </WidthController>
+    </StyledMapPage>
   )
 }
 
