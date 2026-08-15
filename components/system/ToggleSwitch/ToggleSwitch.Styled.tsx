@@ -29,10 +29,9 @@ const StyledToggleSwitch = styled.div<StyledProps>`
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: ${({ inActiveColor }) => inActiveColor ?? '#424242'};
-    -webkit-transition: 0.4s;
-    transition: 0.4s;
-    border-radius: 34px;
+    background-color: ${({ inActiveColor }) => inActiveColor ?? 'var(--control-fill-hover)'};
+    transition: background-color var(--duration) var(--ease);
+    border-radius: var(--radius-pill);
 
     :before {
       position: absolute;
@@ -41,24 +40,23 @@ const StyledToggleSwitch = styled.div<StyledProps>`
       width: 18px;
       left: 3px;
       bottom: 3px;
-      background-color: ${({ circleColor }) => circleColor ?? '#fff'};
-      -webkit-transition: 0.4s;
-      transition: 0.4s;
+      background-color: ${({ circleColor }) => circleColor ?? 'var(--white)'};
+      transition: transform var(--duration) var(--ease);
       border-radius: 50%;
+      box-shadow: var(--shadow-sm);
     }
   }
 
   input:checked + .slider {
-    background-color: ${({ activeColor }) => activeColor ?? 'var(--mediumPurple)'};
+    background-color: ${({ activeColor }) => activeColor ?? 'var(--accent-primary)'};
   }
 
-  input:focus + .slider {
-    box-shadow: 0 0 1px ${({ activeColor }) => activeColor ?? '#8054FF'};
+  input:focus-visible + .slider {
+    outline: var(--focus-ring);
+    outline-offset: 2px;
   }
 
   input:checked + .slider:before {
-    -webkit-transform: translateX(16px);
-    -ms-transform: translateX(16px);
     transform: translateX(16px);
   }
 `

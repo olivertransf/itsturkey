@@ -38,7 +38,7 @@ const StyledGameView = styled.div`
     cursor: pointer;
 
     &:hover {
-      background-color: #282828;
+      background-color: var(--bg-card);
       color: #fff;
     }
 

@@ -20,6 +20,16 @@ export { default as formatDistance } from './formatDistance'
 export { default as formatApproxLocations } from './formatApproxLocations'
 export { default as formatLargeNumber } from './formatLargeNumber'
 export { default as formatOngoingScore } from './formatOngoingScore'
+export {
+  excludeHiddenOngoingGames,
+  hideOngoingGame,
+  isOngoingGameHidden,
+  normalizeOngoingGameId,
+  readHiddenOngoingIds,
+  unhideAllOngoingGames,
+  unhideOngoingGame,
+} from './hiddenOngoingGames'
+export { compareLastUsedDesc, pickLastUsedAt } from './lastUsedAt'
 export { default as formatPolygon } from './formatPolygon'
 export { default as formatRoundTime } from './formatRoundTime'
 export { default as formatSettingsLabel } from './formatSettingsLabel'
@@ -44,6 +54,8 @@ export {
   normalizeStreetViewLiveView,
 } from './streetViewLiveView'
 export type { StreetViewLiveView } from './streetViewLiveView'
+export { normalizeGuessMapLive } from './guessMapLive'
+export type { GuessMapLive } from './guessMapLive'
 export { default as parseJsonFile } from './parseJsonFile'
 export { default as randomElement } from './randomElement'
 export { default as randomInt } from './randomInt'

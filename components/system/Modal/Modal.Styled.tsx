@@ -10,12 +10,10 @@ type StyledProps = {
 const popInAnim = keyframes`
   from {
     opacity: 0;
-    top: calc(50% + 12px);
-    transform: translate(-50%, -50%) scale(0.9);
+    transform: translate(-50%, -50%) scale(0.98);
   }
   to {
     opacity: 1;
-    top: 50%;
     transform: translate(-50%, -50%) scale(1);
   }
 `
@@ -23,13 +21,11 @@ const popInAnim = keyframes`
 const popOutAnim = keyframes`
   from {
     opacity: 1;
-    top: 50%;
     transform: translate(-50%, -50%) scale(1);
   }
   to {
     opacity: 0;
-    top: calc(50% + 12px);
-    transform: translate(-50%, -50%) scale(0.9);
+    transform: translate(-50%, -50%) scale(0.98);
   }
 `
 
@@ -41,26 +37,24 @@ const StyledModal = styled.div<StyledProps>`
   bottom: 0;
   height: 100vh;
   width: 100vw;
-  z-index: 50;
+  z-index: var(--z-modal);
 
   .modal {
-    z-index: 50;
-    border-radius: 6px;
+    z-index: var(--z-modal);
+    border-radius: var(--radius-lg);
     position: fixed;
-    margin: 2rem;
     top: 50%;
     left: 50%;
     outline: none;
     overflow: ${({ noOverflow }) => (noOverflow ? 'hidden' : 'unset')};
     transform: translate(-50%, -50%);
-    background-color: #151515;
+    background-color: var(--bg-elevated);
+    border: var(--border-default);
     margin: 0;
     padding: 0;
-    border: 0;
-    box-shadow: 0 0 0 1px #00000019, 0 2px 4px 0px #00000036;
-    /* animation: forwards 0.05s ease-in-out ${({ showCloseAnim }) => (showCloseAnim ? popOutAnim : popInAnim)}; */
-    /* animation: forwards 0.1s ease-in-out ${({ showCloseAnim }) => showCloseAnim && popOutAnim}; */
-    color: #fff;
+    box-shadow: var(--shadow-card);
+    animation: forwards var(--duration) var(--ease) ${({ showCloseAnim }) => (showCloseAnim ? popOutAnim : popInAnim)};
+    color: var(--text-primary);
     width: max-content;
 
     ${({ maxWidth }) =>
@@ -89,9 +83,9 @@ const StyledModal = styled.div<StyledProps>`
     right: 0;
     width: 100%;
     height: 100%;
-    transition: 0.1s;
+    transition: opacity var(--duration-fast) var(--ease);
     opacity: ${({ showCloseAnim }) => (showCloseAnim ? 0 : 1)};
-    background-color: rgba(0, 0, 0, 0.88);
+    background-color: var(--overlay-scrim);
   }
 
   @media (pointer: none), (pointer: coarse) {

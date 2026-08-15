@@ -2,6 +2,8 @@ import styled from 'styled-components'
 
 const StyledLayout = styled.div`
   .app-layout {
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
     height: 100vh;
     height: 100dvh;
@@ -10,6 +12,8 @@ const StyledLayout = styled.div`
 
   .appBody {
     display: flex;
+    flex: 1;
+    min-height: 0;
     width: 100%;
     overflow: hidden;
   }
@@ -20,12 +24,10 @@ const StyledLayout = styled.div`
     transform: translateX(-50%);
     bottom: max(20px, env(safe-area-inset-bottom, 0px));
     padding: 20px;
-    border-radius: 20px;
-    background-color: #14073a;
-    background-color: #7f1d1d;
-    background-color: #450a0a;
-    z-index: 99999;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    background-color: var(--danger-fill);
+    z-index: var(--z-toast);
+    border: 1px solid var(--border-strong);
     text-align: center;
     font-weight: 400;
     width: fit-content;
@@ -34,19 +36,18 @@ const StyledLayout = styled.div`
     p {
       margin-top: 4px;
       font-size: 15px;
-      color: #fca5a5;
-      color: #fecaca;
+      color: var(--danger);
     }
   }
 
   main {
     width: 100% !important;
-    height: 100vh;
-    height: 100dvh;
+    height: 100%;
     max-height: 100%;
     position: relative;
     overflow: hidden auto;
     background-color: var(--bg-primary);
+    background-image: var(--bg-pattern);
     -webkit-overflow-scrolling: touch;
   }
 
@@ -66,16 +67,23 @@ const StyledLayout = styled.div`
   @media (max-width: 1024px) {
     .app-layout {
       width: 100%;
-      height: unset;
+      height: auto;
+      min-height: 100vh;
+      min-height: 100dvh;
       overflow: unset;
       padding: 0;
       box-sizing: border-box;
     }
 
+    .appBody {
+      overflow: visible;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
     main {
       height: auto;
-      min-height: 100vh;
-      min-height: 100dvh;
+      min-height: 0;
       overflow: unset;
     }
   }

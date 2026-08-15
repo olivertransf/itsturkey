@@ -3,22 +3,22 @@ import styled from 'styled-components'
 const StyledSearchResult = styled.div`
   display: flex;
   align-items: center;
-  font-weight: 400;
+  font-weight: 500;
   cursor: pointer;
 
   :hover {
-    background-color: #282828;
+    background-color: var(--control-fill);
   }
 
   .linkWrapper {
     height: 100%;
     width: 100%;
-    padding: 1rem;
+    padding: var(--space-3) var(--space-4);
   }
 
   .termAvatar {
-    height: 32px;
-    width: 32px;
+    height: var(--icon-lg);
+    width: var(--icon-lg);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -32,6 +32,8 @@ const StyledSearchResult = styled.div`
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      color: var(--text-primary);
+      font-size: var(--font-body);
     }
   }
 `

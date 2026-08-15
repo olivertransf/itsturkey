@@ -8,35 +8,30 @@ const StyledNavbar = styled.div`
   justify-content: space-between;
   position: sticky;
   top: 0;
-  padding: 0 1rem;
-  //position: sticky;
-  //top: 0;
-  z-index: 20;
-  background-color: rgba(16, 18, 20, 0.78);
+  padding: 0 var(--space-4);
+  z-index: var(--z-sticky);
+  background-color: var(--backdrop-nav);
   backdrop-filter: saturate(140%) blur(16px);
   -webkit-backdrop-filter: saturate(140%) blur(16px);
   border-bottom: 1px solid var(--border-subtle);
   flex-shrink: 0 !important;
 
   .appTitle {
-    font-size: 1.125rem;
-    font-weight: 600;
-
-    @media (max-width: 800px) {
-      font-size: 1rem;
-    }
+    font-size: var(--font-section);
+    font-weight: 700;
+    letter-spacing: var(--tracking-title);
   }
 
   .leftContainer {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    gap: 0.5rem;
+    gap: var(--space-2);
     flex-grow: 1;
     width: 100%;
     height: 100%;
 
-    @media (max-width: 500px) {
+    @media (max-width: 600px) {
       flex-shrink: 3;
     }
   }
@@ -45,7 +40,7 @@ const StyledNavbar = styled.div`
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    margin-right: 0.25rem;
+    margin-right: var(--space-1);
   }
 
   .middleContainer {
@@ -55,7 +50,7 @@ const StyledNavbar = styled.div`
     flex-grow: 2;
     width: 100%;
 
-    @media (max-width: 700px) {
+    @media (max-width: 600px) {
       display: none;
     }
   }
@@ -68,33 +63,61 @@ const StyledNavbar = styled.div`
     width: 100%;
   }
 
+  .hubLinks {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: var(--space-3);
+    height: 100%;
+    flex-shrink: 0;
+  }
+
+  .hubLink {
+    font-size: var(--font-meta);
+    font-weight: 600;
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+
+    &:hover {
+      color: var(--text-primary);
+    }
+
+    &.is-active {
+      color: var(--text-primary);
+      background: var(--control-fill);
+    }
+  }
+
   .navLinks {
     display: flex;
     align-items: center;
-    margin-left: 2rem;
+    margin-left: var(--space-5);
     height: 100%;
   }
 
   .rightWrapper {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: var(--space-3);
 
     .geoHubSource {
       display: none;
-      font-size: 13px;
+      font-size: var(--font-meta);
       font-weight: 500;
       color: var(--text-muted);
-      padding: 6px 10px;
-      border-radius: 8px;
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-sm);
       white-space: nowrap;
 
       &:hover {
         color: var(--text-primary);
-        background: rgba(255, 255, 255, 0.06);
+        background: var(--control-fill);
       }
 
-      @media (min-width: 880px) {
+      @media (min-width: 960px) {
         display: inline-flex;
         align-items: center;
       }
@@ -103,23 +126,24 @@ const StyledNavbar = styled.div`
     .mobile-search {
       display: none;
 
-      @media (max-width: 700px) {
+      @media (max-width: 600px) {
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 0.25rem;
-        border-radius: 5px;
+        padding: var(--space-1);
+        border-radius: var(--radius-sm);
         user-select: none;
         background-color: transparent;
 
         :hover {
-          background-color: #444;
+          background-color: var(--control-fill);
         }
       }
 
       svg {
-        height: 20px;
-        color: #efeff1;
+        height: var(--icon-md);
+        width: var(--icon-md);
+        color: var(--text-primary);
 
         path {
           stroke-width: 1.5;
@@ -131,44 +155,34 @@ const StyledNavbar = styled.div`
   .userInfo {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--space-3);
   }
 
   .username {
     color: var(--text-muted);
-    font-size: 16px;
+    font-size: var(--font-body);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 250px;
 
-    @media (max-width: 800px) {
-      font-size: 1rem;
-    }
-
-    @media (max-width: 500px) {
+    @media (max-width: 600px) {
       display: none;
     }
   }
 
   .cancelSearch {
-    margin-left: 1rem;
-    font-size: 14px;
-    color: #9ca3af;
+    margin-left: var(--space-4);
+    font-size: var(--font-meta);
+    color: var(--text-muted);
     cursor: pointer;
   }
 
-  a button {
-    font-size: 15px;
-    border-radius: 5px;
-  }
-
-  @media (max-width: 1024px) {
+  @media (max-width: 960px) {
     position: sticky;
     top: 0;
-    padding-left: max(1rem, env(safe-area-inset-left, 0px));
-    padding-right: max(1rem, env(safe-area-inset-right, 0px));
-    background-color: rgba(16, 16, 18, 0.94);
+    padding-left: max(var(--space-4), env(safe-area-inset-left, 0px));
+    padding-right: max(var(--space-4), env(safe-area-inset-right, 0px));
   }
 `
 

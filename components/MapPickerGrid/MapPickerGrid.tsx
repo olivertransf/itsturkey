@@ -1,8 +1,7 @@
 import { SearchIcon } from '@heroicons/react/outline'
 import { CheckIcon } from '@heroicons/react/solid'
-import Image from 'next/image'
 import { FC, useMemo, useState } from 'react'
-import { resolveMapImageSrc, isGenericMapPreview } from '@utils/helpers/mapPreviewSrc'
+import { mapNameInitials } from '@utils/helpers/mapPreviewSrc'
 import type { MapPickerRow } from '@utils/loadMapPickerOptions'
 import { parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
 import { flagEmojiFromIsoAlpha2 } from '@utils/helpers/flagEmoji'
@@ -10,7 +9,7 @@ import {
   CheckWrap,
   ColumnList,
   LeadFlag,
-  LeadMedia,
+  LeadInitials,
   LoadingHint,
   MapRow,
   PickerRoot,
@@ -21,17 +20,28 @@ import {
   TextCol,
 } from './MapPickerGrid.Styled'
 
+const COMPACT_ROW_PX = 36
+const COMFORT_ROW_PX = 44
+const ROW_GAP_PX = 4
+
+export const mapPickerListHeight = (visibleRows: number, compact: boolean) => {
+  const row = compact ? COMPACT_ROW_PX : COMFORT_ROW_PX
+  return visibleRows * row + Math.max(0, visibleRows - 1) * ROW_GAP_PX
+}
+
 type Props = {
   options: MapPickerRow[]
   value: string
   onChange: (id: string) => void
   loading?: boolean
   maxHeight?: number
+  visibleCount?: number
   emptyMessage?: string
   /** When false, only map titles show (denser rows). Default true. */
   showDescriptions?: boolean
   /** Search filter on map name. Default true. */
   showSearch?: boolean
+  scrollClassName?: string
 }
 
 const MapPickerGrid: FC<Props> = ({
@@ -40,9 +50,11 @@ const MapPickerGrid: FC<Props> = ({
   onChange,
   loading,
   maxHeight = 260,
+  visibleCount,
   emptyMessage = 'No maps available.',
   showDescriptions = true,
   showSearch = true,
+  scrollClassName,
 }) => {
   const [query, setQuery] = useState('')
 
@@ -64,20 +76,8 @@ const MapPickerGrid: FC<Props> = ({
     <PickerRoot>
       {showSearch ? (
         <SearchWrap>
-          <div style={{ position: 'relative' }}>
-            <SearchIcon
-              aria-hidden
-              style={{
-                position: 'absolute',
-                left: 12,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: 18,
-                height: 18,
-                color: 'var(--text-muted)',
-                pointerEvents: 'none',
-              }}
-            />
+          <div className="search-field">
+            <SearchIcon className="search-icon" aria-hidden />
             <input
               type="search"
               className="map-picker-search"
@@ -87,12 +87,18 @@ const MapPickerGrid: FC<Props> = ({
               onChange={(e) => setQuery(e.target.value)}
               autoComplete="off"
               spellCheck={false}
-              style={{ paddingLeft: 38 }}
             />
           </div>
         </SearchWrap>
       ) : null}
-      <ScrollRegion $maxHeight={maxHeight} role="group" aria-label="Choose map">
+      <ScrollRegion
+        $maxHeight={
+          visibleCount != null ? mapPickerListHeight(visibleCount, !showDescriptions) : maxHeight
+        }
+        className={scrollClassName}
+        role="group"
+        aria-label="Choose map"
+      >
         <ColumnList>
           {filteredOptions.length === 0 ? (
             <LoadingHint>No maps match your search.</LoadingHint>
@@ -101,8 +107,6 @@ const MapPickerGrid: FC<Props> = ({
               const id = String(row._id)
               const selected = id === String(value)
               const countryCode = parseEquitableCountryMapKey(id)
-              const thumbSrc = resolveMapImageSrc(row.previewImg)
-              const usePlaceholderArt = isGenericMapPreview(row.previewImg)
               const descRaw = row.description?.trim()
               const desc = showDescriptions ? descRaw : undefined
 
@@ -120,18 +124,10 @@ const MapPickerGrid: FC<Props> = ({
                     <LeadFlag title={row.name}>
                       <span aria-hidden>{flagEmojiFromIsoAlpha2(countryCode)}</span>
                     </LeadFlag>
-                  ) : usePlaceholderArt ? (
-                    <LeadMedia $placeholder aria-hidden />
                   ) : (
-                    <LeadMedia>
-                      <Image
-                        src={thumbSrc}
-                        alt=""
-                        width={44}
-                        height={44}
-                        style={{ objectFit: 'cover' }}
-                      />
-                    </LeadMedia>
+                    <LeadInitials title={row.name}>
+                      <span aria-hidden>{mapNameInitials(row.name)}</span>
+                    </LeadInitials>
                   )}
                   <TextCol>
                     <RowTitle>{row.name}</RowTitle>

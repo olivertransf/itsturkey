@@ -7,7 +7,6 @@ import { DEFAULT_TOTAL_ROUNDS } from '@utils/constants/gameModes'
 import { formatLargeNumber } from '@utils/helpers'
 import formatDistance from '@utils/helpers/formatDistance'
 import { DistanceType, GameViewType } from '../../../@types'
-import { PlonkitGuideLauncher } from '@components/PlonkitCountryGuide'
 import { StyledStandardResults } from './'
 
 type Props = {
@@ -20,8 +19,6 @@ type Props = {
   view: GameViewType
   setView: (view: GameViewType) => void
   onEndUnlimitedSession?: () => Promise<void>
-  plonkitCountryIso?: string | null
-  plonkitMapLabel?: string
   nextLabel?: string
   isSpectator?: boolean
 }
@@ -36,8 +33,6 @@ const StandardResults: FC<Props> = ({
   view,
   setView,
   onEndUnlimitedSession,
-  plonkitCountryIso,
-  plonkitMapLabel,
   nextLabel: nextLabelProp,
   isSpectator = false,
 }) => {
@@ -46,7 +41,7 @@ const StandardResults: FC<Props> = ({
   const [ending, setEnding] = useState(false)
 
   useEffect(() => {
-    if (view !== 'Result') return
+    if (view !== 'Result' || isSpectator) return
 
     document.addEventListener('keydown', handleKeyDown, { once: true })
 
@@ -66,6 +61,7 @@ const StandardResults: FC<Props> = ({
   const effectiveTotal = totalRounds > 0 ? totalRounds : DEFAULT_TOTAL_ROUNDS
 
   const handleNextRound = () => {
+    if (isSpectator) return
     if (!unlimited && round > effectiveTotal) {
       setView('FinalResults')
     } else {
@@ -116,12 +112,7 @@ const StandardResults: FC<Props> = ({
         )}
       </div>
 
-      {plonkitCountryIso ? (
-        <div style={{ marginTop: 16, width: '100%' }}>
-          <PlonkitGuideLauncher variant="compact" countryIso={plonkitCountryIso} mapLabel={plonkitMapLabel} />
-        </div>
-      ) : null}
-
+      {!isSpectator ? (
       <div className="actionButton">
         <button className="next-round-btn" onClick={() => handleNextRound()}>
           {nextLabel}
@@ -137,6 +128,7 @@ const StandardResults: FC<Props> = ({
           </button>
         ) : null}
       </div>
+      ) : null}
     </StyledStandardResults>
   )
 }

@@ -19,6 +19,9 @@ type Props = {
   resetMap?: boolean
 }
 
+const isPlottable = (loc: { lat?: number; lng?: number } | null | undefined): loc is LocationType =>
+  loc != null && Number.isFinite(Number(loc.lat)) && Number.isFinite(Number(loc.lng))
+
 const ResultMap: FC<Props> = ({
   guessedLocations,
   actualLocations,
@@ -35,7 +38,6 @@ const ResultMap: FC<Props> = ({
   const polylinesRef = useRef<google.maps.Polyline[]>([])
   const user = useAppSelector((state) => state.user)
 
-  // If locations change (because we toggle the view on challenge results) -> reload the markers
   useEffect(() => {
     if (!resultMapRef.current || !guessedLocations.length) return
 
@@ -49,50 +51,69 @@ const ResultMap: FC<Props> = ({
     }
   }, [resetMap, isFinalResults])
 
-  const getMapBounds = (map: google.maps.Map) => {
-    const guessedLocation = guessedLocations[guessedLocations.length - 1]
-    const actualLocation = actualLocations[round - 2]
+  const clearOverlays = () => {
+    setGuessMarkers([])
+    setActualMarkers([])
+    polylinesRef.current.forEach((polyline) => polyline.setMap(null))
+    polylinesRef.current = []
+  }
 
+  const getMapBounds = (map: google.maps.Map) => {
     const bounds = new google.maps.LatLngBounds()
+    let hasPoint = false
+
+    const extend = (loc: { lat?: number; lng?: number } | undefined) => {
+      if (!isPlottable(loc)) return
+      bounds.extend(loc)
+      hasPoint = true
+    }
 
     if (isFinalResults) {
       for (let i = 0; i < guessedLocations.length; i++) {
-        bounds.extend(guessedLocations[i])
-        bounds.extend(actualLocations[i])
+        extend(guessedLocations[i])
+        extend(actualLocations[i])
       }
     } else {
-      bounds.extend(guessedLocation)
-      bounds.extend(actualLocation)
+      const idx = Math.max(0, guessedLocations.length - 1)
+      extend(guessedLocations[idx])
+      extend(actualLocations[idx] ?? actualLocations[round - 2])
     }
+
+    if (!hasPoint) return
 
     map.setCenter(bounds.getCenter())
     map.fitBounds(bounds, { bottom: 20 })
   }
 
   const loadMapMarkers = (map: google.maps.Map) => {
-    const guessedLocation = guessedLocations[guessedLocations.length - 1]
-    const actualLocation = actualLocations[round - 2]
+    clearOverlays()
 
-    // Clear prev guess markers and polylines
-    setGuessMarkers([])
-    polylinesRef.current.map((polyline) => polyline.setMap(null))
-
-    // Set map markers and polylines
     if (isFinalResults) {
-      setGuessMarkers(guessedLocations)
-      setActualMarkers(actualLocations)
+      const guesses: GuessType[] = []
+      const actuals: LocationType[] = []
 
-      for (let i = 0; i < actualLocations.length; i++) {
-        const polyline = createMapPolyline(guessedLocations[i], actualLocations[i], map)
-        polylinesRef.current.push(polyline)
+      for (let i = 0; i < guessedLocations.length; i++) {
+        const guess = guessedLocations[i]
+        const actual = actualLocations[i]
+        if (!isPlottable(guess) || !isPlottable(actual)) continue
+        guesses.push(guess)
+        actuals.push(actual)
+        polylinesRef.current.push(createMapPolyline(guess, actual, map))
       }
-    } else {
-      setGuessMarkers([guessedLocation])
-      setActualMarkers([actualLocation])
 
-      const polyline = createMapPolyline(guessedLocation, actualLocation, map)
-      polylinesRef.current.push(polyline)
+      setGuessMarkers(guesses)
+      setActualMarkers(actuals)
+      return
     }
+
+    const idx = guessedLocations.length - 1
+    const guessedLocation = guessedLocations[idx]
+    const actualLocation = actualLocations[idx] ?? actualLocations[round - 2]
+    if (!isPlottable(guessedLocation) || !isPlottable(actualLocation)) return
+
+    setGuessMarkers([guessedLocation])
+    setActualMarkers([actualLocation])
+    polylinesRef.current.push(createMapPolyline(guessedLocation, actualLocation, map))
   }
 
   return (
@@ -105,15 +126,16 @@ const ResultMap: FC<Props> = ({
           zoom={2}
           yesIWantToUseGoogleMapApiInternals
           onGoogleApiLoaded={({ map }) => {
+            resultMapRef.current = map
+            if (!guessedLocations.length) return
             loadMapMarkers(map)
             getMapBounds(map)
-            resultMapRef.current = map
           }}
           options={RESULT_MAP_OPTIONS}
         >
-          {guessMarkers.map((marker, idx) => (
+          {guessMarkers.filter(isPlottable).map((marker, idx) => (
             <Marker
-              key={idx}
+              key={`guess-${idx}`}
               type="guess"
               lat={marker.lat}
               lng={marker.lng}
@@ -122,9 +144,9 @@ const ResultMap: FC<Props> = ({
             />
           ))}
 
-          {actualMarkers.map((marker, idx) => (
+          {actualMarkers.filter(isPlottable).map((marker, idx) => (
             <Marker
-              key={idx}
+              key={`actual-${idx}`}
               type="actual"
               lat={marker.lat}
               lng={marker.lng}

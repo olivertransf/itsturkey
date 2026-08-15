@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { FC } from 'react'
 import HomeSectionRowCard from '@components/HomeSectionRowCard'
-import HomePlayGlyph from '@components/HomeSectionRowCard/HomePlayGlyph'
 import { MapType } from '@types'
 import { parseEquitableContinentMapKey } from '@utils/helpers/equitableContinentMapId'
 
@@ -20,14 +19,12 @@ const EquitableContinentRowCard: FC<Props> = ({ map, isForDisplayOnly }) => {
   return (
     <HomeSectionRowCard title={title}>
       {!isForDisplayOnly ? (
-        <Link href={href}>
-          <a className="home-play-btn home-play-btn--icon" aria-label={`Play ${title}`}>
-            <HomePlayGlyph />
-          </a>
+        <Link href={href} className="home-play-btn">
+          Play
         </Link>
       ) : (
-        <span className="home-play-btn home-play-btn--icon" aria-hidden>
-          <HomePlayGlyph />
+        <span className="home-play-btn" aria-hidden>
+          Play
         </span>
       )}
     </HomeSectionRowCard>

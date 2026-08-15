@@ -50,7 +50,7 @@ const StyledStreakEndedCard = styled.div<StyledProps>`
 
     .country-list {
       margin: 24px 0;
-      border-bottom: 1px solid #333;
+      border-bottom: 1px solid var(--divider-line);
       padding-bottom: 16px;
       width: 100%;
     }
@@ -86,18 +86,20 @@ const StyledStreakEndedCard = styled.div<StyledProps>`
       padding: 0 32px;
       font-weight: 400;
       user-select: none;
-      background-color: var(--mediumPurple);
-      color: #fff;
+      background-color: var(--accent-primary);
+      color: var(--white);
+      border-radius: var(--radius-md);
+      font-weight: 600;
 
       &.alternate-action-btn {
-        background-color: #282828;
+        background-color: var(--control-fill);
       }
 
       :hover {
-        background-color: var(--indigo-600);
+        background-color: var(--accent-primary-hover);
 
         &.alternate-action-btn {
-          background-color: #333;
+          background-color: var(--control-fill-hover);
         }
       }
 

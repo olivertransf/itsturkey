@@ -15,7 +15,7 @@ const StyledAvatar = styled.div<StyledProps>`
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    box-shadow: 0 0 0 2px inset rgba(0, 0, 0, 0.25);
+    box-shadow: 0 0 0 2px inset rgba(0, 0, 0, 0.28);
     background-color: ${({ backgroundColor }) => backgroundColor};
     user-select: none;
 
@@ -36,7 +36,7 @@ const StyledAvatar = styled.div<StyledProps>`
       position: absolute;
       inset: 0;
       border-radius: 30%;
-      box-shadow: 0 0 0 1px inset rgba(255, 255, 255, 0.12);
+      box-shadow: 0 0 0 1px inset var(--border-strong);
     }
 
     img {

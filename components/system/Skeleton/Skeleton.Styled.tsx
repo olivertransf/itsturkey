@@ -26,7 +26,7 @@ const StyledSkeleton = styled.div<StyledProps>`
   overflow: hidden;
   background-color: var(--palette-surface);
   animation: ${pulse} 1.2s ease-in-out infinite;
-  border-radius: ${({ variant }) => (variant === 'circular' ? '50%' : '6px')};
+  border-radius: ${({ variant }) => (variant === 'circular' ? '50%' : 'var(--radius-md)')};
 
   ${({ noBorder }) =>
     noBorder &&

@@ -9,14 +9,19 @@ const StyledHomeSectionRowCard = styled.div<{ $hasDescription: boolean }>`
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 14px;
-    padding: var(--pad-row-card);
-    min-height: ${({ $hasDescription }) => ($hasDescription ? '58px' : '50px')};
+    gap: var(--space-4);
+    padding: 12px 14px;
+    min-height: ${({ $hasDescription }) => ($hasDescription ? '64px' : '56px')};
     box-sizing: border-box;
-    border-radius: 12px;
-    background-color: var(--palette-surface);
+    border-radius: var(--radius-lg);
+    background-color: var(--bg-card);
     border: var(--border-default);
-    box-shadow: var(--shadow-card);
+    transition: border-color var(--duration-fast) var(--ease), background-color var(--duration-fast) var(--ease);
+
+    &:hover {
+      border-color: var(--border-strong);
+      background-color: var(--bg-elevated);
+    }
   }
 
   .home-row-text {
@@ -24,14 +29,14 @@ const StyledHomeSectionRowCard = styled.div<{ $hasDescription: boolean }>`
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: ${({ $hasDescription }) => ($hasDescription ? '5px' : '0')};
+    gap: ${({ $hasDescription }) => ($hasDescription ? 'var(--space-1)' : '0')};
   }
 
   .home-row-title-line {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 10px;
+    gap: var(--space-3);
     min-width: 0;
   }
 
@@ -42,13 +47,29 @@ const StyledHomeSectionRowCard = styled.div<{ $hasDescription: boolean }>`
     user-select: none;
   }
 
+  .home-row-letter {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--text-primary);
+    background: var(--control-fill);
+    flex-shrink: 0;
+    user-select: none;
+  }
+
   .home-row-title {
     margin: 0;
-    font-size: 16px;
-    font-weight: 600;
-    letter-spacing: -0.02em;
+    font-size: var(--font-body);
+    font-weight: 700;
+    letter-spacing: var(--tracking-title);
     line-height: 1.28;
-    color: ${({ theme }) => theme.color.gray[100]};
+    color: var(--text-primary);
     flex: 1;
     min-width: 0;
     overflow: hidden;
@@ -58,10 +79,10 @@ const StyledHomeSectionRowCard = styled.div<{ $hasDescription: boolean }>`
 
   .home-row-desc {
     margin: 0;
-    font-size: 12px;
-    font-weight: 400;
+    font-size: var(--font-meta);
+    font-weight: 500;
     line-height: 1.4;
-    color: ${({ theme }) => theme.color.gray[500]};
+    color: var(--text-muted);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -74,7 +95,7 @@ const StyledHomeSectionRowCard = styled.div<{ $hasDescription: boolean }>`
     flex-direction: row;
     align-items: center;
     justify-content: flex-end;
-    gap: 9px;
+    gap: var(--space-2);
     flex-shrink: 0;
     flex-wrap: nowrap;
   }
@@ -83,18 +104,18 @@ const StyledHomeSectionRowCard = styled.div<{ $hasDescription: boolean }>`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 34px;
-    padding: 0 16px;
-    border-radius: 9px;
-    font-size: 13px;
-    font-weight: 600;
+    height: 32px;
+    padding: 0 14px;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-meta);
+    font-weight: 700;
     white-space: nowrap;
     box-sizing: border-box;
     border: none;
     cursor: pointer;
     text-decoration: none;
     background-color: var(--accent-primary);
-    color: #fff;
+    color: var(--white);
 
     &:hover {
       background-color: var(--accent-primary-hover);
@@ -102,20 +123,20 @@ const StyledHomeSectionRowCard = styled.div<{ $hasDescription: boolean }>`
 
     &:disabled {
       cursor: default;
-      opacity: 0.75;
+      opacity: 0.45;
     }
   }
 
   a.home-play-btn {
-    color: #fff;
+    color: var(--white);
   }
 
   .home-play-btn--icon {
-    width: 34px;
-    height: 34px;
-    min-width: 34px;
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
     padding: 0;
-    border-radius: 10px;
+    border-radius: var(--radius-sm);
   }
 
   .home-play-btn--icon svg {
@@ -124,13 +145,12 @@ const StyledHomeSectionRowCard = styled.div<{ $hasDescription: boolean }>`
   }
 
   .home-play-btn--secondary {
-    background-color: transparent;
-    color: ${({ theme }) => theme.color.gray[200]};
-    border: 1px solid ${({ theme }) => theme.color.gray[600]};
+    background-color: var(--control-fill);
+    color: var(--text-primary);
+    border: 1px solid var(--border-subtle);
 
     &:hover {
-      background-color: ${({ theme }) => theme.color.gray[800]};
-      border-color: ${({ theme }) => theme.color.gray[500]};
+      background-color: var(--control-fill-hover);
     }
   }
 `

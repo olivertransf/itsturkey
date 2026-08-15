@@ -1,4 +1,3 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { FC, useEffect, useState } from 'react'
@@ -15,7 +14,6 @@ import { ChallengeType, GameViewType } from '@types'
 import { isPanZoomEnabled } from '@utils/constants/googleMapOptions'
 import { EQUITABLE_COUNTRY_STREAK_DETAILS, EQUITABLE_COUNTRY_STREAK_ID } from '@utils/constants/random'
 import { formatTimeLimit, redirectToRegister } from '@utils/helpers'
-import { resolveMapImageSrc } from '@utils/helpers/mapPreviewSrc'
 import { StyledChallengeStart } from './'
 
 type Props = {
@@ -50,20 +48,10 @@ const ChallengeStart: FC<Props> = ({ challengeData, handleStartChallenge }) => {
   return (
     <StyledChallengeStart>
       <div className="challengeStartWrapper">
-        <Link href="/">
-          <a className="challenge-back-link">
-            <ArrowLeftIcon aria-hidden />
-            Back
-          </a>
+        <Link href="/" className="challenge-back-link">
+          <ArrowLeftIcon aria-hidden />
+          Back
         </Link>
-
-        <Image
-          src={resolveMapImageSrc(challengeData?.mapDetails?.previewImg)}
-          alt=""
-          layout="fill"
-          objectFit="cover"
-          style={{ opacity: 0.12 }}
-        />
 
         <div className="map-name">
           <LocationMarkerIcon />

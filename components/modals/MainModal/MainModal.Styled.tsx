@@ -1,20 +1,19 @@
 import styled from 'styled-components'
 
-type StyledProps = {}
-
-const StyledMainModal = styled.div<StyledProps>`
+const StyledMainModal = styled.div`
   .modal-header {
-    padding: 16px 20px;
+    padding: var(--space-4) var(--space-5);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    border-bottom: 1px solid #222;
-    background-color: #1d1d1d;
+    gap: var(--space-3);
+    border-bottom: var(--border-default);
+    background-color: var(--bg-elevated);
 
     .modal-title {
-      font-size: 16px;
-      font-weight: 400;
+      font-size: var(--font-section);
+      font-weight: 600;
+      letter-spacing: var(--tracking-title);
       flex: 1;
       min-width: 0;
     }
@@ -22,7 +21,7 @@ const StyledMainModal = styled.div<StyledProps>`
     .modal-header-trailing {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: var(--space-2);
       flex-shrink: 0;
     }
 
@@ -31,16 +30,20 @@ const StyledMainModal = styled.div<StyledProps>`
       align-items: center;
       justify-content: center;
       background: transparent;
-      color: var(--color2);
-      padding: 4px;
-      border-radius: 6px;
+      color: var(--text-muted);
+      padding: var(--space-1);
+      border-radius: var(--radius-sm);
+      height: var(--icon-lg);
+      width: var(--icon-lg);
 
       &:hover {
-        background-color: #222;
+        background-color: var(--control-fill);
+        color: var(--text-primary);
       }
 
       svg {
-        height: 20px;
+        height: var(--icon-md);
+        width: var(--icon-md);
       }
     }
   }
@@ -48,22 +51,23 @@ const StyledMainModal = styled.div<StyledProps>`
   .modal-body {
     max-height: calc(100vh * 0.7);
     overflow: hidden auto;
+    background-color: var(--bg-elevated);
   }
 
   .modal-footer {
-    border-top: 1px solid #222;
-    padding: 16px 20px;
+    border-top: var(--border-default);
+    padding: var(--space-4) var(--space-5);
     display: flex;
     justify-content: flex-end;
-    gap: 12px;
+    gap: var(--space-3);
     flex-shrink: 0;
-    background-color: #1a1a1a;
+    background-color: var(--bg-surface);
   }
 
   .modal-below-footer {
-    border-top: 1px solid #222;
-    padding: 12px 16px 18px;
-    background-color: #121212;
+    border-top: var(--border-default);
+    padding: var(--space-3) var(--space-4) var(--space-4);
+    background-color: var(--bg-surface);
     flex-shrink: 0;
   }
 `

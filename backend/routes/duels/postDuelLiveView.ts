@@ -4,14 +4,16 @@ import { collections, getExistingAnonymousGameId, getUserId, throwError } from '
 import { duelParticipantRole } from '@backend/utils/duelParticipant'
 import { findDuelSessionByInvite } from '@backend/utils/resolveDuelInvite'
 import { normalizeStreetViewLiveView } from '@utils/helpers/streetViewLiveView'
+import { normalizeGuessMapLive } from '@utils/helpers/guessMapLive'
 
 const postDuelLiveView = async (req: NextApiRequest, res: NextApiResponse) => {
   const duelId = req.query.id as string
   const userId = await getUserId(req, res)
   const anonymousId = getExistingAnonymousGameId(req)
 
-  const liveView = normalizeStreetViewLiveView(req.body?.liveView ?? req.body)
-  if (!liveView) {
+  const liveView = normalizeStreetViewLiveView(req.body?.liveView ?? (req.body?.guessMapLive ? null : req.body))
+  const guessMapLive = normalizeGuessMapLive(req.body?.guessMapLive)
+  if (!liveView && !guessMapLive) {
     return throwError(res, 400, 'Invalid live view')
   }
 
@@ -29,16 +31,23 @@ const postDuelLiveView = async (req: NextApiRequest, res: NextApiResponse) => {
     return throwError(res, 401, 'You are not part of this duel')
   }
 
+  const $set: Record<string, unknown> = {}
+  if (liveView) {
+    $set[`liveViews.${role}`] = {
+      ...liveView,
+      updatedAt: new Date(),
+    }
+  }
+  if (guessMapLive) {
+    $set[`guessMapLives.${role}`] = {
+      ...guessMapLive,
+      updatedAt: new Date(),
+    }
+  }
+
   await collections.duelSessions?.updateOne(
     { _id: duel._id },
-    {
-      $set: {
-        [`liveViews.${role}`]: {
-          ...liveView,
-          updatedAt: new Date(),
-        },
-      },
-    }
+    { $set }
   )
 
   return res.status(200).send({ ok: true })

@@ -1,10 +1,11 @@
 import { ButtonHTMLAttributes, FC, ReactNode } from 'react'
 import { Spinner } from '@components/system'
 import { StyledButton } from './'
+import type { ButtonSize, ButtonVariant } from './Button.Styled'
 
 type Props = {
-  variant?: 'primary' | 'solidGray' | 'solidCustom' | 'destroy'
-  size?: 'sm' | 'md' | 'lg'
+  variant?: ButtonVariant
+  size?: ButtonSize
   color?: string
   backgroundColor?: string
   hoverColor?: string
@@ -33,7 +34,7 @@ const Button: FC<Props> = ({
   return (
     <StyledButton
       variant={variant || 'primary'}
-      size={size}
+      size={size || 'md'}
       color={color}
       backgroundColor={backgroundColor}
       hoverColor={hoverColor}

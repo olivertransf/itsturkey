@@ -12,7 +12,7 @@ const StyledSpinner = styled.div<StyledProps>`
   svg {
     height: 100%;
     width: 100%;
-    fill: var(--color2);
+    fill: var(--text-muted);
     animation: loading-spinner 0.75s linear infinite;
 
     @keyframes loading-spinner {

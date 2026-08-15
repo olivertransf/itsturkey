@@ -4,6 +4,7 @@ import { useRouter } from 'next/router'
 import { FC, useEffect, useState } from 'react'
 import { WidthController } from '@components/layout'
 import { Meta } from '@components/Meta'
+import { MapRowTile } from '@components/MapRowTile'
 import { Avatar, Skeleton, Tab, Tabs } from '@components/system'
 import StyledSearchPage from '@styles/SearchPage.Styled'
 import { MapType, UserType } from '@types'
@@ -134,30 +135,26 @@ const SearchResultsPage: NextPage = () => {
 
 const UserResultJSX: FC<{ result: any }> = ({ result }) => {
   return (
-    <Link href={`/user/${result._id}`}>
-      <a className="search-result">
-        <div className="user-avatar">
-          <Avatar type="user" src={result.avatar?.emoji} backgroundColor={result.avatar?.color} size={40} />
-        </div>
-        <div className="user-name">
-          <span>{result.name}</span>
-        </div>
-      </a>
+    <Link href={`/user/${result._id}`} className="search-result">
+      <div className="user-avatar">
+        <Avatar type="user" src={result.avatar?.emoji} backgroundColor={result.avatar?.color} size={40} />
+      </div>
+      <div className="user-name">
+        <span>{result.name}</span>
+      </div>
     </Link>
   )
 }
 
 const MapResultJSX: FC<{ result: any }> = ({ result }) => {
   return (
-    <Link href={`/map/${result._id}`}>
-      <a className="search-result">
-        <div className="user-avatar">
-          <Avatar type="map" src={result.previewImg} size={40} />
-        </div>
-        <div className="user-name">
-          <span>{result.name}</span>
-        </div>
-      </a>
+    <Link href={`/map/${result._id}`} className="search-result">
+      <div className="user-avatar">
+        <MapRowTile mapId={String(result._id)} name={result.name || ''} size={40} />
+      </div>
+      <div className="user-name">
+        <span>{result.name}</span>
+      </div>
     </Link>
   )
 }

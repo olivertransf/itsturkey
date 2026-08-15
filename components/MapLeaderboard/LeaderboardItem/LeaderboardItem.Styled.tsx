@@ -10,57 +10,62 @@ const StyledLeaderboardItem = styled.div<StyledProps>`
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 1rem 20px;
-  background-color: ${({ highlight }) => (highlight ? '#202020' : 'transparent')};
-
-  &:last-child {
-    border-radius: 0 0 6px 6px;
-  }
+  padding: 14px 18px;
+  background-color: ${({ highlight }) => (highlight ? 'var(--bg-elevated)' : 'transparent')};
 
   &:not(:first-child) {
-    border-top: var(--border);
+    border-top: 1px solid var(--divider-line);
+  }
+
+  &:hover {
+    background-color: var(--bg-elevated);
   }
 
   @media (max-width: 1000px) {
-    padding: 1rem;
-  }
-
-  @media (max-width: 600px) {
-    &:last-child {
-      border-radius: 0;
-    }
+    padding: 14px 16px;
   }
 
   .userPlace {
     font-feature-settings: 'tnum';
+    font-variant-numeric: tabular-nums;
+    font-size: var(--font-meta);
+    font-weight: 700;
+    color: var(--text-subtle);
+    min-width: 28px;
   }
 
   .userSection {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 14px;
     user-select: none;
-    font-weight: 400;
+    font-weight: 500;
+    min-width: 0;
   }
 
   .userInfo {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    min-width: 0;
   }
 
   .username-wrapper {
     display: grid;
+    min-width: 0;
 
     .username {
-      font-size: 1rem;
+      font-size: var(--font-body);
+      font-weight: 600;
+      letter-spacing: var(--tracking-title);
+      color: var(--text-primary);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       display: block;
 
       @media (max-width: 850px) {
-        font-size: 14px;
+        font-size: var(--font-meta);
       }
     }
   }
@@ -69,8 +74,9 @@ const StyledLeaderboardItem = styled.div<StyledProps>`
     display: flex;
     align-items: center;
     gap: 1rem;
+    flex-shrink: 0;
 
-    ${({ removeResults }) => removeResults && 'margin-right: -16px'};
+    ${({ removeResults }) => removeResults && 'margin-right: -8px'};
 
     .results-link {
       display: flex;
@@ -78,21 +84,26 @@ const StyledLeaderboardItem = styled.div<StyledProps>`
       justify-content: center;
 
       svg {
-        height: 20px;
-        color: #a0a0a0;
+        height: 18px;
+        color: var(--text-subtle);
 
         path {
           stroke-width: 1.5;
         }
       }
+
+      &:hover svg {
+        color: var(--text-primary);
+      }
     }
   }
 
   .totalTime {
-    color: var(--color3);
-    font-size: 14px;
+    color: var(--text-muted);
+    font-size: var(--font-meta);
     width: 80px;
-    font-weight: 400;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
 
     @media (max-width: 650px) {
       display: none;
@@ -105,27 +116,31 @@ const StyledLeaderboardItem = styled.div<StyledProps>`
 
     .bestStreak {
       width: 55px;
-      font-size: 16px;
+      font-size: var(--font-body);
+      font-variant-numeric: tabular-nums;
 
       @media (max-width: 850px) {
-        font-size: 14px;
+        font-size: var(--font-meta);
       }
     }
 
     svg {
-      height: 20px;
+      height: 18px;
       margin-right: 6px;
-      color: #fbbf24;
+      color: var(--text-muted);
     }
   }
 
   .totalPoints {
     width: 120px;
-    font-size: 16px;
+    font-size: var(--font-body);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
 
     @media (max-width: 850px) {
       width: 100px;
-      font-size: 14px;
+      font-size: var(--font-meta);
     }
   }
 `

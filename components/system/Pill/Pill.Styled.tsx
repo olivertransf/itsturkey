@@ -1,19 +1,19 @@
 import styled from 'styled-components'
 
 const StyledPill = styled.div`
-  background-color: rgb(255, 255, 255, 0.1);
-  color: rgb(255, 255, 255, 0.7);
-  border: 1px solid rgb(255, 255, 255, 0.1);
+  background-color: var(--control-fill);
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
   user-select: none;
-  padding: 0 16px;
+  padding: 0 var(--space-4);
   display: flex;
   align-items: center;
   justify-content: center;
   width: fit-content;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 400;
-  height: 30px;
+  border-radius: var(--radius-pill);
+  font-size: var(--font-meta);
+  font-weight: 500;
+  height: var(--control-height-sm);
 `
 
 export default StyledPill

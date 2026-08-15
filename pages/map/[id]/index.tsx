@@ -1,18 +1,17 @@
 import { useRouter } from 'next/router'
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { NotFound } from '@components/errorViews'
-import { PageBackLink } from '@components/PageBackLink'
 import { MapPlayInline } from '@components/GameStartForm'
 import { WidthController } from '@components/layout'
 import { MapLeaderboard } from '@components/MapLeaderboard'
 import { Meta } from '@components/Meta'
+import { PageBackLink } from '@components/PageBackLink'
 import { SkeletonMapInfo } from '@components/skeletons'
 import { Tab, Tabs } from '@components/system'
 import StyledMapPage from '@styles/MapPage.Styled'
 import { MapLeaderboardType, MapType } from '@types'
 import { mailman } from '@utils/helpers'
 import { recordRecentMapId } from '@utils/helpers/recentMapsStorage'
-import { isCustomMapPlaceholderPreview, resolveMapImageSrc } from '@utils/helpers/mapPreviewSrc'
 import { SITE_NAME } from '@utils/constants/site'
 import {
   LEADERBOARD_BUCKET_LABELS,
@@ -123,11 +122,6 @@ const MapPage: FC = () => {
     }
   }, [mapId, fetchLeaderboards, lbPollMs, leaderboardBucket])
 
-  const mapHeroCustomPlaceholderGradient = useMemo(
-    () => (mapDetails ? isCustomMapPlaceholderPreview(mapDetails.previewImg) : false),
-    [mapDetails]
-  )
-
   if (mapDetails === null) {
     return (
       <NotFound
@@ -139,36 +133,18 @@ const MapPage: FC = () => {
 
   return (
     <StyledMapPage>
-      <WidthController customWidth="1100px" mobilePadding="0px">
+      <WidthController customWidth="none">
         <Meta title={mapDetails?.name ? `${SITE_NAME} — ${mapDetails.name}` : SITE_NAME} />
 
         {mapDetails ? (
           <>
-            <div className="mapDetailsSection">
-              <div className="mapPageHero">
-                <div
-                  className={`mapPageHeroMedia${
-                    mapHeroCustomPlaceholderGradient ? ' mapPageHeroMedia--placeholder' : ''
-                  }`}
-                  style={
-                    mapHeroCustomPlaceholderGradient
-                      ? undefined
-                      : { backgroundImage: `url(${resolveMapImageSrc(mapDetails.previewImg)})` }
-                  }
-                />
-                <div className="mapPageHeroScrim" />
-                <div className="mapPageHeroInner">
-                  <div className="page-back-toolbar">
-                    <PageBackLink href="/" label="Back to home" compact />
-                  </div>
-                  <h1 className="mapPageHeroTitle">{mapDetails.name}</h1>
-                </div>
-              </div>
-
-              <div className="statsWrapper">
-                <MapPlayInline mapDetails={mapDetails} gameMode="standard" />
-              </div>
-            </div>
+            <section className="mapPlayCard">
+              <header className="mapPlayHead">
+                <PageBackLink href="/" label="Back" compact />
+                <h1 className="mapPlayTitle">{mapDetails.name}</h1>
+              </header>
+              <MapPlayInline mapDetails={mapDetails} gameMode="standard" />
+            </section>
 
             <div className="mapLeaderboardSection">
               <div className="mapLeaderboardBucketTabs">
@@ -192,7 +168,7 @@ const MapPage: FC = () => {
                   <MapLeaderboard
                     leaderboard={lowScores}
                     title="Low scores"
-                    noResultsMessage="No low-score entries yet. Finish a 5-round standard game with these settings to qualify!"
+                    noResultsMessage="No entries yet."
                   />
                 </div>
               </div>

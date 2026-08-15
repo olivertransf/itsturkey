@@ -10,19 +10,24 @@ const StyledTooltip = styled.div<StyledProps>`
   position: absolute;
   top: ${({ top }) => (top ? `${top}px` : '50%')};
   left: ${({ left }) => (left ? `${left}px` : '100%')};
+  z-index: var(--z-tooltip);
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(0, 0, 0, 0.75);
-  border-radius: 4px;
-  padding: 8px 16px;
-  font-weight: 400;
-  font-size: 14px;
+  background-color: var(--hud-surface-hover);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  font-weight: 500;
+  font-size: var(--font-compact);
+  color: var(--text-primary);
   width: fit-content;
-  pointer-events: none;
+  max-width: 240px;
   white-space: nowrap;
+  pointer-events: none;
   transform: translateY(-50%) scale(1);
-  margin-left: 10px;
+  margin-left: var(--space-3);
+  box-shadow: var(--shadow-sm);
 
   ${({ position }) =>
     position === 'bottom' &&
@@ -37,7 +42,7 @@ const StyledTooltip = styled.div<StyledProps>`
         content: '';
         background: none;
         border-bottom: 6px solid transparent;
-        border-right: 6px solid rgba(0, 0, 0, 0.75);;
+        border-right: 6px solid var(--hud-surface-hover);
         border-top: 6px solid transparent;
         height: 0;
         margin-top: -6px;
@@ -62,7 +67,7 @@ const StyledTooltip = styled.div<StyledProps>`
         content: '';
         background: none;
         border-bottom: 6px solid transparent;
-        border-right: 6px solid rgba(0, 0, 0, 0.75);;
+        border-right: 6px solid var(--hud-surface-hover);
         border-top: 6px solid transparent;
         height: 0;
         margin-top: -6px;

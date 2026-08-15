@@ -1,10 +1,9 @@
 import Link from 'next/link'
 import { FC } from 'react'
 import HomeSectionRowCard from '@components/HomeSectionRowCard'
-import HomePlayGlyph from '@components/HomeSectionRowCard/HomePlayGlyph'
 import { MapType } from '@types'
-import { flagEmojiFromIsoAlpha2 } from '@utils/helpers/flagEmoji'
 import { parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
+import { flagEmojiFromIsoAlpha2 } from '@utils/helpers/flagEmoji'
 
 type Props = {
   map: Pick<MapType, '_id' | 'name'>
@@ -16,8 +15,8 @@ const EquitableCountryRowCard: FC<Props> = ({ map, isForDisplayOnly }) => {
   if (!code) return null
 
   const countryName = map.name?.trim() || code.toUpperCase()
-  const flag = flagEmojiFromIsoAlpha2(code)
   const href = `/map/${encodeURIComponent(String(map._id))}`
+  const flag = flagEmojiFromIsoAlpha2(code)
 
   return (
     <HomeSectionRowCard
@@ -27,18 +26,16 @@ const EquitableCountryRowCard: FC<Props> = ({ map, isForDisplayOnly }) => {
           <span className="home-row-flag" title={countryName} aria-hidden>
             {flag}
           </span>
-        ) : undefined
+        ) : null
       }
     >
       {!isForDisplayOnly ? (
-        <Link href={href}>
-          <a className="home-play-btn home-play-btn--icon" aria-label={`Play ${countryName}`}>
-            <HomePlayGlyph />
-          </a>
+        <Link href={href} className="home-play-btn">
+          Play
         </Link>
       ) : (
-        <span className="home-play-btn home-play-btn--icon" aria-hidden>
-          <HomePlayGlyph />
+        <span className="home-play-btn" aria-hidden>
+          Play
         </span>
       )}
     </HomeSectionRowCard>

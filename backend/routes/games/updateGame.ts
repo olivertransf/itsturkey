@@ -17,6 +17,7 @@ import { ChallengeType, DistanceType, GuessType } from '@types'
 import { DEFAULT_TOTAL_ROUNDS } from '@utils/constants/gameModes'
 import { getRealCountryCode } from '@utils/helpers/getRealCountryCode'
 import { normalizeStreetViewLiveView } from '@utils/helpers/streetViewLiveView'
+import { normalizeGuessMapLive } from '@utils/helpers/guessMapLive'
 
 const triggerScoresUpdate = async (req: NextApiRequest, game: Game) => {
   const secret = process.env.INTERNAL_API_SECRET
@@ -83,6 +84,7 @@ const updateGame = async (req: NextApiRequest, res: NextApiResponse) => {
 
     await collections.games?.updateOne(getGameQuery, {
       $set: {
+        updatedAt: new Date(),
         liveView: {
           ...liveView,
           updatedAt: new Date(),
@@ -90,6 +92,32 @@ const updateGame = async (req: NextApiRequest, res: NextApiResponse) => {
       },
     })
 
+    return res.status(200).send({ ok: true })
+  }
+
+  if (req.body?.guessMapLive != null) {
+    const guessMapLive = normalizeGuessMapLive(req.body.guessMapLive)
+    if (!guessMapLive) {
+      return throwError(res, 400, 'Invalid guess map live')
+    }
+
+    await collections.games?.updateOne(getGameQuery, {
+      $set: {
+        updatedAt: new Date(),
+        guessMapLive: {
+          ...guessMapLive,
+          updatedAt: new Date(),
+        },
+      },
+    })
+
+    return res.status(200).send({ ok: true })
+  }
+
+  if (req.body?.playPhase === 'playing' || req.body?.playPhase === 'recap') {
+    await collections.games?.updateOne(getGameQuery, {
+      $set: { playPhase: req.body.playPhase, updatedAt: new Date() },
+    })
     return res.status(200).send({ ok: true })
   }
 
@@ -109,6 +137,7 @@ const updateGame = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     game.state = 'finished'
+    game.updatedAt = new Date()
 
     await collections.games?.findOneAndUpdate(getGameQuery, { $set: game })
 
@@ -224,6 +253,8 @@ const updateGame = async (req: NextApiRequest, res: NextApiResponse) => {
   game.totalDistance.metric += distance.metric
   game.totalDistance.imperial += distance.imperial
   game.totalTime += Math.floor(guessTime)
+  game.playPhase = 'recap'
+  game.updatedAt = new Date()
 
   if (game.mode === 'standard' && game.unlimited && !isGameFinished && game.round > game.rounds.length) {
     const BATCH = 10

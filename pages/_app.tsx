@@ -35,10 +35,14 @@ const App = ({ Component, pageProps }: AppPropsWithLayout) => {
 
               <Toaster
                 position="bottom-right"
+                containerStyle={{ zIndex: 70 }}
                 toastOptions={{
                   style: {
-                    background: 'var(--background3)',
-                    color: 'var(--color2)',
+                    background: 'var(--bg-elevated)',
+                    color: 'var(--text-primary)',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: '10px',
+                    fontSize: '0.8125rem',
                   },
                 }}
               />

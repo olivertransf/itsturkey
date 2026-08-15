@@ -7,14 +7,23 @@ import { PageHeader, WidthController } from '@components/layout'
 import { Meta } from '@components/Meta'
 import { DestroyModal } from '@components/modals'
 import { SkeletonOngoingGames } from '@components/skeletons'
-import { Avatar, Pill, Spinner } from '@components/system'
+import { MapRowTile } from '@components/MapRowTile'
+import { Pill, Spinner } from '@components/system'
 import { ExclamationCircleIcon, TrashIcon } from '@heroicons/react/outline'
 import { useAppSelector } from '@redux/hook'
 import StyledOngoingGamesPage from '@styles/OngoingGamesPage.Styled'
 import { GameType, MapType } from '@types'
 import { COUNTRY_STREAK_DETAILS, DAILY_CHALLENGE_DETAILS } from '@utils/constants/random'
-import { formatMonthDayYear } from '@utils/dateHelpers'
-import { formatOngoingScore, mailman, showToast } from '@utils/helpers'
+import { formatMonthDayYearTime } from '@utils/dateHelpers'
+import { formatOngoingScore, mailman, pickLastUsedAt, showToast } from '@utils/helpers'
+import {
+  hideOngoingGame,
+  isOngoingGameHidden,
+  normalizeOngoingGameId,
+  readHiddenOngoingIds,
+  unhideAllOngoingGames,
+  unhideOngoingGame,
+} from '@utils/helpers/hiddenOngoingGames'
 import { useBreakpoint } from '@utils/hooks'
 
 type OngoingGame = GameType & {
@@ -29,16 +38,37 @@ const OngoingGamesPage: NextPage = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [deletingGameId, setDeletingGameId] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
+  const [hiddenIds, setHiddenIds] = useState<string[]>([])
   const user = useAppSelector((state) => state.user)
   const { isBreakpoint } = useBreakpoint()
 
+  const refreshHidden = () => setHiddenIds(readHiddenOngoingIds())
+
   useEffect(() => {
+    refreshHidden()
+
     if (!user.id) {
       return setLoading(false)
     }
 
     fetchGames()
   }, [])
+
+  const toggleHidden = (gameId: string) => {
+    if (isOngoingGameHidden(gameId)) {
+      unhideOngoingGame(gameId)
+      showToast('success', 'Shown on Continue')
+    } else {
+      hideOngoingGame(gameId)
+      showToast('success', 'Successfully hidden')
+    }
+    refreshHidden()
+  }
+
+  const showAllHidden = () => {
+    unhideAllOngoingGames()
+    refreshHidden()
+  }
 
   const fetchGames = async () => {
     const res = await mailman(`games/unfinished?page=${gamesPage}`)
@@ -97,6 +127,11 @@ const OngoingGamesPage: NextPage = () => {
             <ExclamationCircleIcon />
             <span>Ongoing games are only saved for 30 days after they are created</span>
           </div>
+          {hiddenIds.length > 0 ? (
+            <button type="button" className="ongoing-show-hidden" onClick={showAllHidden}>
+              Show {hiddenIds.length} hidden
+            </button>
+          ) : null}
         </div>
 
         {!loading && (!user.id || games.length === 0) ? (
@@ -126,18 +161,31 @@ const OngoingGamesPage: NextPage = () => {
                 key={isBreakpoint ? 1 : 0}
                 scrollableTarget={isBreakpoint ? undefined : 'main'}
               >
-                {games.map((game, idx) => (
-                  <div key={idx} className={`ongoing-item ${idx % 2 === 0 ? 'variant' : ''}`}>
+                {games.map((game, idx) => {
+                  const gameId = normalizeOngoingGameId(game._id)
+                  const hidden = hiddenIds.includes(gameId)
+
+                  return (
+                  <div
+                    key={idx}
+                    className={`ongoing-item ${idx % 2 === 0 ? 'variant' : ''}${hidden ? ' is-hidden' : ''}`}
+                  >
                     <div className="flex-left">
                       <div className="map-details">
-                        <Avatar
-                          type="map"
-                          src={
+                        <MapRowTile
+                          mapId={String(
                             game.mode === 'streak'
-                              ? COUNTRY_STREAK_DETAILS.previewImg
+                              ? COUNTRY_STREAK_DETAILS._id
                               : game.isDailyChallenge
-                              ? DAILY_CHALLENGE_DETAILS.previewImg
-                              : game.mapDetails?.[0]?.previewImg
+                                ? DAILY_CHALLENGE_DETAILS._id
+                                : game.mapDetails?.[0]?._id ?? ''
+                          )}
+                          name={
+                            game.mode === 'streak'
+                              ? COUNTRY_STREAK_DETAILS.name
+                              : game.isDailyChallenge
+                                ? DAILY_CHALLENGE_DETAILS.name
+                                : game.mapDetails?.[0]?.name ?? 'Map'
                           }
                         />
                         <div className="mapNameWrapper">
@@ -157,19 +205,28 @@ const OngoingGamesPage: NextPage = () => {
                         <div className="game-info-pills">
                           <Pill label={`Round ${game.round}`} className="game-info-pill round" />
                           <Pill label={formatOngoingScore(game.totalPoints)} className="game-info-pill score" />
-                          <Pill label={formatMonthDayYear(game.createdAt)} className="game-info-pill created" />
+                          <Pill
+                            label={formatMonthDayYearTime(pickLastUsedAt(game))}
+                            className="game-info-pill created"
+                          />
                         </div>
                       )}
 
                       {game.mode === 'streak' && (
                         <div className="game-info-pills">
                           <Pill label={`${game.streak} Streak`} className="game-info-pill round" />
-                          <Pill label={formatMonthDayYear(game.createdAt)} className="game-info-pill created" />
+                          <Pill
+                            label={formatMonthDayYearTime(pickLastUsedAt(game))}
+                            className="game-info-pill created"
+                          />
                         </div>
                       )}
 
                       <div className="ongoing-buttons">
-                        <button className="delete-button" onClick={() => openDeleteModal(game._id as string)}>
+                        <button type="button" className="hide-button" onClick={() => toggleHidden(gameId)}>
+                          {hidden ? 'Show' : 'Hide'}
+                        </button>
+                        <button className="delete-button" onClick={() => openDeleteModal(gameId)}>
                           <TrashIcon />
                         </button>
                         <a className="play-button" href={`/game/${game._id}`}>
@@ -189,7 +246,8 @@ const OngoingGamesPage: NextPage = () => {
                       </div>
                     </div>
                   </div>
-                ))}
+                  )
+                })}
               </InfiniteScroll>
             )}
           </div>

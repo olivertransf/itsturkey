@@ -1,53 +1,75 @@
 import styled from 'styled-components'
 
 const StyledLikedMapCard = styled.div`
-  border-radius: 6px;
-  background-color: ${({ theme }) => theme.color.gray[900]};
-  border: 1px solid ${({ theme }) => theme.color.gray[800]};
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-  display: grid;
-  gap: 1rem;
-  max-height: 300px;
+  border-radius: var(--radius-xl);
+  background-color: var(--bg-card);
+  border: var(--border-default);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
 
   .map-avatar {
-    height: 125px;
+    height: 168px;
     width: 100%;
-    border-radius: 5px 5px 0 0;
     position: relative;
-
-    span img {
-      border-radius: 5px 5px 0 0;
-    }
+    flex-shrink: 0;
 
     .image-gradient {
-      z-index: 1;
-      position: absolute;
-      height: 100%;
-      width: 100%;
-      background-color: rgba(8, 10, 15, 0.55);
+      display: none;
     }
   }
 
   .contentWrapper {
     display: flex;
-    align-items: center;
-    justify-content: center;
     flex-direction: column;
-    gap: 18px;
-    margin-top: -48px;
+    align-items: stretch;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    flex: 1;
   }
 
   .mapNameWrapper {
-    display: grid;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    justify-content: flex-start;
+
+    .map-flag {
+      font-size: 22px;
+      line-height: 1;
+      flex-shrink: 0;
+      user-select: none;
+    }
+
+    .map-letter {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--text-primary);
+      background: var(--control-fill);
+      flex-shrink: 0;
+    }
 
     .mapName {
-      font-size: 20px;
-      font-weight: 600;
-      padding: 0 1rem;
+      font-size: var(--font-body);
+      font-weight: 700;
+      letter-spacing: var(--tracking-title);
+      padding: 0;
       z-index: 1;
+      width: 100%;
+      text-align: left;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      color: var(--text-primary);
     }
   }
 
@@ -55,68 +77,58 @@ const StyledLikedMapCard = styled.div`
     width: 100%;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 1rem 1rem 2rem 1rem;
+    justify-content: stretch;
+    gap: var(--space-2);
+    margin-top: auto;
   }
 
-  .mapEditBtn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 5px;
-    height: 40px;
-    padding: 0 25px;
-    font-size: 1rem;
-    font-weight: 500;
-    user-select: none;
-    width: clamp(120px, 70%, 300px);
-    background-color: rgb(255, 255, 255, 0.1);
-    color: rgb(255, 255, 255, 0.7);
-
-    &:hover {
-      background-color: rgb(255, 255, 255, 0.15);
-    }
-  }
-
-  .mapPlayBtn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 5px;
-    height: 40px;
-    padding: 0 25px;
-    font-size: 1rem;
-    font-weight: 500;
-    user-select: none;
-    width: clamp(120px, 70%, 300px);
-    background-color: var(--indigo-700);
-    color: #fff;
-
-    :hover {
-      background-color: var(--indigo-600);
-    }
-  }
-
+  .mapEditBtn,
+  .mapPlayBtn,
   .unlike-button {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 5px;
-    padding: 10px;
-    font-size: 1rem;
-    font-weight: 500;
+    border-radius: var(--radius-md);
+    height: var(--control-height-md);
+    padding: 0 var(--space-4);
+    font-size: var(--font-body);
+    font-weight: 700;
     user-select: none;
-    background-color: rgb(255, 255, 255, 0.1);
-    color: rgb(255, 255, 255, 0.7);
+  }
+
+  .mapEditBtn {
+    flex: 1;
+    background-color: var(--control-fill);
+    color: var(--text-primary);
+
+    &:hover {
+      background-color: var(--control-fill-hover);
+    }
+  }
+
+  .mapPlayBtn {
+    flex: 1;
+    background-color: var(--accent-primary);
+    color: var(--white);
+
+    :hover {
+      background-color: var(--accent-primary-hover);
+    }
+  }
+
+  .unlike-button {
+    padding: 0;
+    width: var(--control-height-md);
+    background-color: var(--control-fill);
+    color: var(--text-primary);
 
     svg {
-      height: 22px;
-      color: var(--red-500);
+      height: var(--icon-md);
+      color: var(--danger);
     }
 
     &:hover {
-      background-color: rgb(255, 255, 255, 0.15);
+      background-color: var(--control-fill-hover);
     }
   }
 `

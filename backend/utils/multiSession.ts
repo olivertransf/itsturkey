@@ -10,6 +10,8 @@ import {
   MULTI_COOLDOWN_SECONDS,
 } from '@utils/constants/gameModes'
 import type { AllowedMultiPanelCount } from '@utils/constants/gameModes'
+import { parseEquitableContinentMapKey } from '@utils/helpers/equitableContinentMapId'
+import { isMongoObjectIdHex24, parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
 
 export type MultiSessionSettingsInput = {
   panelCount?: unknown
@@ -63,3 +65,11 @@ export const normalizeMultiSessionSettings = ({
 
 export const calculateMultiSessionTotalPoints = (panelGames: Pick<Game, 'totalPoints'>[]) =>
   panelGames.reduce((total, game) => total + (game.totalPoints ?? 0), 0)
+
+export const mapIdForMultiPanelGame = (mapId: string) => String(mapId ?? '').trim()
+
+export const storesMultiMapIdAsObjectId = (mapId: string) => {
+  const s = mapIdForMultiPanelGame(mapId)
+  if (parseEquitableCountryMapKey(s) || parseEquitableContinentMapKey(s)) return false
+  return isMongoObjectIdHex24(s)
+}

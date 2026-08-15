@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb'
 import { collections } from '@backend/utils'
+import { PRESENCE_ONLINE_WINDOW_MS } from '@utils/friends/friendPresence'
 import type { PresenceSessionKind } from '@utils/friends/friendPresence'
 
 export type SessionWatcher = {
@@ -7,7 +8,7 @@ export type SessionWatcher = {
   name: string
 }
 
-const ONLINE_MS = 2 * 60 * 1000
+const ONLINE_MS = PRESENCE_ONLINE_WINDOW_MS
 
 /** Users currently heartbeating as spectators of this match session. */
 export async function listSessionWatchers(

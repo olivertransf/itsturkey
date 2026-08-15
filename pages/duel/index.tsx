@@ -2,30 +2,16 @@ import type { NextPage } from 'next'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { HeartIcon, LightningBoltIcon, SparklesIcon } from '@heroicons/react/outline'
-import {
-  CreateAccordion,
-  CreateFieldGrow,
-  CreateFieldInput,
-  CreateFieldLabel,
-  CreateLobbyShell,
-  CreateModeStrip,
-  CreateOnlyNarrow,
-  CreateRow,
-  CreateSection,
-  CreateSectionStatic,
-  CreateStickyActions,
-  CreateWideAside,
-  CreateWideLayout,
-  CreateWideMain,
-} from '@components/CreateLobby'
+import { HeartIcon, LightningBoltIcon } from '@heroicons/react/outline'
 import { VisualRestrictionsPanel } from '@components/GameStartForm'
+import { StyledPlaySetup } from '@components/GameStartForm/PlaySetup.Styled'
 import { LobbyGameSettings } from '@components/LobbyGameSettings'
 import { MapPickerGrid } from '@components/MapPickerGrid'
 import { Meta } from '@components/Meta'
-import { Button } from '@components/system'
-import ToggleSwitch from '@components/system/ToggleSwitch/ToggleSwitch'
-import StyledMultiGamePage from '@styles/MultiGamePage.Styled'
+import { PageBackLink } from '@components/PageBackLink'
+import { Button, Slider, ToggleSwitch } from '@components/system'
+import { WidthController } from '@components/layout'
+import StyledMapPage from '@styles/MapPage.Styled'
 import { isMapExcludedFromPicker } from '@utils/constants/mapPicker'
 import { EQUITABLE_COUNTRY_STREAK_DETAILS, EQUITABLE_COUNTRY_STREAK_ID } from '@utils/constants/random'
 import { DEFAULT_TOTAL_ROUNDS, MAX_TOTAL_ROUNDS } from '@utils/constants/gameModes'
@@ -40,6 +26,7 @@ import {
   normalizeVisualRestrictions,
 } from '@utils/constants/visualRestrictions'
 import type { VisualRestrictions } from '@utils/constants/visualRestrictions'
+import { SITE_NAME } from '@utils/constants/site'
 
 /** Same pool duels already draw rounds from; default scoring/UI map matches. */
 const EQUITABLE_STREAK_PICKER_ROW: MapPickerRow = {
@@ -113,9 +100,8 @@ const DuelLobbyPage: NextPage = () => {
   const [canZoom, setCanZoom] = useState(true)
   const [visualRestrictions, setVisualRestrictions] = useState<VisualRestrictions>({})
 
-  const fxCount = useMemo(
-    () => VISUAL_RESTRICTION_CATALOG.filter(({ key }) => Boolean(visualRestrictions[key])).length,
-    [visualRestrictions]
+  const anyFilterOn = VISUAL_RESTRICTION_CATALOG.some(
+    ({ key }) => Boolean(normalizeVisualRestrictions(visualRestrictions)[key])
   )
 
   const onToggleDefaults = useCallback(() => {
@@ -175,190 +161,179 @@ const DuelLobbyPage: NextPage = () => {
   }
 
   return (
-    <StyledMultiGamePage>
-      <Meta title="Create Duel" />
+    <StyledMapPage>
+      <WidthController customWidth="none">
+        <Meta title={`${SITE_NAME} — Create duel`} />
 
-      <CreateLobbyShell
-        wide
-        title="Create duel"
-        tag="1v1 invite — share the link or code. Basics stay on the right; pick a map on the left."
-        glyph={<SparklesIcon />}
-      >
-        <CreateWideLayout>
-          <CreateWideAside>
-            <CreateSection>
-              <CreateSectionStatic>
-                <CreateFieldLabel as="div">
-                  Map{mapNameForField ? ` · ${mapNameForField}` : ''}
-                </CreateFieldLabel>
+        <section className="mapPlayCard">
+          <header className="mapPlayHead">
+            <PageBackLink href="/" label="Back" compact />
+            <h1 className="mapPlayTitle">Create duel</h1>
+          </header>
+
+          <StyledPlaySetup>
+            <div className="play-col play-col-main">
+              <section className="play-card">
+                <h2 className="play-heading">Map</h2>
                 <MapPickerGrid
                   options={selectOptions}
                   value={mapField}
                   onChange={setMapField}
                   loading={mapsLoading}
-                  maxHeight={420}
+                  visibleCount={4}
                   showDescriptions={false}
+                  scrollClassName="play-filter-grid-scroll"
                 />
-              </CreateSectionStatic>
-            </CreateSection>
-          </CreateWideAside>
+              </section>
 
-          <CreateWideMain>
-            <CreateSection>
-              <CreateSectionStatic>
+              <section className="play-card">
+                <h2 className="play-heading">Mode</h2>
                 {status !== 'authenticated' && status !== 'loading' ? (
-                  <div>
-                    <CreateFieldLabel htmlFor="hostNick">Your name (guests)</CreateFieldLabel>
-                    <CreateFieldInput
+                  <div className="play-field">
+                    <label className="play-field-label" htmlFor="hostNick">
+                      Your name
+                    </label>
+                    <input
                       id="hostNick"
+                      className="play-input"
                       type="text"
                       maxLength={32}
-                      placeholder="Optional — lobby display"
+                      placeholder="Optional"
                       value={hostNickname}
                       onChange={(e) => setHostNickname(e.target.value)}
                     />
                   </div>
                 ) : null}
 
-                <div>
-                  <CreateFieldLabel as="div">Mode</CreateFieldLabel>
-                  <CreateModeStrip>
-                    <ToggleSwitch isActive={mode === 'points'} setIsActive={(on) => setMode(on ? 'points' : 'hp')} />
-                    <span className="mode-copy">
-                      {mode === 'hp' ? (
-                        <>
-                          <HeartIcon /> HP · until KO
-                        </>
-                      ) : (
-                        <>
-                          <LightningBoltIcon /> Points · {rounds} rounds
-                        </>
-                      )}
-                    </span>
-                  </CreateModeStrip>
+                <div className="play-mode-row">
+                  <ToggleSwitch isActive={mode === 'points'} setIsActive={(on) => setMode(on ? 'points' : 'hp')} />
+                  <span className="play-mode-copy">
+                    {mode === 'hp' ? (
+                      <>
+                        <HeartIcon /> HP · until KO
+                      </>
+                    ) : (
+                      <>
+                        <LightningBoltIcon /> Points · {rounds} rounds
+                      </>
+                    )}
+                  </span>
                 </div>
 
                 {mode === 'points' ? (
-                  <div>
-                    <CreateFieldLabel htmlFor="rounds">Rounds</CreateFieldLabel>
-                    <CreateFieldInput
-                      id="rounds"
-                      type="number"
+                  <div className="play-field">
+                    <span className="roundTimeLabel">
+                      <span className="roundLabelGroup">Rounds</span>
+                      <span className="timeLimit">
+                        {rounds}
+                        <span className="labelHint"> / {MAX_TOTAL_ROUNDS}</span>
+                      </span>
+                    </span>
+                    <Slider
+                      value={rounds}
                       min={1}
                       max={MAX_TOTAL_ROUNDS}
-                      value={rounds}
-                      onChange={(e) => setRounds(Number(e.target.value))}
+                      onChange={setRounds}
                     />
                   </div>
                 ) : null}
 
-                <CreateRow>
-                  <CreateFieldGrow>
-                    <CreateFieldLabel htmlFor="hpHost">Your HP</CreateFieldLabel>
-                    <CreateFieldInput
+                <div className="play-field-row">
+                  <div className="play-field">
+                    <label className="play-field-label" htmlFor="hpHost">
+                      Your HP
+                    </label>
+                    <input
                       id="hpHost"
+                      className="play-input"
                       type="number"
                       min={100}
                       value={startingHpHost}
                       onChange={(e) => setStartingHpHost(Number(e.target.value))}
                     />
-                  </CreateFieldGrow>
-                  <CreateFieldGrow>
-                    <CreateFieldLabel htmlFor="hpGuest">Opponent HP</CreateFieldLabel>
-                    <CreateFieldInput
+                  </div>
+                  <div className="play-field">
+                    <label className="play-field-label" htmlFor="hpGuest">
+                      Opponent HP
+                    </label>
+                    <input
                       id="hpGuest"
+                      className="play-input"
                       type="number"
                       min={100}
                       value={startingHpGuest}
                       onChange={(e) => setStartingHpGuest(Number(e.target.value))}
                     />
-                  </CreateFieldGrow>
-                </CreateRow>
+                  </div>
+                </div>
 
                 {mode === 'hp' ? (
-                  <div>
-                    <CreateFieldLabel as="div">Damage multiplier</CreateFieldLabel>
-                    <CreateModeStrip>
-                      <ToggleSwitch
-                        isActive={multiplierMode === 'win_streak'}
-                        setIsActive={(on) => setMultiplierMode(on ? 'win_streak' : 'round_ramp')}
-                      />
-                      <span className="mode-copy">
-                        {multiplierMode === 'round_ramp'
-                          ? 'Round ramp — climbs each round'
-                          : 'Win streak — +0.5× per round won'}
-                      </span>
-                    </CreateModeStrip>
+                  <div className="play-mode-row">
+                    <ToggleSwitch
+                      isActive={multiplierMode === 'win_streak'}
+                      setIsActive={(on) => setMultiplierMode(on ? 'win_streak' : 'round_ramp')}
+                    />
+                    <span className="play-mode-copy">
+                      {multiplierMode === 'round_ramp'
+                        ? 'Round ramp, climbs each round'
+                        : 'Win streak, +0.5x per round won'}
+                    </span>
                   </div>
                 ) : null}
-              </CreateSectionStatic>
-            </CreateSection>
+              </section>
 
-            <CreateOnlyNarrow>
-              <CreateAccordion
-                title="Map"
-                summary={mapNameForField || (mapsLoading ? 'Loading…' : 'Choose a map')}
-                defaultOpen={false}
-              >
-                <MapPickerGrid
-                  options={selectOptions}
-                  value={mapField}
-                  onChange={setMapField}
-                  loading={mapsLoading}
-                  maxHeight={280}
-                  showDescriptions={false}
+              <section className="play-card">
+                <h2 className="play-heading">Time & movement</h2>
+                <LobbyGameSettings
+                  defaultsLocked={defaultsLocked}
+                  onToggleDefaults={onToggleDefaults}
+                  sliderVal={sliderVal}
+                  setSliderVal={setSliderVal}
+                  canMove={canMove}
+                  canPan={canPan}
+                  canZoom={canZoom}
+                  setCanMove={setCanMove}
+                  setCanPan={setCanPan}
+                  setCanZoom={setCanZoom}
+                  visualRestrictions={visualRestrictions}
+                  setVisualRestrictions={setVisualRestrictions}
+                  hideVisualRestrictions
                 />
-              </CreateAccordion>
-            </CreateOnlyNarrow>
+              </section>
 
-            <CreateAccordion
-              title="Round & movement"
-              summary={defaultsLocked ? 'Default time & movement' : 'Custom time & movement'}
-              defaultOpen={false}
-            >
-              <LobbyGameSettings
-                defaultsLocked={defaultsLocked}
-                onToggleDefaults={onToggleDefaults}
-                sliderVal={sliderVal}
-                setSliderVal={setSliderVal}
-                canMove={canMove}
-                canPan={canPan}
-                canZoom={canZoom}
-                setCanMove={setCanMove}
-                setCanPan={setCanPan}
-                setCanZoom={setCanZoom}
-                visualRestrictions={visualRestrictions}
-                setVisualRestrictions={setVisualRestrictions}
-                hideVisualRestrictions
-              />
-            </CreateAccordion>
+              <div className="play-start">
+                <Button
+                  variant="primary"
+                  width="100%"
+                  disabled={submitting || status === 'loading'}
+                  isLoading={submitting}
+                  onClick={() => void create()}
+                >
+                  Create room
+                </Button>
+              </div>
+            </div>
 
-            <CreateAccordion
-              title="Wacky filters"
-              summary={fxCount > 0 ? `${fxCount} filter${fxCount === 1 ? '' : 's'} on` : 'None'}
-              defaultOpen={fxCount > 0}
-            >
-              <VisualRestrictionsPanel
-                value={visualRestrictions}
-                onChange={setVisualRestrictions}
-                listMaxHeight={220}
-              />
-            </CreateAccordion>
-          </CreateWideMain>
-        </CreateWideLayout>
-
-        <CreateStickyActions>
-          <Button
-            variant="primary"
-            style={{ width: '100%' }}
-            disabled={submitting || status === 'loading'}
-            onClick={() => void create()}
-          >
-            {submitting ? 'Creating…' : 'Create room'}
-          </Button>
-        </CreateStickyActions>
-      </CreateLobbyShell>
-    </StyledMultiGamePage>
+            <div className="play-col play-col-filters">
+              <section className="play-card play-card-filters">
+                <div className="play-heading-row">
+                  <h2 className="play-heading">Filters</h2>
+                  <button
+                    type="button"
+                    className="play-clear"
+                    disabled={!anyFilterOn}
+                    onClick={() => setVisualRestrictions({})}
+                  >
+                    Clear all
+                  </button>
+                </div>
+                <VisualRestrictionsPanel value={visualRestrictions} onChange={setVisualRestrictions} embedded />
+              </section>
+            </div>
+          </StyledPlaySetup>
+        </section>
+      </WidthController>
+    </StyledMapPage>
   )
 }
 

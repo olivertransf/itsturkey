@@ -1,1 +1,1 @@
-export { default as MapPickerGrid } from './MapPickerGrid'
+export { default as MapPickerGrid, mapPickerListHeight } from './MapPickerGrid'

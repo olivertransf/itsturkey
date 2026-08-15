@@ -6,7 +6,8 @@ import { MapLeaderboard } from '@components/MapLeaderboard'
 import { Meta } from '@components/Meta'
 import { SkeletonLeaderboard, SkeletonMapInfo } from '@components/skeletons'
 import { StreakMapStats } from '@components/StreakMapStats'
-import { Avatar, Button } from '@components/system'
+import { MapRowTile } from '@components/MapRowTile'
+import { Button } from '@components/system'
 import { VerifiedBadge } from '@components/VerifiedBadge'
 import StyledPlayStreaksPage from '@styles/PlayStreaksPage.Styled'
 import { MapLeaderboardType, StreakStatsType } from '@types'
@@ -46,7 +47,11 @@ const EquitableStreaksPage = () => {
                 </div>
                 <div className="descriptionColumnRow">
                   <div className="descriptionColumn">
-                    <Avatar type="map" src={EQUITABLE_COUNTRY_STREAK_DETAILS.previewImg} size={50} />
+                    <MapRowTile
+                      mapId={String(EQUITABLE_COUNTRY_STREAK_DETAILS._id)}
+                      name={EQUITABLE_COUNTRY_STREAK_DETAILS.name}
+                      size={50}
+                    />
                     <div className="map-details">
                       <div className="name-container">
                         <div className="name-wrapper">

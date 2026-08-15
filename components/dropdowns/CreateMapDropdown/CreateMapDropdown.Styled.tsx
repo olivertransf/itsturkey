@@ -49,32 +49,40 @@ const StyledCreateMapDropdown = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #333;
-    height: 38px;
-    width: 38px;
-    border-radius: 5px;
-    color: #999;
+    background-color: var(--control-fill);
+    height: var(--control-height-md);
+    width: var(--control-height-md);
+    border-radius: var(--radius-md);
+    color: var(--text-muted);
+    border: 1px solid var(--border-subtle);
 
     &:hover {
-      background-color: #383838;
-      color: #ccc;
+      background-color: var(--control-fill-hover);
+      color: var(--text-primary);
+    }
+
+    &:focus-visible {
+      outline: var(--focus-ring);
+      outline-offset: 2px;
     }
 
     svg {
-      height: 20px;
+      height: var(--icon-md);
+      width: var(--icon-md);
     }
   }
 
   .DropdownMenuContent {
     min-width: 185px;
-    background-color: #333;
-    border-radius: 6px;
-    padding: 5px;
-    animation-duration: 400ms;
-    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    background-color: var(--bg-elevated);
+    border-radius: var(--radius-md);
+    padding: var(--space-1);
+    animation-duration: var(--duration);
+    animation-timing-function: var(--ease);
     will-change: transform, opacity;
-    z-index: 99;
-    box-shadow: 0 0 0 1px #434343;
+    z-index: var(--z-dropdown);
+    border: 1px solid var(--border-strong);
+    box-shadow: var(--shadow-card);
 
     &[data-side='top'] {
       animation-name: ${slideDownAndFade};
@@ -93,104 +101,32 @@ const StyledCreateMapDropdown = styled.div`
     }
   }
 
-  /* .DropdownMenuItem {
-    font-size: 13px;
-    line-height: 1;
-    color: #dcdcdc;
-    border-radius: 3px;
-    display: flex;
-    align-items: center;
-    position: relative;
-    user-select: none;
-    outline: none;
-    padding: 0 20px;
-
-    &:hover {
-      background-color: #434343;
-      color: #fff;
-
-      &.destructive {
-        background-color: #b02828;
-        color: #fff;
-      }
-    }
-
-    &:not(:last-child) {
-      margin-bottom: 6px;
-    }
-  } */
-
   .DropdownMenuSeparator {
     height: 1px;
-    background-color: #505050;
-    margin: 5px;
+    background-color: var(--divider-line);
+    margin: var(--space-1);
   }
-
-  /* .item-button {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    height: 36px;
-    border-radius: 3px;
-    font-weight: 400;
-    width: 100%;
-    position: relative;
-    user-select: none;
-    outline: none;
-    font-size: 13px;
-  }
-
-  .item-input-button {
-    input {
-      display: none;
-    }
-
-    label {
-      cursor: pointer;
-      height: 100%;
-      width: 100%;
-      display: flex;
-      align-items: center;
-      padding: 0 20px;
-      height: 36px;
-      font-size: 13px;
-      user-select: none;
-      outline: none;
-      position: relative;
-      border-radius: 3px;
-      font-weight: 400;
-      color: #dcdcdc;
-
-      &:hover {
-        background-color: #434343;
-        color: #fff;
-      }
-    }
-  } */
 
   .new-item-wrapper {
     cursor: pointer;
-    height: 100%;
+    height: var(--control-height-md);
     width: 100%;
     display: flex;
     align-items: center;
-    padding: 0 20px;
-    height: 36px;
-    font-size: 13px;
+    padding: 0 var(--space-4);
+    font-size: var(--font-meta);
     user-select: none;
-    outline: none;
     position: relative;
-    border-radius: 3px;
-    font-weight: 400;
-    color: #dcdcdc;
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+    color: var(--text-primary);
 
     &:hover {
-      background-color: #434343;
-      color: #fff;
+      background-color: var(--control-fill-hover);
 
       &.destructive {
-        background-color: #b02828;
-        color: #fff;
+        background-color: var(--danger-fill);
+        color: var(--white);
       }
     }
   }

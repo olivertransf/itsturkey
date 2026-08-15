@@ -26,7 +26,7 @@ type Props = LobbyGameSettingsState & {
   hideVisualRestrictions?: boolean
 }
 
-const DEFAULT_SETTINGS_LABEL = 'Use default round time and movement'
+const DEFAULT_SETTINGS_LABEL = 'Default settings'
 
 const LobbyGameSettings: FC<Props> = ({
   defaultsLocked,
@@ -52,7 +52,7 @@ const LobbyGameSettings: FC<Props> = ({
             <Checkbox isChecked={defaultsLocked} setChecked={() => onToggleDefaults()} label={DEFAULT_SETTINGS_LABEL} />
           </div>
 
-          <div className={`controlCard detailedSettings ${defaultsLocked ? 'settingsControlsMuted' : ''}`}>
+          <div className={`detailedSettings ${defaultsLocked ? 'settingsControlsMuted' : ''}`}>
             <span className="roundTimeLabel">
               Round time <span className="timeLimit">{formatTimeLimit(sliderVal * 10)}</span>
             </span>
@@ -84,9 +84,7 @@ const LobbyGameSettings: FC<Props> = ({
 
         {!hideVisualRestrictions ? (
           <section className="settingsWrapper" aria-label="Visual restrictions" style={{ marginTop: 14 }}>
-            <div className="controlCard detailedSettings">
-              <VisualRestrictionsPanel value={visualRestrictions} onChange={setVisualRestrictions} />
-            </div>
+            <VisualRestrictionsPanel value={visualRestrictions} onChange={setVisualRestrictions} />
           </section>
         ) : null}
       </div>

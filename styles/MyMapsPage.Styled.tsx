@@ -13,7 +13,7 @@ const StyledMyMapsPage = styled.div`
 
   .create-map-card {
     border-radius: var(--radius-lg);
-    background-color: ${({ theme }) => theme.color.gray[900]};
+    background-color: var(--bg-card);
     border: 1px solid var(--border-subtle);
     box-shadow: var(--shadow-card);
     position: relative;

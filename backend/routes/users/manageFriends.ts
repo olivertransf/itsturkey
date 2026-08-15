@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb'
 import { NextApiRequest, NextApiResponse } from 'next'
 import type FriendshipEdge from '@backend/models/friendship'
 import { collections, getUserId, throwError } from '@backend/utils'
-import { normalizePresenceSession } from '@utils/friends/friendPresence'
+import { PRESENCE_ONLINE_WINDOW_MS, normalizePresenceSession, sortFriendsByPresence } from '@utils/friends/friendPresence'
 
 function sortedPair(a: ObjectId, b: ObjectId): { low: ObjectId; high: ObjectId } {
   const as = a.toHexString()
@@ -36,7 +36,7 @@ export const listFriends = async (req: NextApiRequest, res: NextApiResponse) => 
       .toArray()) ?? []
 
   const now = Date.now()
-  const onlineWindowMs = 2 * 60 * 1000
+  const onlineWindowMs = PRESENCE_ONLINE_WINDOW_MS
 
   const rows = users.map((u) => {
     const id = u._id.toHexString()
@@ -58,7 +58,8 @@ export const listFriends = async (req: NextApiRequest, res: NextApiResponse) => 
     } else if (
       presenceActivity === 'in_game' ||
       presenceActivity === 'in_duel' ||
-      presenceActivity === 'spectating'
+      presenceActivity === 'spectating' ||
+      presenceActivity === 'idle'
     ) {
       // keep live heartbeat activity
     } else {
@@ -84,19 +85,7 @@ export const listFriends = async (req: NextApiRequest, res: NextApiResponse) => 
     }
   })
 
-  rows.sort((a, b) => {
-    const rank = (f: (typeof rows)[number]) => {
-      if (f.online && f.presenceActivity === 'in_duel') return 0
-      if (f.online && f.presenceActivity === 'in_game') return 1
-      if (f.online) return 2
-      return 3
-    }
-    const diff = rank(a) - rank(b)
-    if (diff !== 0) return diff
-    return a.name.localeCompare(b.name)
-  })
-
-  res.status(200).send(rows)
+  res.status(200).send(sortFriendsByPresence(rows))
 }
 
 export const addFriend = async (req: NextApiRequest, res: NextApiResponse) => {

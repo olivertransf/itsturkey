@@ -1,10 +1,11 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import { FC, useState } from 'react'
 import { HeartIcon as HeartIconOutline } from '@heroicons/react/outline'
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/solid'
 import { MapType } from '@types'
-import { resolveMapImageSrc } from '@utils/helpers/mapPreviewSrc'
+import { flagEmojiFromIsoAlpha2 } from '@utils/helpers/flagEmoji'
+import { parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
+import { mapNameInitials } from '@utils/helpers/mapPreviewSrc'
 import { mailman, showToast } from '@utils/helpers'
 import { StyledLikedMapCard } from './'
 
@@ -15,6 +16,8 @@ type Props = {
 
 const LikedMapCard: FC<Props> = ({ map, reloadMaps }) => {
   const [isHoveringLike, setIsHoveringLike] = useState(false)
+  const countryCode = typeof map._id === 'string' ? parseEquitableCountryMapKey(map._id) : null
+  const flag = countryCode ? flagEmojiFromIsoAlpha2(countryCode) : ''
 
   const handleUnlike = async () => {
     const res = await mailman(`likes/${map._id}`, 'DELETE')
@@ -30,18 +33,22 @@ const LikedMapCard: FC<Props> = ({ map, reloadMaps }) => {
 
   return (
     <StyledLikedMapCard>
-      <div className="map-avatar">
-        <Image src={resolveMapImageSrc(map.previewImg)} alt="" layout="fill" objectFit="cover" sizes="720px" />
-        <div className="image-gradient"></div>
-      </div>
-
       <div className="contentWrapper">
         <div className="mapNameWrapper">
+          {countryCode && flag ? (
+            <span className="map-flag" title={map.name} aria-hidden>
+              {flag}
+            </span>
+          ) : (
+            <span className="map-letter" aria-hidden>
+              {mapNameInitials(map.name)}
+            </span>
+          )}
           <div className="mapName">{map.name}</div>
         </div>
         <div className="playWrapper">
-          <Link href={`/map/${map._id}`}>
-            <a className="mapPlayBtn">Play</a>
+          <Link href={`/map/${map._id}`} className="mapPlayBtn">
+            Play
           </Link>
           <button
             className="unlike-button"

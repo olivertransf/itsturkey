@@ -1,11 +1,9 @@
 import styled from 'styled-components'
 
-type StyledProps = {}
-
-const StyledTabs = styled.div<StyledProps>`
+const StyledTabs = styled.div`
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: var(--space-5);
   position: relative;
 `
 

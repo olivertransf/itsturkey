@@ -53,11 +53,14 @@ const StyledStreakContinueCard = styled.div<StyledProps>`
       width: 180px;
       font-weight: 400;
       user-select: none;
-      background-color: var(--mediumPurple);
-      color: #fff;
+      background-color: var(--accent-primary);
+      color: var(--white);
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      height: var(--control-height-lg);
 
       :hover {
-        background-color: var(--indigo-600);
+        background-color: var(--accent-primary-hover);
       }
     }
   }

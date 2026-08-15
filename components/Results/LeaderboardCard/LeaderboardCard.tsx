@@ -23,8 +23,6 @@ const LeaderboardCard: FC<Props> = ({ gameData, mapData, selectedGameIndex, setS
       <div className="leaderboardWrapper">
         <div className="gameInfoWrapper">
           <div className="gameInfoItem">
-            <Avatar type="map" src={mapData.previewImg} size={50} />
-
             <div className="gameInfoContent">
               <span className="label1">{mapData.name}</span>
               {(mapData.creator === 'GeoHub' || mapData.creatorDetails?.name) && (

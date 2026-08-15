@@ -57,6 +57,7 @@ const createGame = async (req: NextApiRequest, res: NextApiResponse) => {
     streak: 0,
     state: 'started',
     createdAt: new Date(),
+    updatedAt: new Date(),
     ...(unlimited ? { unlimited: true } : { totalRounds, unlimited: false }),
   } as Game
 

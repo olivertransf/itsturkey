@@ -2,7 +2,7 @@ import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { Game } from '@backend/models'
 import { NotFound } from '@components/errorViews'
-import { Navbar } from '@components/layout'
+import { PageBackLink } from '@components/PageBackLink'
 import { Meta } from '@components/Meta'
 import { ResultMap } from '@components/ResultMap'
 import { LeaderboardCard } from '@components/Results'
@@ -72,7 +72,9 @@ const ResultsPage: PageType = () => {
           <SkeletonGameResults />
         ) : (
           <section>
-            <Navbar backHref={getStreakLobbyPath()} backLabel="Back to streaks" />
+            <div className="result-back">
+              <PageBackLink href={getStreakLobbyPath()} label="Back to streaks" compact />
+            </div>
 
             <StreaksSummaryMap gameData={gameData} />
 
@@ -93,7 +95,9 @@ const ResultsPage: PageType = () => {
         <SkeletonGameResults />
       ) : (
         <section>
-          <Navbar backHref="/" backLabel="Back to home" />
+          <div className="result-back">
+            <PageBackLink href="/" label="Back to home" compact />
+          </div>
 
           <ResultMap
             guessedLocations={gameData.guesses}

@@ -9,26 +9,20 @@ import { KEY_CODES } from '@utils/constants/keyCodes'
 import { StyledStreakContinueCard } from './'
 import { getRealCountryCode } from '@utils/helpers/getRealCountryCode'
 import { streakFlagImgProps } from '@utils/helpers/streakFlagImgProps'
-import { PlonkitGuideLauncher } from '@components/PlonkitCountryGuide'
-import { lastCompletedRoundLocation, resolvePlonkitGuideCountryIso } from '@utils/helpers/resolvePlonkitGuideCountryIso'
 
 type Props = {
   gameData: Game
   view: GameViewType
   setView: (view: GameViewType) => void
   nextLabel?: string
+  isSpectator?: boolean
 }
 
-const StreakContinueCard: FC<Props> = ({ gameData, view, setView, nextLabel = 'Next Round' }) => {
+const StreakContinueCard: FC<Props> = ({ gameData, view, setView, nextLabel = 'Next Round', isSpectator = false }) => {
   const dispatch = useAppDispatch()
 
-  const plonkIso = useMemo(() => {
-    const loc = lastCompletedRoundLocation(gameData)
-    return resolvePlonkitGuideCountryIso(gameData.mapId, loc)
-  }, [gameData.mapId, gameData.rounds, gameData.guesses])
-
   useEffect(() => {
-    if (view !== 'Result') return
+    if (view !== 'Result' || isSpectator) return
 
     document.addEventListener('keydown', handleKeyDown, { once: true })
 
@@ -46,6 +40,7 @@ const StreakContinueCard: FC<Props> = ({ gameData, view, setView, nextLabel = 'N
   }
 
   const handleNextRound = () => {
+    if (isSpectator) return
     dispatch(updateStartTime({ startTime: new Date().getTime() }))
     setView('Game')
   }
@@ -88,19 +83,15 @@ const StreakContinueCard: FC<Props> = ({ gameData, view, setView, nextLabel = 'N
         <p className="streak-count">
           {`Your streak is now at ${gameData.streak} ${gameData.streak === 1 ? 'country' : 'countries'}`}.
         </p>
-
-        {plonkIso ? (
-          <div style={{ marginTop: 14 }}>
-            <PlonkitGuideLauncher variant="compact" countryIso={plonkIso} mapLabel={gameData.mapDetails?.name} />
-          </div>
-        ) : null}
       </div>
 
+      {!isSpectator ? (
       <div className="actionButton">
         <button className="next-round-btn" onClick={() => handleNextRound()}>
           {nextLabel}
         </button>
       </div>
+      ) : null}
     </StyledStreakContinueCard>
   )
 }

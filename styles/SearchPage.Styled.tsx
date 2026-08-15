@@ -69,9 +69,9 @@ const StyledSearchPage = styled.div`
     }
 
     .no-search-results {
-      font-size: 18px;
-      color: #efeff1;
-      font-weight: 400;
+      font-size: var(--font-section);
+      color: var(--text-primary);
+      font-weight: 500;
       margin-top: 1rem;
 
       span {

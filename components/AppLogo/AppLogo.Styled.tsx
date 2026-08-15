@@ -12,7 +12,7 @@ const StyledAppLogo = styled.div<StyledProps>`
     transition: 0.2s;
 
     .wordmark {
-      font-size: 18px;
+      font-size: 15px;
       font-weight: 700;
       letter-spacing: -0.025em;
       color: var(--text-primary);

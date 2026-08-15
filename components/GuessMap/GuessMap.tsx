@@ -11,6 +11,9 @@ import useGuessMap from '@utils/hooks/useGuessMap'
 import { getMapsKey, googleMapLoaderAsync } from '@utils/helpers'
 import { parseEquitableContinentMapKey } from '@utils/helpers/equitableContinentMapId'
 import { parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
+import { getGuessMapIdleSize, GUESS_MAP_HOVER_UNIFORM_SCALE, GUESS_MAP_VMIN_MULTIPLIER } from '@utils/helpers/getGuessMapSize'
+import type { GuessMapLive } from '@utils/helpers/guessMapLive'
+import { locationFromGuessMapClick } from '@utils/helpers/guessMapClick'
 import { StyledGuessMap } from './'
 import { LockOpenIcon, LockClosedIcon } from '@heroicons/react/solid'
 
@@ -30,6 +33,9 @@ type Props = {
   guessLocked?: boolean
   /** Primary guess button label (duel uses "Lock in"). */
   submitLabel?: string
+  isSpectator?: boolean
+  followGuessMapLive?: GuessMapLive | null
+  onGuessMapLiveChange?: (live: GuessMapLive) => void
 }
 
 const GuessMap: FC<Props> = ({
@@ -45,6 +51,9 @@ const GuessMap: FC<Props> = ({
   duelLayout = false,
   guessLocked = false,
   submitLabel = 'Submit Guess',
+  isSpectator = false,
+  followGuessMapLive = null,
+  onGuessMapLiveChange,
 }) => {
   const [marker, setMarker] = useState<{ lat: number; lng: number } | null>(null)
 
@@ -61,13 +70,19 @@ const GuessMap: FC<Props> = ({
     expandAndPin,
     changeMapSize,
     resetGuessMapDimensions,
+    setMapWidth,
+    setMapHeight,
   } = useGuessMap()
   const user = useAppSelector((state) => state.user)
 
   const mapExpanded = hovering || isPinned || Boolean(mobileMapOpen)
   const tabletTouch = chromeMode === 'tabletTouch'
-  const showDesktopControls = mapExpanded && chromeMode !== 'phone' && !guessLocked
+  const locked = guessLocked || isSpectator
+  const showDesktopControls = mapExpanded && chromeMode !== 'phone' && !locked
   const wrapperRef = useRef<HTMLDivElement | null>(null)
+  const publishTimerRef = useRef<number | null>(null)
+  const onGuessMapLiveChangeRef = useRef(onGuessMapLiveChange)
+  onGuessMapLiveChangeRef.current = onGuessMapLiveChange
 
   useEffect(() => {
     handleSetupMap()
@@ -85,7 +100,7 @@ const GuessMap: FC<Props> = ({
   }, [googleMapsConfig, mapWidth, mapHeight, mapExpanded, mobileMapOpen])
 
   useEffect(() => {
-    if (!tabletTouch || !mapExpanded || guessLocked || mobileMapOpen) return
+    if (!tabletTouch || !mapExpanded || locked || mobileMapOpen) return
 
     const onPointerDown = (e: PointerEvent) => {
       const root = wrapperRef.current
@@ -97,18 +112,119 @@ const GuessMap: FC<Props> = ({
 
     document.addEventListener('pointerdown', onPointerDown, true)
     return () => document.removeEventListener('pointerdown', onPointerDown, true)
-  }, [tabletTouch, mapExpanded, guessLocked, mobileMapOpen, setHovering, setIsPinned])
+  }, [tabletTouch, mapExpanded, locked, mobileMapOpen, setHovering, setIsPinned])
+
+  useEffect(() => {
+    if (isSpectator || !onGuessMapLiveChange || !googleMapsConfig?.map) return
+    const map = googleMapsConfig.map
+
+    const publish = () => {
+      const center = map.getCenter()
+      const zoom = map.getZoom()
+      if (!center || zoom == null) return
+      const payload: GuessMapLive = {
+        lat: center.lat(),
+        lng: center.lng(),
+        zoom,
+        expanded: mapExpanded,
+        mapSize: Number(user.guessMapSize) || 2,
+        mobileOpen: Boolean(mobileMapOpen),
+      }
+      if (marker) {
+        payload.pinLat = marker.lat
+        payload.pinLng = marker.lng
+      }
+      onGuessMapLiveChangeRef.current?.(payload)
+    }
+
+    const schedule = () => {
+      if (publishTimerRef.current != null) return
+      publishTimerRef.current = window.setTimeout(() => {
+        publishTimerRef.current = null
+        publish()
+      }, 180)
+    }
+
+    const idleL = map.addListener('idle', schedule)
+    const centerL = map.addListener('center_changed', schedule)
+    const zoomL = map.addListener('zoom_changed', schedule)
+    publish()
+
+    return () => {
+      idleL.remove()
+      centerL.remove()
+      zoomL.remove()
+      if (publishTimerRef.current != null) {
+        window.clearTimeout(publishTimerRef.current)
+        publishTimerRef.current = null
+      }
+    }
+  }, [
+    isSpectator,
+    onGuessMapLiveChange,
+    googleMapsConfig,
+    marker,
+    mapExpanded,
+    mobileMapOpen,
+    user.guessMapSize,
+  ])
+
+  useEffect(() => {
+    if (!isSpectator || !followGuessMapLive || !googleMapsConfig?.map) return
+    const map = googleMapsConfig.map
+    const { lat, lng, zoom } = followGuessMapLive
+    const cur = map.getCenter()
+    const curZoom = map.getZoom() ?? zoom
+    const dLat = cur ? Math.abs(cur.lat() - lat) : 99
+    const dLng = cur ? Math.abs(cur.lng() - lng) : 99
+    const dZoom = Math.abs(curZoom - zoom)
+    if (dLat > 8 || dLng > 8 || dZoom > 3) {
+      map.setCenter({ lat, lng })
+      map.setZoom(zoom)
+    } else {
+      map.panTo({ lat, lng })
+      if (dZoom > 0.05) map.setZoom(zoom)
+    }
+
+    if (followGuessMapLive.pinLat != null && followGuessMapLive.pinLng != null) {
+      setMarker({ lat: followGuessMapLive.pinLat, lng: followGuessMapLive.pinLng })
+      setCurrGuess({ lat: followGuessMapLive.pinLat, lng: followGuessMapLive.pinLng })
+    } else {
+      setMarker(null)
+    }
+
+    const expanded = followGuessMapLive.expanded !== false
+    setIsPinned(expanded)
+    setHovering(expanded)
+
+    const size = followGuessMapLive.mapSize ?? 2
+    const idle = getGuessMapIdleSize(size)
+    const scale = expanded ? GUESS_MAP_HOVER_UNIFORM_SCALE : 1
+    const m = GUESS_MAP_VMIN_MULTIPLIER
+    setMapWidth(idle.width * m * scale)
+    setMapHeight(idle.height * m * scale)
+  }, [
+    isSpectator,
+    followGuessMapLive,
+    googleMapsConfig,
+    setCurrGuess,
+    setHovering,
+    setIsPinned,
+    setMapWidth,
+    setMapHeight,
+  ])
 
   const handleSetupMap = () => {
-    if (!googleMapsConfig) return
+    if (!googleMapsConfig?.map || isSpectator) return
 
     const { map } = googleMapsConfig
 
-    map.addListener('click', (e: google.maps.MapMouseEvent) => addMarker(e))
+    map.addListener('click', (e: google.maps.MapMouseEvent) => placePin(e))
   }
 
   const handleResetMapState = () => {
-    if (!resetMap || !googleMapsConfig || !gameData.mapDetails) return
+    if (isSpectator) return
+    if (!resetMap || !googleMapsConfig?.map || !gameData.mapDetails) return
 
     const { map } = googleMapsConfig
 
@@ -144,18 +260,17 @@ const GuessMap: FC<Props> = ({
     closeMobileMap()
   }
 
-  const addMarker = (e: google.maps.MapMouseEvent) => {
-    if (guessLocked) return
-    if (!e.latLng) return
-
-    const location = { lat: e.latLng.lat(), lng: e.latLng.lng() }
+  const placePin = (event: { lat?: number; lng?: number; latLng?: google.maps.LatLng | null }) => {
+    if (locked) return
+    const location = locationFromGuessMapClick(event)
+    if (!location) return
 
     setCurrGuess(location)
     setMarker(location)
   }
 
   const nudgeZoom = (delta: number) => {
-    if (!googleMapsConfig?.map || guessLocked) return
+    if (!googleMapsConfig?.map || locked) return
     const map = googleMapsConfig.map
     const next = Math.min(21, Math.max(1, (map.getZoom() ?? 1) + delta))
     map.setZoom(next)
@@ -174,9 +289,9 @@ const GuessMap: FC<Props> = ({
       <div
         ref={wrapperRef}
         className="guessMapWrapper"
-        onMouseOver={guessLocked || tabletTouch ? undefined : handleMapHover}
-        onMouseLeave={guessLocked || tabletTouch ? undefined : handleMapLeave}
-        style={{ pointerEvents: guessLocked ? 'none' : undefined }}
+        onMouseOver={locked || tabletTouch ? undefined : handleMapHover}
+        onMouseLeave={locked || tabletTouch ? undefined : handleMapLeave}
+        style={{ pointerEvents: locked ? 'none' : undefined }}
       >
         {showDesktopControls && (
           <div className="controls">
@@ -240,7 +355,11 @@ const GuessMap: FC<Props> = ({
             defaultCenter={{ lat: 0, lng: 0 }}
             defaultZoom={1}
             yesIWantToUseGoogleMapApiInternals
-            onGoogleApiLoaded={({ map, maps }) => setGoogleMapsConfig({ isLoaded: true, map, mapsApi: maps })}
+            onGoogleApiLoaded={({ map, maps }) => {
+              if (!map || !maps) return
+              setGoogleMapsConfig({ isLoaded: true, map, mapsApi: maps })
+            }}
+            onClick={({ lat, lng }) => placePin({ lat, lng })}
             options={getGuessMapOptions(gameData.gameSettings)}
           >
             {marker && (
@@ -248,7 +367,7 @@ const GuessMap: FC<Props> = ({
             )}
           </GoogleMapReact>
 
-          {tabletTouch && !mapExpanded && !guessLocked && (
+          {tabletTouch && !mapExpanded && !locked && (
             <button type="button" className="expand-map-hit" onClick={expandAndPin} aria-label="Expand map" />
           )}
         </div>
@@ -257,18 +376,20 @@ const GuessMap: FC<Props> = ({
           <XIcon />
         </button>
 
-        <div className="submit-button-wrapper">
-          <Button
-            variant={!currGuess ? 'solidCustom' : 'primary'}
-            backgroundColor="var(--background3)"
-            color="#fff"
-            width="100%"
-            disabled={guessLocked || !currGuess}
-            onClick={() => handleSubmitGuess()}
-          >
-            {submitLabel}
-          </Button>
-        </div>
+        {!isSpectator ? (
+          <div className="submit-button-wrapper">
+            <Button
+              variant={!currGuess ? 'solidCustom' : 'primary'}
+              backgroundColor="var(--background3)"
+              color="#fff"
+              width="100%"
+              disabled={guessLocked || !currGuess}
+              onClick={() => handleSubmitGuess()}
+            >
+              {submitLabel}
+            </Button>
+          </div>
+        ) : null}
       </div>
     </StyledGuessMap>
   )

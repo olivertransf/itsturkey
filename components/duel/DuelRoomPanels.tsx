@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import type { FC, ReactNode } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 import {
   ClipboardCopyIcon,
@@ -22,7 +21,6 @@ import { Button } from '@components/system'
 import { DuelHpMeter, DuelPointsMeter } from '@components/duel/DuelHpMeter'
 import { duelAvatarAccent, duelHudAvatarIcon } from '@components/duel/duelHudAvatar'
 import { showToast } from '@utils/helpers'
-import { resolveMapImageSrc } from '@utils/helpers/mapPreviewSrc'
 import DuelChatPanel from './DuelChatPanel'
 import type { DuelClientPayload, DuelChatMessageClient, DuelGuessAvatar, DuelViewerRole } from './duelApiTypes'
 import styled from 'styled-components'
@@ -32,12 +30,12 @@ const Shell = styled.div<{ $variant?: 'lobby' | 'finish' }>`
   max-width: ${({ $variant }) =>
     $variant === 'finish' ? '100%' : $variant === 'lobby' ? '100%' : 'min(480px, 100%)'};
   margin-inline: ${({ $variant }) => ($variant === 'finish' ? 'auto' : '0')};
-  padding: ${({ $variant }) => ($variant === 'finish' ? '14px 14px 16px' : 'var(--pad-card)')};
+  padding: ${({ $variant }) => ($variant === 'finish' ? '14px 14px 16px' : '18px')};
   border-radius: var(--radius-xl);
   box-sizing: border-box;
-  background-color: var(--bg-elevated);
+  background-color: var(--bg-card);
   border: var(--border-default);
-  box-shadow: var(--shadow-card);
+  box-shadow: none;
   color: var(--text-primary);
 `
 
@@ -131,25 +129,27 @@ const LobbyHead = styled.div`
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 
   svg.tile {
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
     flex-shrink: 0;
     padding: 10px;
-    border-radius: 12px;
-    background: rgba(110, 178, 232, 0.14);
-    border: 1px solid rgba(157, 200, 240, 0.35);
-    color: #9dc8f0;
+    border-radius: var(--radius-md);
+    background: var(--control-fill);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-muted);
     box-sizing: border-box;
   }
 `
 
 const LobbyTitle = styled.h1`
   margin: 0;
-  font-size: 19px;
-  font-weight: 800;
+  font-size: var(--font-title);
+  font-weight: 700;
+  letter-spacing: var(--tracking-title);
+  line-height: 1.2;
 `
 
 const BtnRow = styled.div`
@@ -178,7 +178,7 @@ const NickField = styled.input`
   box-sizing: border-box;
 
   &:focus {
-    border-color: rgba(157, 200, 240, 0.5);
+    border-color: var(--border-strong);
     outline: none;
   }
 `
@@ -191,8 +191,9 @@ const TipLink = styled.span`
   line-height: 1.45;
 
   a {
-    color: #9dc8f0;
-    text-decoration: none;
+    color: var(--text-primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
   a:hover {
     text-decoration: underline;
@@ -285,20 +286,20 @@ const LobbyAsideColumn = styled.aside`
 
 const RoomCodeCard = styled.div`
   margin: 0 0 14px;
-  padding: 14px 16px;
-  border-radius: 14px;
-  background: linear-gradient(145deg, rgba(234, 179, 8, 0.08), rgba(0, 0, 0, 0.22));
-  border: 1px solid rgba(253, 224, 71, 0.28);
+  padding: 16px 18px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+  border: var(--border-default);
   box-sizing: border-box;
 `
 
 const RoomCodeLabel = styled.div`
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.16em;
+  font-size: var(--font-compact);
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(253, 224, 71, 0.72);
-  margin-bottom: 8px;
+  color: var(--text-subtle);
+  margin-bottom: 10px;
 `
 
 const RoomCodeValue = styled.div`
@@ -310,11 +311,11 @@ const RoomCodeValue = styled.div`
 `
 
 const RoomCodeText = styled.span`
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
-  font-size: clamp(1.65rem, 6vw, 2.35rem);
+  font-family: var(--font-mono);
+  font-size: clamp(1.5rem, 5vw, 2.1rem);
   font-weight: 800;
-  letter-spacing: 0.22em;
-  color: #fde047;
+  letter-spacing: 0.18em;
+  color: var(--text-primary);
   line-height: 1;
 `
 
@@ -327,9 +328,9 @@ const RoomCodeHint = styled.p`
 
 const FriendsSection = styled.div`
   margin: 0 0 14px;
-  padding: 12px;
-  border-radius: 14px;
-  background: var(--bg-surface);
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
   border: var(--border-default);
   box-sizing: border-box;
 `
@@ -358,8 +359,9 @@ const FriendsEmpty = styled.p`
   color: rgba(161, 161, 170, 0.95);
 
   a {
-    color: #9dc8f0;
-    text-decoration: none;
+    color: var(--text-primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   a:hover {
@@ -395,14 +397,14 @@ const OpponentJoinedBadge = styled.div`
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
-  border-radius: 999px;
-  background: rgba(110, 178, 232, 0.12);
-  border: 1px solid rgba(157, 200, 240, 0.35);
-  font-size: 13px;
-  font-weight: 700;
-  color: #d4e8fb;
-  margin-bottom: 12px;
+  padding: 7px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--control-fill);
+  border: 1px solid var(--border-subtle);
+  font-size: var(--font-meta);
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 14px;
   width: fit-content;
   max-width: 100%;
 `
@@ -417,8 +419,9 @@ const LobbyPlonkFoot = styled.p`
   color: rgba(161, 161, 170, 0.92);
 
   a {
-    color: #9dc8f0;
-    text-decoration: none;
+    color: var(--text-primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   a:hover {
@@ -428,8 +431,8 @@ const LobbyPlonkFoot = styled.p`
 
 const InviteCard = styled.div`
   margin: 4px 0 0;
-  border-radius: 14px;
-  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
   border: var(--border-default);
   overflow: hidden;
 `
@@ -447,22 +450,11 @@ const MatchSummaryCard = styled.div`
   gap: 14px;
   align-items: stretch;
   margin: 0 0 14px;
-  padding: 12px;
-  border-radius: 14px;
-  background: var(--bg-surface);
+  padding: 16px 18px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
   border: var(--border-default);
   box-sizing: border-box;
-`
-
-const MatchSummaryPreview = styled.div`
-  position: relative;
-  width: 72px;
-  height: 72px;
-  flex-shrink: 0;
-  border-radius: 12px;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.08);
 `
 
 const MatchSummaryBody = styled.div`
@@ -506,9 +498,9 @@ const MatchSummaryMeta = styled.div`
     align-items: flex-start;
     gap: 1px;
     padding: 6px 10px;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(157, 200, 240, 0.22);
+    border-radius: var(--radius-sm);
+    background: var(--control-fill);
+    border: 1px solid var(--border-subtle);
     min-width: 72px;
   }
 
@@ -517,7 +509,7 @@ const MatchSummaryMeta = styled.div`
     font-weight: 800;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: rgba(157, 200, 240, 0.82);
+    color: var(--text-subtle);
   }
 
   span.meta-round-value {
@@ -571,15 +563,9 @@ async function copyDuelRoomCode(shortCode: string) {
 
 const DuelLobbyMatchSummary: FC<{ match: DuelLobbyMatchInfo }> = ({ match }) => {
   const mapName = match.mapDetails?.name ?? 'Map'
-  const preview = match.mapDetails?.previewImg
 
   return (
     <MatchSummaryCard>
-      <MatchSummaryPreview>
-        {preview ? (
-          <Image src={resolveMapImageSrc(preview)} alt="" layout="fill" objectFit="cover" sizes="72px" />
-        ) : null}
-      </MatchSummaryPreview>
       <MatchSummaryBody>
         <MatchSummaryTitle title={mapName}>{mapName}</MatchSummaryTitle>
         <MatchSummaryMeta>
@@ -643,10 +629,23 @@ const DuelRoomCodeCard: FC<{ shortCode: string; hint: string }> = ({ shortCode, 
 const DuelLobbyFriendsInvite: FC<{
   friends?: { id: string; name: string }[]
   invitingFriendId?: string | null
+  lastInvite?: { friendId: string; name: string; expiresAt: string } | null
+  guestJoined?: boolean
   onInviteFriend?: (friend: { id: string; name: string }) => void | Promise<void>
-}> = ({ friends, invitingFriendId, onInviteFriend }) => {
+}> = ({ friends, invitingFriendId, lastInvite, guestJoined, onInviteFriend }) => {
   if (!onInviteFriend) return null
   const list = friends ?? []
+  const expired =
+    !!lastInvite && !guestJoined && new Date(lastInvite.expiresAt).getTime() <= Date.now()
+  const statusLine = guestJoined
+    ? 'Joined'
+    : invitingFriendId
+      ? 'Inviting…'
+      : expired && lastInvite
+        ? `Invite to ${lastInvite.name} expired`
+        : lastInvite
+          ? `Invite sent — waiting for ${lastInvite.name}`
+          : null
 
   return (
     <FriendsSection>
@@ -656,34 +655,50 @@ const DuelLobbyFriendsInvite: FC<{
           Invite a friend
         </FriendsSectionTitle>
       </FriendsSectionHead>
+      {statusLine ? <FriendsEmpty>{statusLine}</FriendsEmpty> : null}
       {list.length === 0 ? (
         <FriendsEmpty>
           No friends yet.{' '}
-          <Link href="/friends">
-            <a>Add friends</a>
-          </Link>{' '}
+          <Link href="/friends">Add friends</Link>{' '}
           to send one-tap duel invites.
         </FriendsEmpty>
       ) : (
         <FriendsChipRow>
-          {list.map((f) => (
-            <FriendChip key={f.id}>
-              <FriendName title={f.name}>{f.name}</FriendName>
-              <Button
-                variant="solidGray"
-                size="sm"
-                disabled={invitingFriendId === f.id}
-                isLoading={invitingFriendId === f.id}
-                spinnerSize={18}
-                onClick={() => void onInviteFriend(f)}
-              >
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                  <PaperAirplaneIcon style={{ width: 14, height: 14 }} />
-                  Invite
-                </span>
-              </Button>
-            </FriendChip>
-          ))}
+          {list.map((f) => {
+            const isLast = lastInvite?.friendId === f.id
+            const label =
+              invitingFriendId === f.id
+                ? 'Inviting…'
+                : guestJoined && isLast
+                  ? 'Joined'
+                  : expired && isLast
+                    ? 'Invite again'
+                    : isLast
+                      ? 'Invite sent'
+                      : 'Invite'
+            return (
+              <FriendChip key={f.id}>
+                <FriendName title={f.name}>{f.name}</FriendName>
+                <Button
+                  variant="solidGray"
+                  size="sm"
+                  disabled={
+                    invitingFriendId === f.id ||
+                    (guestJoined && isLast) ||
+                    (isLast && !expired && !guestJoined)
+                  }
+                  isLoading={invitingFriendId === f.id}
+                  spinnerSize={18}
+                  onClick={() => void onInviteFriend(f)}
+                >
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <PaperAirplaneIcon style={{ width: 14, height: 14 }} />
+                    {label}
+                  </span>
+                </Button>
+              </FriendChip>
+            )
+          })}
         </FriendsChipRow>
       )}
     </FriendsSection>
@@ -744,7 +759,7 @@ const FinishBtnPair = styled.div`
 const RematchModalRoot = styled.div`
   position: fixed;
   inset: 0;
-  z-index: 100;
+  z-index: calc(var(--z-modal) + 10);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1100,9 +1115,11 @@ export const DuelLobbyHostWaitingPanel: FC<{
   match: DuelLobbyMatchInfo
   friends?: { id: string; name: string }[]
   invitingFriendId?: string | null
+  lastInvite?: { friendId: string; name: string; expiresAt: string } | null
+  guestJoined?: boolean
   onInviteFriend?: (friend: { id: string; name: string }) => void | Promise<void>
   chat?: DuelLobbyChatProps
-}> = ({ shortCode, match, friends, invitingFriendId, onInviteFriend, chat }) => (
+}> = ({ shortCode, match, friends, invitingFriendId, lastInvite, guestJoined, onInviteFriend, chat }) => (
   <LobbyWideGrid>
     <LobbyMainColumn>
       <Shell $variant="lobby">
@@ -1129,6 +1146,8 @@ export const DuelLobbyHostWaitingPanel: FC<{
         <DuelLobbyFriendsInvite
           friends={friends}
           invitingFriendId={invitingFriendId}
+          lastInvite={lastInvite}
+          guestJoined={guestJoined}
           onInviteFriend={onInviteFriend}
         />
       </Shell>
@@ -1172,9 +1191,7 @@ export const DuelLobbyGuestJoinPanel: FC<{
                 autoComplete="nickname"
               />
               <TipLink>
-                <Link href={loginHref} passHref>
-                  <a>Sign in</a>
-                </Link>{' '}
+                <Link href={loginHref}>Sign in</Link>{' '}
                 to use your account name and friends list.
               </TipLink>
             </>

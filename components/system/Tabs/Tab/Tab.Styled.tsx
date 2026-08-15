@@ -6,20 +6,32 @@ type StyledProps = {
 
 const StyledTab = styled.div<StyledProps>`
   cursor: pointer;
-  line-height: 1.8;
-  margin: 0px;
-  padding: 4px;
+  line-height: 1.4;
+  margin: 0;
+  padding: var(--space-2) 0;
   position: relative;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: ${({ isActive }) => (isActive ? '#a7a7a7' : '#737373')};
-  border-bottom: ${({ isActive }) => (isActive ? '2px solid #a7a7a7' : '2px solid transparent')};
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: ${({ isActive }) => (isActive ? 'var(--text-primary)' : 'var(--text-muted)')};
+  border-bottom: 2px solid ${({ isActive }) => (isActive ? 'var(--accent-primary)' : 'transparent')};
+  transition: color var(--duration-fast) var(--ease), border-color var(--duration-fast) var(--ease);
+
+  &:hover {
+    color: var(--text-primary);
+  }
+
+  &:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: 2px;
+  }
 
   span {
     box-sizing: border-box;
-    margin: 0px;
-    padding: 0px;
+    margin: 0;
+    padding: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

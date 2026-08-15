@@ -1,23 +1,15 @@
 import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ViewGridIcon } from '@heroicons/react/outline'
-import {
-  CreateAccordion,
-  CreateChoiceChip,
-  CreateChipRow,
-  CreateFieldLabel,
-  CreateLobbyShell,
-  CreateSection,
-  CreateSectionStatic,
-  CreateStickyActions,
-} from '@components/CreateLobby'
 import { VisualRestrictionsPanel } from '@components/GameStartForm'
+import { StyledPlaySetup } from '@components/GameStartForm/PlaySetup.Styled'
 import { LobbyGameSettings } from '@components/LobbyGameSettings'
 import { MapPickerGrid } from '@components/MapPickerGrid'
 import { Meta } from '@components/Meta'
+import { PageBackLink } from '@components/PageBackLink'
 import { Button } from '@components/system'
-import StyledMultiGamePage from '@styles/MultiGamePage.Styled'
+import { WidthController } from '@components/layout'
+import StyledMapPage from '@styles/MapPage.Styled'
 import { isMapExcludedFromPicker } from '@utils/constants/mapPicker'
 import {
   ALLOWED_MULTI_PANEL_COUNTS,
@@ -28,6 +20,8 @@ import {
 } from '@utils/constants/gameModes'
 import type { AllowedMultiPanelCount } from '@utils/constants/gameModes'
 import { OFFICIAL_WORLD_ID } from '@utils/constants/random'
+import { SITE_NAME } from '@utils/constants/site'
+import { getHomeDefaultWorldMapId } from '@utils/helpers/homeMapCards'
 import { DEFAULT_MAP_PREVIEW_FILE } from '@utils/helpers/mapPreviewSrc'
 import { loadMapPickerOptions } from '@utils/loadMapPickerOptions'
 import type { MapPickerRow } from '@utils/loadMapPickerOptions'
@@ -42,7 +36,7 @@ import type { VisualRestrictions } from '@utils/constants/visualRestrictions'
 
 const MultiLobbyPage: NextPage = () => {
   const router = useRouter()
-  const [mapField, setMapField] = useState<string>(OFFICIAL_WORLD_ID)
+  const [mapField, setMapField] = useState<string>(getHomeDefaultWorldMapId())
   const [mapOptions, setMapOptions] = useState<MapPickerRow[]>([])
   const [mapsLoading, setMapsLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -72,13 +66,19 @@ const MultiLobbyPage: NextPage = () => {
     if (!router.isReady) return
     const q = router.query.mapId
     if (typeof q === 'string' && q.length > 0 && !isMapExcludedFromPicker(q)) {
-      setMapField(q)
+      const homeDefault = getHomeDefaultWorldMapId()
+      setMapField(q === OFFICIAL_WORLD_ID && homeDefault !== OFFICIAL_WORLD_ID ? homeDefault : q)
     }
   }, [router.isReady, router.query.mapId])
 
   useEffect(() => {
+    const homeDefault = getHomeDefaultWorldMapId()
     if (isMapExcludedFromPicker(mapField)) {
-      setMapField(OFFICIAL_WORLD_ID)
+      setMapField(homeDefault)
+      return
+    }
+    if (mapField === OFFICIAL_WORLD_ID && homeDefault !== OFFICIAL_WORLD_ID) {
+      setMapField(homeDefault)
     }
   }, [mapField])
 
@@ -96,9 +96,8 @@ const MultiLobbyPage: NextPage = () => {
     [selectOptions, mapField]
   )
 
-  const fxCount = useMemo(
-    () => VISUAL_RESTRICTION_CATALOG.filter(({ key }) => Boolean(visualRestrictions[key])).length,
-    [visualRestrictions]
+  const anyFilterOn = VISUAL_RESTRICTION_CATALOG.some(
+    ({ key }) => Boolean(normalizeVisualRestrictions(visualRestrictions)[key])
   )
 
   const onToggleDefaults = useCallback(() => {
@@ -158,93 +157,99 @@ const MultiLobbyPage: NextPage = () => {
   }
 
   return (
-    <StyledMultiGamePage>
-      <Meta title="MultiGuessr" />
+    <StyledMapPage>
+      <WidthController customWidth="none">
+        <Meta title={`${SITE_NAME} — MultiGuessr`} />
 
-      <CreateLobbyShell
-        title="MultiGuessr"
-        tag="Several Street Views at once. Pick panels, then open map or filters only if you need them."
-        glyph={<ViewGridIcon />}
-      >
-        <CreateSection>
-          <CreateSectionStatic>
-            <CreateFieldLabel as="div">Panels at once</CreateFieldLabel>
-            <CreateChipRow>
-              {ALLOWED_MULTI_PANEL_COUNTS.map((n) => (
-                <CreateChoiceChip
-                  key={n}
-                  type="button"
-                  $active={panelCount === n}
-                  onClick={() => setPanelCount(n)}
+        <section className="mapPlayCard">
+          <header className="mapPlayHead">
+            <PageBackLink href="/" label="Back" compact />
+            <h1 className="mapPlayTitle">MultiGuessr</h1>
+          </header>
+
+          <StyledPlaySetup>
+            <div className="play-col play-col-main">
+              <section className="play-card">
+                <h2 className="play-heading">Map</h2>
+                <MapPickerGrid
+                  options={selectOptions}
+                  value={mapField}
+                  onChange={setMapField}
+                  loading={mapsLoading}
+                  visibleCount={4}
+                  showDescriptions={false}
+                  scrollClassName="play-filter-grid-scroll"
+                />
+              </section>
+
+              <section className="play-card">
+                <h2 className="play-heading">Panels</h2>
+                <div className="play-chip-row">
+                  {ALLOWED_MULTI_PANEL_COUNTS.map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      className={`play-chip${panelCount === n ? ' is-active' : ''}`}
+                      onClick={() => setPanelCount(n)}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              </section>
+
+              <section className="play-card">
+                <h2 className="play-heading">Time & movement</h2>
+                <LobbyGameSettings
+                  defaultsLocked={defaultsLocked}
+                  onToggleDefaults={onToggleDefaults}
+                  sliderVal={sliderVal}
+                  setSliderVal={setSliderVal}
+                  canMove={canMove}
+                  canPan={canPan}
+                  canZoom={canZoom}
+                  setCanMove={setCanMove}
+                  setCanPan={setCanPan}
+                  setCanZoom={setCanZoom}
+                  visualRestrictions={visualRestrictions}
+                  setVisualRestrictions={setVisualRestrictions}
+                  hideVisualRestrictions
+                />
+              </section>
+
+              <div className="play-start">
+                <Button
+                  variant="primary"
+                  width="100%"
+                  disabled={submitting || mapsLoading}
+                  isLoading={submitting}
+                  onClick={() => void start()}
                 >
-                  {n}
-                </CreateChoiceChip>
-              ))}
-            </CreateChipRow>
-          </CreateSectionStatic>
-        </CreateSection>
+                  Start
+                </Button>
+              </div>
+            </div>
 
-        <CreateAccordion
-          title="Map"
-          summary={mapNameForField || (mapsLoading ? 'Loading…' : 'Choose a map')}
-          defaultOpen={false}
-        >
-          <MapPickerGrid
-            options={selectOptions}
-            value={mapField}
-            onChange={setMapField}
-            loading={mapsLoading}
-            maxHeight={280}
-            showDescriptions={false}
-          />
-        </CreateAccordion>
-
-        <CreateAccordion
-          title="Round & movement"
-          summary={defaultsLocked ? 'Default time & movement' : 'Custom time & movement'}
-          defaultOpen={false}
-        >
-          <LobbyGameSettings
-            defaultsLocked={defaultsLocked}
-            onToggleDefaults={onToggleDefaults}
-            sliderVal={sliderVal}
-            setSliderVal={setSliderVal}
-            canMove={canMove}
-            canPan={canPan}
-            canZoom={canZoom}
-            setCanMove={setCanMove}
-            setCanPan={setCanPan}
-            setCanZoom={setCanZoom}
-            visualRestrictions={visualRestrictions}
-            setVisualRestrictions={setVisualRestrictions}
-            hideVisualRestrictions
-          />
-        </CreateAccordion>
-
-        <CreateAccordion
-          title="Wacky filters"
-          summary={fxCount > 0 ? `${fxCount} filter${fxCount === 1 ? '' : 's'} on` : 'None'}
-          defaultOpen={fxCount > 0}
-        >
-          <VisualRestrictionsPanel
-            value={visualRestrictions}
-            onChange={setVisualRestrictions}
-            listMaxHeight={220}
-          />
-        </CreateAccordion>
-
-        <CreateStickyActions>
-          <Button
-            variant="primary"
-            style={{ width: '100%' }}
-            disabled={submitting || mapsLoading}
-            onClick={() => void start()}
-          >
-            {submitting ? 'Starting…' : 'Start'}
-          </Button>
-        </CreateStickyActions>
-      </CreateLobbyShell>
-    </StyledMultiGamePage>
+            <div className="play-col play-col-filters">
+              <section className="play-card play-card-filters">
+                <div className="play-heading-row">
+                  <h2 className="play-heading">Filters</h2>
+                  <button
+                    type="button"
+                    className="play-clear"
+                    disabled={!anyFilterOn}
+                    onClick={() => setVisualRestrictions({})}
+                  >
+                    Clear all
+                  </button>
+                </div>
+                <VisualRestrictionsPanel value={visualRestrictions} onChange={setVisualRestrictions} embedded />
+              </section>
+            </div>
+          </StyledPlaySetup>
+        </section>
+      </WidthController>
+    </StyledMapPage>
   )
 }
 

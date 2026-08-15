@@ -112,6 +112,30 @@ export type DuelSession = {
       updatedAt?: Date
     }
   }
+  guessMapLives?: {
+    host?: {
+      lat: number
+      lng: number
+      zoom: number
+      pinLat?: number
+      pinLng?: number
+      expanded?: boolean
+      mapSize?: number
+      mobileOpen?: boolean
+      updatedAt?: Date
+    }
+    guest?: {
+      lat: number
+      lng: number
+      zoom: number
+      pinLat?: number
+      pinLng?: number
+      expanded?: boolean
+      mapSize?: number
+      mobileOpen?: boolean
+      updatedAt?: Date
+    }
+  }
 }
 
 export default DuelSession

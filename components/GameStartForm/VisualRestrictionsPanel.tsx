@@ -20,19 +20,47 @@ type Props = {
   disabled?: boolean
   /** Constrain chip list height so create lobbies stay compact. */
   listMaxHeight?: number
+  /** Hide the inner "Wacky filters" title when the accordion already says it. */
+  embedded?: boolean
 }
 
-const Root = styled.section`
+const Root = styled.section<{ $fill?: boolean }>`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
+  min-width: 0;
+  ${({ $fill }) =>
+    $fill
+      ? `
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  `
+      : ''}
+`
+
+const GridScroll = styled.div<{ $scroll?: boolean }>`
+  ${({ $scroll }) =>
+    $scroll
+      ? `
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+    min-height: 0;
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
+  `
+      : ''}
 `
 
 const TitleRow = styled.div`
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
 `
 
 const Title = styled.h3`
@@ -62,11 +90,8 @@ const ClearBtn = styled.button`
 const IntensityRow = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid var(--border-subtle);
-  background: rgba(255, 255, 255, 0.03);
+  gap: var(--space-3);
+  flex-shrink: 0;
 
   .intensity-label {
     display: flex;
@@ -90,10 +115,14 @@ const IntensityRow = styled.div`
   }
 `
 
-const Grid = styled.div<{ $maxHeight?: number }>`
+const Grid = styled.div<{ $maxHeight?: number; $twoCol?: boolean }>`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
-  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  grid-template-columns: ${({ $twoCol }) =>
+    $twoCol ? 'repeat(2, minmax(0, 1fr))' : 'repeat(auto-fill, minmax(132px, 1fr))'};
+  gap: ${({ $twoCol }) => ($twoCol ? 'var(--space-2)' : 'var(--space-3)')};
   ${({ $maxHeight }) =>
     $maxHeight
       ? `
@@ -104,14 +133,17 @@ const Grid = styled.div<{ $maxHeight?: number }>`
       : ''}
 `
 
-const Chip = styled.button<{ $on: boolean; $disabled?: boolean }>`
+const Chip = styled.button<{ $on: boolean; $disabled?: boolean; $thin?: boolean }>`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  gap: ${({ $thin }) => ($thin ? '2px' : '4px')};
   text-align: left;
-  padding: 10px 11px;
-  border-radius: 12px;
+  padding: ${({ $thin }) => ($thin ? '6px 8px' : '10px 11px')};
+  border-radius: ${({ $thin }) => ($thin ? 'var(--radius-sm)' : '12px')};
   border: 1px solid
     ${({ $on }) => ($on ? 'rgba(47, 127, 255, 0.55)' : 'var(--border-subtle)')};
   background: ${({ $on }) =>
@@ -119,30 +151,35 @@ const Chip = styled.button<{ $on: boolean; $disabled?: boolean }>`
   color: var(--text-primary);
   cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
   opacity: ${({ $disabled }) => ($disabled ? 0.45 : 1)};
-  min-height: 64px;
+  min-height: ${({ $thin }) => ($thin ? '40px' : '64px')};
 
   .chip-label {
-    font-size: 13px;
+    font-size: ${({ $thin }) => ($thin ? '12px' : '13px')};
     font-weight: 700;
     letter-spacing: -0.01em;
   }
 
   .chip-blurb {
-    font-size: 11px;
+    font-size: ${({ $thin }) => ($thin ? '10px' : '11px')};
     font-weight: 500;
     color: var(--text-muted);
     line-height: 1.3;
+    ${({ $thin }) =>
+      $thin
+        ? `
+      width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    `
+        : ''}
   }
 `
 
 const PixelRow = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid var(--border-subtle);
-  background: rgba(255, 255, 255, 0.03);
+  gap: var(--space-3);
 
   .pixel-label {
     display: flex;
@@ -159,7 +196,7 @@ const PixelRow = styled.div`
   }
 `
 
-const VisualRestrictionsPanel: FC<Props> = ({ value, onChange, disabled, listMaxHeight }) => {
+const VisualRestrictionsPanel: FC<Props> = ({ value, onChange, disabled, listMaxHeight, embedded }) => {
   const normalized = useMemo(() => normalizeVisualRestrictions(value), [value])
   const anyOn = VISUAL_RESTRICTION_CATALOG.some(({ key }) => Boolean(normalized[key]))
   const intensity = clampVisualIntensity(
@@ -192,17 +229,19 @@ const VisualRestrictionsPanel: FC<Props> = ({ value, onChange, disabled, listMax
   }
 
   return (
-    <Root aria-label="Visual restrictions">
-      <TitleRow>
-        <Title>Wacky filters</Title>
-        <ClearBtn
-          type="button"
-          disabled={disabled || !anyOn}
-          onClick={() => onChange({})}
-        >
-          Clear all
-        </ClearBtn>
-      </TitleRow>
+    <Root aria-label="Visual restrictions" $fill={embedded}>
+      {embedded ? null : (
+        <TitleRow>
+          <Title>Filters</Title>
+          <ClearBtn
+            type="button"
+            disabled={disabled || !anyOn}
+            onClick={() => onChange({})}
+          >
+            Clear all
+          </ClearBtn>
+        </TitleRow>
+      )}
 
       <IntensityRow>
         <div className="intensity-label">
@@ -219,56 +258,59 @@ const VisualRestrictionsPanel: FC<Props> = ({ value, onChange, disabled, listMax
           disabled={disabled}
         />
         <p className="intensity-hint">
-          1 is the normal look. Drag up toward Impossible for extreme distortion.
+          1 is the normal look.
         </p>
       </IntensityRow>
 
-      <Grid $maxHeight={listMaxHeight}>
-        {VISUAL_RESTRICTION_CATALOG.map(({ key, label, blurb }) => {
-          const on = Boolean(normalized[key])
-          return (
-            <Chip
-              key={key}
-              type="button"
-              $on={on}
-              $disabled={disabled}
-              aria-pressed={on}
-              disabled={disabled}
-              onClick={() => toggle(key)}
-            >
-              <span className="chip-label">{label}</span>
-              <span className="chip-blurb">{blurb}</span>
-            </Chip>
-          )
-        })}
-      </Grid>
+      <GridScroll $scroll={embedded} className={embedded ? 'play-filter-grid-scroll' : undefined}>
+        <Grid $maxHeight={embedded ? undefined : listMaxHeight} $twoCol={embedded}>
+          {VISUAL_RESTRICTION_CATALOG.map(({ key, label, blurb }) => {
+            const on = Boolean(normalized[key])
+            return (
+              <Chip
+                key={key}
+                type="button"
+                $on={on}
+                $thin={embedded}
+                $disabled={disabled}
+                aria-pressed={on}
+                disabled={disabled}
+                onClick={() => toggle(key)}
+              >
+                <span className="chip-label">{label}</span>
+                <span className="chip-blurb">{blurb}</span>
+              </Chip>
+            )
+          })}
+        </Grid>
 
-      {normalized.pixelate ? (
-        <PixelRow>
-          <div className="pixel-label">
-            <span>Pixel size</span>
-            <span className="pixel-val">
-              {clampPixelateLevel(normalized.pixelateLevel ?? DEFAULT_PIXELATE_LEVEL)}
-            </span>
-          </div>
-          <Slider
-            value={clampPixelateLevel(normalized.pixelateLevel ?? DEFAULT_PIXELATE_LEVEL)}
-            min={2}
-            max={16}
-            onChange={(n) =>
-              onChange(
-                normalizeVisualRestrictions({
-                  ...normalized,
-                  pixelate: true,
-                  pixelateLevel: n,
-                  intensity,
-                })
-              )
-            }
-            disabled={disabled}
-          />
-        </PixelRow>
-      ) : null}
+        {normalized.pixelate ? (
+          <PixelRow>
+            <div className="pixel-label">
+              <span>Pixel size</span>
+              <span className="pixel-val">
+                {clampPixelateLevel(normalized.pixelateLevel ?? DEFAULT_PIXELATE_LEVEL)}
+              </span>
+            </div>
+            <Slider
+              value={clampPixelateLevel(normalized.pixelateLevel ?? DEFAULT_PIXELATE_LEVEL)}
+              min={2}
+              max={16}
+              onChange={(n) =>
+                onChange(
+                  normalizeVisualRestrictions({
+                    ...normalized,
+                    pixelate: true,
+                    pixelateLevel: n,
+                    intensity,
+                  })
+                )
+              }
+              disabled={disabled}
+            />
+          </PixelRow>
+        ) : null}
+      </GridScroll>
     </Root>
   )
 }

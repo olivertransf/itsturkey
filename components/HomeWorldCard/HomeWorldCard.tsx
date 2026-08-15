@@ -1,22 +1,18 @@
 import Link from 'next/link'
 import { FC } from 'react'
 import HomeSectionRowCard from '@components/HomeSectionRowCard'
-import HomePlayGlyph from '@components/HomeSectionRowCard/HomePlayGlyph'
 
 type Props = {
   mapId: string
   name: string
+  description?: string
 }
 
-const HomeWorldCard: FC<Props> = ({ mapId, name }) => {
-  const label = `Play ${name}`
-
+const HomeWorldCard: FC<Props> = ({ mapId, name, description }) => {
   return (
-    <HomeSectionRowCard title={name}>
-      <Link href={`/map/${encodeURIComponent(mapId)}`}>
-        <a className="home-play-btn home-play-btn--icon" aria-label={label}>
-          <HomePlayGlyph />
-        </a>
+    <HomeSectionRowCard title={name} description={description}>
+      <Link href={`/map/${encodeURIComponent(mapId)}`} className="home-play-btn">
+        Play
       </Link>
     </HomeSectionRowCard>
   )

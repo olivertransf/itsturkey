@@ -1,8 +1,11 @@
 import {
   calculateMultiSessionTotalPoints,
+  mapIdForMultiPanelGame,
+  storesMultiMapIdAsObjectId,
   normalizeMultiPanelCount,
   normalizeMultiSessionSettings,
 } from '@backend/utils/multiSession'
+import { OFFICIAL_WORLD_ID } from '@utils/constants/random'
 
 test('normalizes multi-session settings to playable bounds', () => {
   expect(
@@ -37,4 +40,14 @@ test('sums points from every panel game', () => {
       { totalPoints: 4200 },
     ])
   ).toBe(7700)
+})
+
+test('stores virtual country map ids as strings', () => {
+  expect(mapIdForMultiPanelGame('eqcountry-us')).toBe('eqcountry-us')
+  expect(storesMultiMapIdAsObjectId('eqcountry-us')).toBe(false)
+})
+
+test('stores official world as an ObjectId', () => {
+  expect(mapIdForMultiPanelGame(OFFICIAL_WORLD_ID)).toBe(OFFICIAL_WORLD_ID)
+  expect(storesMultiMapIdAsObjectId(OFFICIAL_WORLD_ID)).toBe(true)
 })

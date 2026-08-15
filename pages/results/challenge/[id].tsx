@@ -3,7 +3,7 @@ import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { Game } from '@backend/models'
 import { NotFound } from '@components/errorViews'
-import { Navbar } from '@components/layout'
+import { PageBackLink } from '@components/PageBackLink'
 import { Meta } from '@components/Meta'
 import { ResultMap } from '@components/ResultMap'
 import { LeaderboardCard } from '@components/Results'
@@ -77,9 +77,7 @@ const ChallengeResultsPage: PageType = () => {
             <h1>You have not played this challenge</h1>
             <p>Finish the challenge to view the results.</p>
             <Link href={`/challenge/${challengeId}`}>
-              <a>
-                <Button>Play Challenge</Button>
-              </a>
+              <Button>Play Challenge</Button>
             </Link>
           </div>
         </div>
@@ -100,7 +98,9 @@ const ChallengeResultsPage: PageType = () => {
           <SkeletonGameResults />
         ) : (
           <section>
-            <Navbar backHref={getStreakLobbyPath()} backLabel="Back to streaks" />
+            <div className="result-back">
+              <PageBackLink href={getStreakLobbyPath()} label="Back to streaks" compact />
+            </div>
 
             <StreaksSummaryMap gameData={gamesFromChallenge[selectedGameIndex]} />
 
@@ -125,7 +125,9 @@ const ChallengeResultsPage: PageType = () => {
         <SkeletonGameResults />
       ) : (
         <section>
-          <Navbar backHref="/ongoing" backLabel="Back to ongoing" />
+          <div className="result-back">
+            <PageBackLink href="/ongoing" label="Back to ongoing" compact />
+          </div>
 
           <ResultMap
             guessedLocations={gamesFromChallenge[selectedGameIndex].guesses}

@@ -13,6 +13,8 @@ import type { GameViewType, LocationType } from '@types'
 import { mailman, showToast } from '@utils/helpers'
 import type { StreetViewLiveView } from '@utils/helpers/streetViewLiveView'
 import { normalizeStreetViewLiveView } from '@utils/helpers/streetViewLiveView'
+import type { GuessMapLive } from '@utils/helpers/guessMapLive'
+import { normalizeGuessMapLive } from '@utils/helpers/guessMapLive'
 import { useVisibleInterval } from '@utils/useVisibleInterval'
 import styled, { keyframes } from 'styled-components'
 import { duelRoundDamageMultiplier } from '@backend/utils/duelConstants'
@@ -42,13 +44,11 @@ const HudTop = styled.div`
   grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px 12px;
-  background: rgba(10, 12, 16, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 16px;
+  background: var(--hud-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-xl);
   backdrop-filter: blur(14px) saturate(145%);
-  box-shadow:
-    0 12px 32px rgba(0, 0, 0, 0.42),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  box-shadow: var(--shadow-card);
   padding: 10px 12px;
   min-height: 60px;
   pointer-events: auto;
@@ -660,6 +660,7 @@ type StreetSectionProps = {
   /** Force a provisional pin PATCH so timeout resolve has latest coords. */
   forcePinFlush?: boolean
   followLiveView?: StreetViewLiveView | null
+  followGuessMapLive?: GuessMapLive | null
   watchers?: WatcherChip[]
 }
 
@@ -680,6 +681,7 @@ const DuelStreetSection = memo(
     onRefresh,
     forcePinFlush = false,
     followLiveView = null,
+    followGuessMapLive = null,
     watchers = [],
   }: StreetSectionProps) {
     const [view, setView] = useState<GameViewType>('Game')
@@ -729,6 +731,14 @@ const DuelStreetSection = memo(
       [duelId, readOnly, viewerRole]
     )
 
+    const onGuessMapLiveChange = useCallback(
+      (guessMapLive: GuessMapLive) => {
+        if (readOnly || (viewerRole !== 'host' && viewerRole !== 'guest')) return
+        void mailman(`duels/${duelId}/live-view`, 'POST', JSON.stringify({ guessMapLive }))
+      },
+      [duelId, readOnly, viewerRole]
+    )
+
     const streetChatDock =
       viewerRole === 'host' || viewerRole === 'guest' || viewerRole === 'spectator' ? (
         <DuelStreetChatDock
@@ -762,6 +772,8 @@ const DuelStreetSection = memo(
             primaryControlsLeading={streetChatDock}
             onLiveViewChange={readOnly ? undefined : onLiveViewChange}
             followLiveView={readOnly ? followLiveView : null}
+            onGuessMapLiveChange={readOnly ? undefined : onGuessMapLiveChange}
+            followGuessMapLive={readOnly ? followGuessMapLive : null}
             watchers={readOnly ? [] : watchers}
           />
         </PanoStretch>
@@ -781,6 +793,7 @@ const DuelStreetSection = memo(
     prev.viewerRole === next.viewerRole &&
     prev.forcePinFlush === next.forcePinFlush &&
     prev.followLiveView === next.followLiveView &&
+    prev.followGuessMapLive === next.followGuessMapLive &&
     prev.watchers === next.watchers
 )
 
@@ -854,8 +867,6 @@ const DuelPlaySurface: FC<Props> = ({
   const [forfeitOpen, setForfeitOpen] = useState(false)
   const [forfeitSubmitting, setForfeitSubmitting] = useState(false)
   const [chatOpen, setChatOpen] = useState(false)
-  const specSeenResultRef = useRef<number | null>(null)
-  const [specRecapAck, setSpecRecapAck] = useState(-1)
 
   const followSide = useMemo((): 'host' | 'guest' => {
     if (!spectating) return 'host'
@@ -875,38 +886,20 @@ const DuelPlaySurface: FC<Props> = ({
     return normalizeStreetViewLiveView(raw)
   }, [spectating, followSide, payload.liveViews])
 
+  const followGuessMapLive = useMemo(() => {
+    if (!spectating) return null
+    const raw = followSide === 'guest' ? payload.guessMapLives?.guest : payload.guessMapLives?.host
+    return normalizeGuessMapLive(raw)
+  }, [spectating, followSide, payload.guessMapLives])
+
   const lr = payload.lastRoundResult
   const revealActual = payload.lastRoundActualLocation
   const recapAck = payload.recapAckRoundIndex ?? -1
 
-  useEffect(() => {
-    if (!spectating) {
-      specSeenResultRef.current = null
-      return
-    }
-    if (lr == null) return
-
-    const idx = lr.roundIndex
-    const serverAck = payload.recapAckRoundIndex ?? -1
-
-    if (specSeenResultRef.current === null) {
-      specSeenResultRef.current = idx
-      setSpecRecapAck(idx > serverAck ? serverAck : idx)
-      return
-    }
-
-    if (idx > specSeenResultRef.current) {
-      specSeenResultRef.current = idx
-      setSpecRecapAck(idx - 1)
-    }
-  }, [spectating, lr, payload.recapAckRoundIndex])
-
   const showRoundReveal =
     lr != null &&
     revealActual != null &&
-    (finalDamageMode ||
-      (payload.status === 'in_progress' &&
-        lr.roundIndex > (spectating ? specRecapAck : recapAck)))
+    (finalDamageMode || (payload.status === 'in_progress' && lr.roundIndex > recapAck))
 
   useEffect(() => {
     const noDeadline = payload.roundDeadlineAt == null || payload.roundDeadlineAt === ''
@@ -1204,13 +1197,13 @@ const DuelPlaySurface: FC<Props> = ({
             guestPlayerName={payload.playerNames.guest}
             playerAvatars={payload.playerAvatars}
             continueLabel={
-              finalDamageMode ? 'See match summary' : spectating ? 'Continue watching' : 'Next round'
+              finalDamageMode ? 'See match summary' : spectating ? undefined : 'Next round'
             }
             onContinue={
               finalDamageMode
                 ? onSeeMatchSummary
                 : spectating
-                  ? () => setSpecRecapAck(lr.roundIndex)
+                  ? undefined
                   : () => void dismissRecap()
             }
           />
@@ -1230,6 +1223,7 @@ const DuelPlaySurface: FC<Props> = ({
             viewerRole={role}
             onRefresh={onRefresh}
             followLiveView={followLiveView}
+            followGuessMapLive={followGuessMapLive}
             forcePinFlush={
               !spectating &&
               !payload.flags.youLocked &&

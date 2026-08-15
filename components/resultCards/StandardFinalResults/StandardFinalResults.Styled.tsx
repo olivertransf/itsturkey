@@ -45,46 +45,45 @@ const StyledStandardFinalResults = styled.div<StyledProps>`
     }
 
     .play-again-btn {
-      border-radius: var(--radius-pill, 999px);
+      border-radius: var(--radius-md);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      min-height: 52px;
+      gap: var(--space-2);
+      min-height: var(--control-height-lg);
       min-width: min(200px, 100%);
-      padding-inline: 22px;
-      font-size: 16px;
+      padding-inline: var(--space-5);
+      font-size: var(--font-body);
       font-weight: 600;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.01em;
       user-select: none;
-      background-color: var(--accent-primary, var(--mediumPurple));
-      color: #fff;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      background-color: var(--accent-primary);
+      color: var(--white);
+      border: 1px solid transparent;
+      box-shadow: var(--shadow-sm);
 
       :hover {
-        background-color: var(--accent-primary-hover, #4a8ac4);
+        background-color: var(--accent-primary-hover);
       }
     }
 
     .results-btn,
     .map-btn {
-      border-radius: var(--radius-pill, 999px);
+      border-radius: var(--radius-md);
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 52px;
-      width: 52px;
-      background-color: rgba(255, 255, 255, 0.06);
-      color: #a3a3ad;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      height: var(--control-height-lg);
+      width: var(--control-height-lg);
+      background-color: var(--control-fill);
+      color: var(--text-muted);
+      border: 1px solid var(--border-subtle);
       cursor: pointer;
-      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+      transition: background var(--duration-fast) var(--ease), color var(--duration-fast) var(--ease);
 
       &:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-        color: #e4e4e7;
-        border-color: rgba(255, 255, 255, 0.12);
+        background-color: var(--control-fill-hover);
+        color: var(--text-primary);
       }
 
       svg {

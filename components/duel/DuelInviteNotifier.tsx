@@ -19,12 +19,12 @@ type DuelInviteRow = {
 }
 
 /** Safety poll even when Pusher looks healthy — invite banners must not depend on a single push. */
-const POLL_MS_BACKUP = 15_000
-const POLL_MS_FAST = 8_000
+const POLL_MS_BACKUP = 3_000
+const POLL_MS_FAST = 2_000
 
 const pulse = keyframes`
-  0%, 100% { box-shadow: 0 0 0 0 rgba(167, 139, 250, 0.35); }
-  50% { box-shadow: 0 0 0 8px rgba(167, 139, 250, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(47, 127, 255, 0.35); }
+  50% { box-shadow: 0 0 0 8px rgba(47, 127, 255, 0); }
 `
 
 const Anchor = styled.div`
@@ -32,7 +32,7 @@ const Anchor = styled.div`
   top: 18px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 10001;
+  z-index: var(--z-toast);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -51,8 +51,8 @@ const Card = styled.div`
   pointer-events: auto;
   padding: 14px 14px 12px;
   border-radius: var(--radius-lg);
-  background: linear-gradient(165deg, rgba(36, 28, 58, 0.98), var(--bg-elevated));
-  border: 1px solid rgba(167, 139, 250, 0.55);
+  background: linear-gradient(165deg, rgba(20, 32, 56, 0.98), var(--bg-elevated));
+  border: 1px solid rgba(47, 127, 255, 0.55);
   box-shadow: var(--shadow-card), 0 12px 40px rgba(0, 0, 0, 0.45);
   color: var(--text-primary);
   animation: ${pulse} 2s ease-in-out 3;
@@ -73,9 +73,9 @@ const Tile = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(97, 63, 231, 0.28);
-  border: 1px solid rgba(167, 139, 250, 0.5);
-  color: #e9d5ff;
+  background: rgba(47, 127, 255, 0.22);
+  border: 1px solid rgba(47, 127, 255, 0.5);
+  color: #bfdbfe;
 
   svg {
     width: 22px;

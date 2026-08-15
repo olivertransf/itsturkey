@@ -28,6 +28,7 @@ export function getStreakLobbyPath(): '/streak' {
 }
 
 export const DAILY_CHALLENGE_DETAILS = {
+  _id: DAILY_CHALLENGE_ID,
   name: 'The Daily Challenge',
   description: 'A brand new challenge everyday. See how you compare!',
   previewImg: 'official15.jpg',

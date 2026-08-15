@@ -5,30 +5,36 @@ export const PickerRoot = styled.div`
   min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: var(--space-2);
 `
 
 export const ScrollRegion = styled.div<{ $maxHeight: number }>`
   max-height: ${(p) => p.$maxHeight}px;
-  overflow-y: auto;
+  overflow-y: scroll;
   overflow-x: hidden;
-  padding: 10px 10px 12px;
+  padding: 0;
   margin: 0;
   box-sizing: border-box;
+  width: 100%;
   scrollbar-gutter: stable;
 
   &::-webkit-scrollbar {
-    width: 8px;
+    width: 10px;
   }
   &::-webkit-scrollbar-thumb {
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.38);
+  }
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-pill);
   }
 `
 
 export const ColumnList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
   width: 100%;
   min-width: 0;
 `
@@ -41,53 +47,35 @@ export const MapRow = styled.button<{ $selected: boolean; $compact?: boolean }>`
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
-  padding: ${(p) => (p.$compact ? '7px 10px 7px 8px' : '9px 11px 9px 9px')};
-  min-height: ${(p) => (p.$compact ? 44 : 48)}px;
+  padding: ${(p) => (p.$compact ? '6px 8px' : '8px 10px')};
+  min-height: ${(p) => (p.$compact ? 36 : 44)}px;
   margin: 0;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   text-align: left;
   font: inherit;
   color: inherit;
-  border: 1px solid var(--border-subtle);
-  background-color: var(--bg-elevated);
-  box-shadow: ${(p) =>
-    p.$selected
-      ? `0 0 0 2px rgba(47, 127, 255, 0.48), 0 10px 28px rgba(0, 0, 0, 0.32)`
-      : `inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 4px 16px rgba(0, 0, 0, 0.22)`};
-  transition:
-    box-shadow 0.12s ease,
-    filter 0.12s ease,
-    transform 0.12s ease,
-    border-color 0.12s ease;
+  border: 1px solid ${(p) => (p.$selected ? 'rgba(47, 127, 255, 0.55)' : 'var(--border-subtle)')};
+  background-color: ${(p) => (p.$selected ? 'rgba(47, 127, 255, 0.16)' : 'var(--bg-surface)')};
 
   &:hover {
-    filter: brightness(1.05);
-    transform: translateY(-1px);
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-
-  &:active {
-    transform: translateY(0);
+    border-color: ${(p) => (p.$selected ? 'rgba(47, 127, 255, 0.55)' : 'rgba(255, 255, 255, 0.16)')};
   }
 
   &:focus-visible {
-    outline: 2px solid rgba(47, 127, 255, 0.75);
+    outline: var(--focus-ring);
     outline-offset: 2px;
   }
 `
 
 export const LeadMedia = styled.span<{ $placeholder?: boolean }>`
   flex-shrink: 0;
-  width: 44px;
-  height: 44px;
+  width: 28px;
+  height: 28px;
   border-radius: var(--radius-sm);
   overflow: hidden;
   position: relative;
-  background: ${({ $placeholder, theme }) =>
-    $placeholder
-      ? 'linear-gradient(145deg, #1e3a5f 0%, #0f766e 48%, #14532d 100%)'
-      : theme.color.gray[800]};
+  background: ${({ $placeholder }) => ($placeholder ? 'var(--bg-surface)' : 'var(--bg-elevated)')};
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 
   &::after {
@@ -103,17 +91,23 @@ export const LeadMedia = styled.span<{ $placeholder?: boolean }>`
 
 export const LeadFlag = styled.span`
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
+  width: 28px;
+  height: 28px;
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  font-size: 16px;
   line-height: 1;
-  background: ${({ theme }) => theme.color.gray[800]};
+  background: var(--bg-elevated);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
   user-select: none;
+`
+
+export const LeadInitials = styled(LeadFlag)`
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 `
 
 export const TextCol = styled.span`
@@ -121,25 +115,25 @@ export const TextCol = styled.span`
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
 `
 
 export const RowTitle = styled.span`
-  font-size: 14px;
+  font-size: var(--font-meta);
   font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.25;
-  color: ${({ theme }) => theme.color.gray[100]};
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 `
 
 export const RowDesc = styled.span`
-  font-size: 11px;
+  font-size: var(--font-compact);
   font-weight: 400;
-  line-height: 1.35;
-  color: ${({ theme }) => theme.color.gray[500]};
+  line-height: 1.3;
+  color: var(--text-muted);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -149,48 +143,65 @@ export const RowDesc = styled.span`
 
 export const CheckWrap = styled.span`
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--palette-accent);
 
   .map-picker-check {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
   }
 `
 
 export const LoadingHint = styled.p`
-  margin: 8px 0 0;
-  font-size: 14px;
-  color: #a1a1aa;
+  margin: 0;
+  font-size: var(--font-meta);
+  color: var(--text-muted);
 `
 
 export const SearchWrap = styled.div`
-  margin: 0 0 10px;
   width: 100%;
   min-width: 0;
+  box-sizing: border-box;
+  padding-right: 10px;
+
+  .search-field {
+    position: relative;
+    width: 100%;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+    pointer-events: none;
+  }
 
   .map-picker-search {
     width: 100%;
+    height: var(--control-height-sm);
     box-sizing: border-box;
-    padding: 10px 12px;
-    border-radius: var(--radius-md);
+    padding: 0 8px 0 30px;
+    border-radius: var(--radius-sm);
     border: 1px solid var(--border-subtle);
     background: var(--bg-surface);
     color: var(--text-primary);
-    font-size: 14px;
-    outline: none;
+    font-size: var(--font-meta);
 
     &::placeholder {
       color: var(--text-muted);
     }
 
-    &:focus {
-      border-color: rgba(47, 127, 255, 0.55);
-      box-shadow: 0 0 0 2px rgba(47, 127, 255, 0.2);
+    &:focus-visible {
+      outline: var(--focus-ring);
+      outline-offset: 2px;
     }
   }
 `
