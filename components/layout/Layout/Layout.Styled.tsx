@@ -53,8 +53,10 @@ const StyledLayout = styled.div`
   .app-hero {
     display: flex;
     justify-content: center;
+    align-items: center;
     width: 100%;
-    padding: var(--space-7) var(--page-gutter) var(--space-4);
+    min-height: clamp(8rem, 22vh, 14rem);
+    padding: clamp(3rem, 10vh, 6rem) var(--page-gutter) clamp(2rem, 6vh, 4rem);
     box-sizing: border-box;
   }
 
