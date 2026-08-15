@@ -169,7 +169,7 @@ const MultiLobbyPage: NextPage = () => {
                   value={mapField}
                   onChange={setMapField}
                   loading={mapsLoading}
-                  maxHeight={280}
+                  maxHeight={220}
                   showDescriptions={false}
                   scrollClassName="play-filter-grid-scroll"
                 />

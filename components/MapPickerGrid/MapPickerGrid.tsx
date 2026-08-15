@@ -67,20 +67,8 @@ const MapPickerGrid: FC<Props> = ({
     <PickerRoot>
       {showSearch ? (
         <SearchWrap>
-          <div style={{ position: 'relative' }}>
-            <SearchIcon
-              aria-hidden
-              style={{
-                position: 'absolute',
-                left: 12,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: 18,
-                height: 18,
-                color: 'var(--text-muted)',
-                pointerEvents: 'none',
-              }}
-            />
+          <div className="search-field">
+            <SearchIcon className="search-icon" aria-hidden />
             <input
               type="search"
               className="map-picker-search"
@@ -90,7 +78,6 @@ const MapPickerGrid: FC<Props> = ({
               onChange={(e) => setQuery(e.target.value)}
               autoComplete="off"
               spellCheck={false}
-              style={{ paddingLeft: 38 }}
             />
           </div>
         </SearchWrap>
@@ -132,8 +119,8 @@ const MapPickerGrid: FC<Props> = ({
                       <Image
                         src={thumbSrc}
                         alt=""
-                        width={40}
-                        height={40}
+                        width={28}
+                        height={28}
                         style={{ objectFit: 'cover' }}
                       />
                     </LeadMedia>
