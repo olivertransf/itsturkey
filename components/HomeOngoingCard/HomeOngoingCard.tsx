@@ -1,13 +1,14 @@
 import Link from 'next/link'
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { mailman } from '@utils/helpers'
+import { mailman, showToast } from '@utils/helpers'
 import {
   hideOngoingGame,
   isOngoingGameHidden,
   readHiddenOngoingIds,
   unhideAllOngoingGames,
 } from '@utils/helpers/hiddenOngoingGames'
+import { formatMonthDayYearTime } from '@utils/dateHelpers'
 import { COUNTRY_STREAK_DETAILS, DAILY_CHALLENGE_DETAILS } from '@utils/constants/random'
 import StyledHomeOngoingCard from './HomeOngoingCard.Styled'
 
@@ -20,10 +21,27 @@ type UnfinishedGame = {
   isDailyChallenge?: boolean
   mapName?: string
   mapDetails?: { name?: string }[]
+  createdAt?: Date | string
+  liveView?: { updatedAt?: Date | string }
+  guessMapLive?: { updatedAt?: Date | string }
 }
 
-const VISIBLE_LIMIT = 5
+const VISIBLE_LIMIT = 2
 const MAX_PAGES = 5
+
+const toDate = (value: Date | string | undefined) => {
+  if (!value) return undefined
+  const date = value instanceof Date ? value : new Date(value)
+  return Number.isNaN(date.getTime()) ? undefined : date
+}
+
+const lastUsedAt = (game: UnfinishedGame) => {
+  const candidates = [game.liveView?.updatedAt, game.guessMapLive?.updatedAt, game.createdAt]
+    .map(toDate)
+    .filter((date): date is Date => Boolean(date))
+  if (candidates.length === 0) return undefined
+  return candidates.reduce((latest, date) => (date > latest ? date : latest))
+}
 
 const mapLabel = (game: UnfinishedGame) => {
   if (game.mode === 'streak') return COUNTRY_STREAK_DETAILS.name
@@ -37,6 +55,11 @@ const roundLabel = (game: UnfinishedGame) => {
   const total = game.totalRounds
   if (typeof total === 'number' && total > 0) return `Round ${game.round ?? 1} of ${total}`
   return `Round ${game.round ?? 1}`
+}
+
+const metaLabel = (game: UnfinishedGame) => {
+  const when = formatMonthDayYearTime(lastUsedAt(game))
+  return when ? `${roundLabel(game)} · ${when}` : roundLabel(game)
 }
 
 const HomeOngoingCard: FC = () => {
@@ -95,6 +118,7 @@ const HomeOngoingCard: FC = () => {
     hideOngoingGame(id)
     const nextHidden = Array.from(new Set([...hiddenIds, String(id)]))
     setHiddenIds(nextHidden)
+    showToast('success', 'Successfully hidden')
     const remaining = games.filter((game) => !nextHidden.includes(String(game._id)))
     if (remaining.length === 0 && hasMore) {
       void load()
@@ -125,7 +149,7 @@ const HomeOngoingCard: FC = () => {
               <Link href={`/game/${game._id}`} className="ongoing-row">
                 <div className="ongoing-copy">
                   <span className="ongoing-name">{mapLabel(game)}</span>
-                  <span className="ongoing-meta">{roundLabel(game)}</span>
+                  <span className="ongoing-meta">{metaLabel(game)}</span>
                 </div>
                 <span className="ongoing-resume">Resume</span>
               </Link>

@@ -92,6 +92,9 @@ const StyledHomeOngoingCard = styled.section`
     font-size: var(--font-meta);
     line-height: 1.35;
     color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .ongoing-resume {

@@ -55,8 +55,10 @@ const OngoingGamesPage: NextPage = () => {
   const toggleHidden = (gameId: string) => {
     if (isOngoingGameHidden(gameId)) {
       unhideOngoingGame(gameId)
+      showToast('success', 'Shown on Continue')
     } else {
       hideOngoingGame(gameId)
+      showToast('success', 'Successfully hidden')
     }
     refreshHidden()
   }
