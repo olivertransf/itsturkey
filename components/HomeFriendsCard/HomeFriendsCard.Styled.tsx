@@ -100,11 +100,7 @@ const StyledHomeFriendsCard = styled.div`
     display: flex;
     flex-direction: column;
     gap: var(--space-1);
-    max-height: min(42vh, 420px);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+    overflow: visible;
   }
 
   .friends-card-row {

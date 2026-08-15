@@ -54,22 +54,11 @@ const StyledHomePage = styled.div`
 
   .home-friends-rail {
     min-width: 0;
-    position: sticky;
-    top: var(--space-5);
-    align-self: start;
-    max-height: calc(100vh - var(--space-8));
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
 
     @media (max-width: 960px) {
-      position: static;
-      max-height: none;
-      overflow: visible;
       order: -1;
     }
   }
