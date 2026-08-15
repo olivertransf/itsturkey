@@ -79,8 +79,12 @@ const StyledHomePage = styled.div`
   }
 
   .home-maps-grid .home-row-card {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: var(--space-3);
     min-height: 96px;
-    padding: 22px 16px;
+    padding: 16px;
     border: 0;
     border-radius: 0;
     background: transparent;
@@ -91,6 +95,14 @@ const StyledHomePage = styled.div`
     &:hover {
       background: var(--bg-elevated);
     }
+  }
+
+  .home-maps-grid .home-row-title {
+    white-space: normal;
+  }
+
+  .home-maps-grid .home-row-actions {
+    justify-content: flex-start;
   }
 
   .home-maps-grid > *:nth-child(2n) .home-row-card {

@@ -2,12 +2,13 @@ import styled from 'styled-components'
 
 const StyledHomeModeTile = styled.article`
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: var(--space-4);
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: var(--space-3);
   min-width: 0;
   min-height: 96px;
-  padding: 22px 16px;
+  padding: 16px;
   background: transparent;
   border: 0;
   border-right: 1px solid var(--divider-line);
@@ -23,21 +24,18 @@ const StyledHomeModeTile = styled.article`
 
   .mode-title {
     margin: 0;
-    font-size: var(--font-body);
-    font-weight: 600;
-    letter-spacing: -0.02em;
+    font-size: var(--font-title);
+    font-weight: 700;
+    letter-spacing: var(--tracking-title);
     color: var(--text-primary);
-    line-height: 1.25;
+    line-height: 1.2;
   }
 
   .mode-desc {
     margin: 0;
     font-size: var(--font-meta);
-    line-height: 1.35;
+    line-height: 1.4;
     color: var(--text-muted);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   .mode-actions {
@@ -52,7 +50,7 @@ const StyledHomeModeTile = styled.article`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: var(--control-height-sm);
+    height: var(--control-height-md);
     padding: 0 var(--space-3);
     border-radius: var(--radius-sm);
     font-size: var(--font-meta);
