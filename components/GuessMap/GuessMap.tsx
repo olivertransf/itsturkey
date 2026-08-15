@@ -13,6 +13,7 @@ import { parseEquitableContinentMapKey } from '@utils/helpers/equitableContinent
 import { parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
 import { getGuessMapIdleSize, GUESS_MAP_HOVER_UNIFORM_SCALE, GUESS_MAP_VMIN_MULTIPLIER } from '@utils/helpers/getGuessMapSize'
 import type { GuessMapLive } from '@utils/helpers/guessMapLive'
+import { locationFromGuessMapClick } from '@utils/helpers/guessMapClick'
 import { StyledGuessMap } from './'
 import { LockOpenIcon, LockClosedIcon } from '@heroicons/react/solid'
 
@@ -218,7 +219,7 @@ const GuessMap: FC<Props> = ({
 
     const { map } = googleMapsConfig
 
-    map.addListener('click', (e: google.maps.MapMouseEvent) => addMarker(e))
+    map.addListener('click', (e: google.maps.MapMouseEvent) => placePin(e))
   }
 
   const handleResetMapState = () => {
@@ -259,11 +260,10 @@ const GuessMap: FC<Props> = ({
     closeMobileMap()
   }
 
-  const addMarker = (e: google.maps.MapMouseEvent) => {
+  const placePin = (event: { lat?: number; lng?: number; latLng?: google.maps.LatLng | null }) => {
     if (locked) return
-    if (!e.latLng) return
-
-    const location = { lat: e.latLng.lat(), lng: e.latLng.lng() }
+    const location = locationFromGuessMapClick(event)
+    if (!location) return
 
     setCurrGuess(location)
     setMarker(location)
@@ -359,6 +359,7 @@ const GuessMap: FC<Props> = ({
               if (!map || !maps) return
               setGoogleMapsConfig({ isLoaded: true, map, mapsApi: maps })
             }}
+            onClick={({ lat, lng }) => placePin({ lat, lng })}
             options={getGuessMapOptions(gameData.gameSettings)}
           >
             {marker && (

@@ -69,6 +69,8 @@ type Props = {
   watchers?: WatcherChip[]
   hideExit?: boolean
   hideGuessMap?: boolean
+  /** When false, keep GuessMap mounted but ignore pointer events (MultiGuessr inactive panels). */
+  guessMapInteractive?: boolean
   compactStatus?: boolean
 }
 
@@ -93,6 +95,7 @@ const Streetview: FC<Props> = ({
   watchers = [],
   hideExit,
   hideGuessMap = false,
+  guessMapInteractive = true,
   compactStatus = false,
 }) => {
   const router = useRouter()
@@ -792,7 +795,10 @@ const Streetview: FC<Props> = ({
           )}
 
           {!hideGuessMap && gameData.mode === 'standard' && (
-            <div data-streetview-ui>
+            <div
+              data-streetview-ui
+              style={guessMapInteractive ? undefined : { visibility: 'hidden', pointerEvents: 'none' }}
+            >
               <GuessMap
                 currGuess={currGuess}
                 setCurrGuess={updateCurrGuess}
@@ -804,7 +810,7 @@ const Streetview: FC<Props> = ({
                 resetMap={view === 'Game'}
                 gameData={gameData}
                 duelLayout={isDuel}
-                guessLocked={(isDuel && duelGuessLocked) || isSpectator}
+                guessLocked={(isDuel && duelGuessLocked) || isSpectator || !guessMapInteractive}
                 submitLabel={isDuel ? 'Lock in' : undefined}
                 isSpectator={isSpectator}
                 followGuessMapLive={isSpectator ? followGuessMapLive : null}
@@ -814,7 +820,10 @@ const Streetview: FC<Props> = ({
           )}
 
           {!hideGuessMap && gameData.mode === 'streak' && (
-            <div data-streetview-ui>
+            <div
+              data-streetview-ui
+              style={guessMapInteractive ? undefined : { visibility: 'hidden', pointerEvents: 'none' }}
+            >
               <StreaksGuessMap
                 countryStreakGuess={countryStreakGuess}
                 setCountryStreakGuess={setCountryStreakGuess}
@@ -832,7 +841,7 @@ const Streetview: FC<Props> = ({
             </div>
           )}
 
-          {!isSpectator && !hideGuessMap ? (
+          {!isSpectator && !hideGuessMap && guessMapInteractive ? (
             <button
               data-streetview-ui
               className="toggle-map-button"

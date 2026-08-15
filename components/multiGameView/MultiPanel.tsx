@@ -5,6 +5,7 @@ import { GameViewType } from '@types'
 import { DEFAULT_TOTAL_ROUNDS } from '@utils/constants/gameModes'
 import { formatLargeNumber, mailman, normalizeGuessMapLive, normalizeStreetViewLiveView } from '@utils/helpers'
 import type { GuessMapLive } from '@utils/helpers/guessMapLive'
+import { multiPanelGuessMap } from '@utils/helpers/multiGuessMap'
 import type { StreetViewLiveView } from '@utils/helpers/streetViewLiveView'
 import { StyledMultiPanel } from './MultiGameView.Styled'
 
@@ -34,6 +35,7 @@ const MultiPanel: FC<Props> = ({
   const [panelGame, setPanelGame] = useState(game)
   const [view, setView] = useState<GameViewType>('Game')
   const [panelState, setPanelState] = useState<PanelState>(game.state === 'finished' ? 'done' : 'playing')
+  const [hasBeenActive, setHasBeenActive] = useState(isActive)
   const latestGameRef = useRef(game)
   const roundStartedAtRef = useRef(new Date().getTime())
   const cooldownTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -43,6 +45,7 @@ const MultiPanel: FC<Props> = ({
   const isPanelDone = isSpectator ? panelGame.state === 'finished' : panelState === 'done'
   const panelId = String(panelGame._id ?? panelIndex)
   const playable = !isPanelDone && panelState === 'playing'
+  const guessMap = multiPanelGuessMap({ isActive, playable, isPanelDone, hasBeenActive })
 
   const followLiveView = useMemo(
     () => (isSpectator ? normalizeStreetViewLiveView(panelGame.liveView) : null),
@@ -66,6 +69,10 @@ const MultiPanel: FC<Props> = ({
   useEffect(() => {
     onPlayableChange?.(panelId, playable)
   }, [onPlayableChange, panelId, playable])
+
+  useEffect(() => {
+    if (isActive) setHasBeenActive(true)
+  }, [isActive])
 
   useEffect(() => {
     return () => {
@@ -136,7 +143,8 @@ const MultiPanel: FC<Props> = ({
             getGuessTime={() => (new Date().getTime() - roundStartedAtRef.current) / 1000}
             isSpectator={isSpectator}
             hideExit
-            hideGuessMap={!isActive || !playable}
+            hideGuessMap={guessMap.hideGuessMap}
+            guessMapInteractive={guessMap.interactive}
             compactStatus
             onLiveViewChange={
               isSpectator || !panelGame._id
