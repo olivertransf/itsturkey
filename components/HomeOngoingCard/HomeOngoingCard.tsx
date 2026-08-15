@@ -3,8 +3,8 @@ import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { compareLastUsedDesc, mailman, pickLastUsedAt, showToast } from '@utils/helpers'
 import {
+  excludeHiddenOngoingGames,
   hideOngoingGame,
-  isOngoingGameHidden,
   normalizeOngoingGameId,
   readHiddenOngoingIds,
   unhideAllOngoingGames,
@@ -59,12 +59,17 @@ const HomeOngoingCard: FC = () => {
   const [hasMore, setHasMore] = useState(false)
   const [hiddenTick, setHiddenTick] = useState(0)
   const loadSeq = useRef(0)
+  const hiddenIdsRef = useRef<string[]>([])
   const isAuthed = status === 'authenticated' && Boolean(session?.user?.id)
 
-  const hiddenIds = useMemo(() => readHiddenOngoingIds(), [hiddenTick])
+  const hiddenIds = useMemo(() => {
+    const ids = readHiddenOngoingIds()
+    hiddenIdsRef.current = ids
+    return ids
+  }, [hiddenTick])
 
-  const bumpHidden = useCallback(() => {
-    setHiddenTick((n) => n + 1)
+  const applyHidden = useCallback((list: UnfinishedGame[]) => {
+    return excludeHiddenOngoingGames(list, hiddenIdsRef.current)
   }, [])
 
   const load = useCallback(async () => {
@@ -74,6 +79,7 @@ const HomeOngoingCard: FC = () => {
       return
     }
 
+    hiddenIdsRef.current = readHiddenOngoingIds()
     const collected: UnfinishedGame[] = []
     let page = 0
     let more = true
@@ -87,56 +93,44 @@ const HomeOngoingCard: FC = () => {
       }
       collected.push(...(res.data as UnfinishedGame[]))
       more = Boolean(res.hasMore)
-      const visibleCount = collected.filter((game) => !isOngoingGameHidden(gameId(game))).length
-      if (visibleCount >= VISIBLE_LIMIT) break
+      if (applyHidden(collected).length >= VISIBLE_LIMIT) break
       page += 1
     }
 
     if (seq !== loadSeq.current) return
-    const nextVisible = collected.filter((game) => !isOngoingGameHidden(gameId(game)))
+    hiddenIdsRef.current = readHiddenOngoingIds()
+    const nextVisible = applyHidden(collected)
     setGames(nextVisible)
     setHasMore(more && nextVisible.length > 0)
-    bumpHidden()
-  }, [isAuthed, bumpHidden])
+    setHiddenTick((n) => n + 1)
+  }, [isAuthed, applyHidden])
 
   useEffect(() => {
+    hiddenIdsRef.current = readHiddenOngoingIds()
+    setHiddenTick((n) => n + 1)
     void load()
   }, [load])
 
   const visible = useMemo(
-    () =>
-      games
-        .filter((game) => {
-          const id = gameId(game)
-          return id && !hiddenIds.includes(id)
-        })
-        .sort(compareLastUsedDesc)
-        .slice(0, VISIBLE_LIMIT),
-    [games, hiddenIds]
+    () => applyHidden(games).sort(compareLastUsedDesc).slice(0, VISIBLE_LIMIT),
+    [games, hiddenIds, applyHidden]
   )
 
   const hide = (id: unknown) => {
     const normalized = normalizeOngoingGameId(id)
     if (!normalized) return
     hideOngoingGame(normalized)
-    const nextHidden = readHiddenOngoingIds()
-    setGames((prev) => {
-      const next = prev.filter((game) => {
-        const id = gameId(game)
-        return Boolean(id) && id !== normalized && !nextHidden.includes(id)
-      })
-      if (next.length < VISIBLE_LIMIT) {
-        void load()
-      }
-      return next
-    })
-    bumpHidden()
+    hiddenIdsRef.current = Array.from(new Set([...hiddenIdsRef.current, normalized]))
+    loadSeq.current += 1
+    setGames((prev) => applyHidden(prev).filter((game) => gameId(game) !== normalized))
+    setHiddenTick((n) => n + 1)
     showToast('success', 'Successfully hidden')
   }
 
   const showHidden = () => {
     unhideAllOngoingGames()
-    bumpHidden()
+    hiddenIdsRef.current = []
+    setHiddenTick((n) => n + 1)
     void load()
   }
 

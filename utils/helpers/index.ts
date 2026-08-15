@@ -21,6 +21,7 @@ export { default as formatApproxLocations } from './formatApproxLocations'
 export { default as formatLargeNumber } from './formatLargeNumber'
 export { default as formatOngoingScore } from './formatOngoingScore'
 export {
+  excludeHiddenOngoingGames,
   hideOngoingGame,
   isOngoingGameHidden,
   normalizeOngoingGameId,

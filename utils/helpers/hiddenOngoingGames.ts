@@ -64,3 +64,12 @@ export const unhideAllOngoingGames = () => {
   if (typeof window === 'undefined') return
   window.localStorage.removeItem(STORAGE_KEY)
 }
+
+export const excludeHiddenOngoingGames = <T extends { _id?: unknown }>(
+  games: T[],
+  hiddenIds: string[] = readIds()
+) =>
+  games.filter((game) => {
+    const id = normalizeOngoingGameId(game._id)
+    return Boolean(id) && !hiddenIds.includes(id)
+  })
