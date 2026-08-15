@@ -8,7 +8,7 @@ const StyledProfilePage = styled.div`
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: var(--space-3);
     padding: var(--space-4);
     border-radius: var(--radius-xl);
     border: var(--border-default);
@@ -16,50 +16,30 @@ const StyledProfilePage = styled.div`
   }
 
   .profile-shell-head {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    display: flex;
     align-items: center;
-    column-gap: var(--space-3);
-  }
-
-  .profile-shell-head > *:first-child {
-    justify-self: start;
-  }
-
-  .profile-shell-title {
-    grid-column: 2;
-    margin: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-2);
-    min-width: 0;
-    text-align: center;
-    font-size: var(--font-title);
-    font-weight: 700;
-    letter-spacing: var(--tracking-title);
-    line-height: 1.2;
-    color: var(--text-primary);
-
-    span {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-  }
-
-  .profile-shell-title-input {
-    grid-column: 2;
-    width: min(280px, 100%);
-    text-align: center;
+    justify-content: space-between;
+    gap: var(--space-3);
   }
 
   .profile-shell-actions {
-    justify-self: end;
     display: flex;
     align-items: center;
     gap: var(--space-3);
-    min-height: 1em;
+  }
+
+  .profile-body {
+    display: grid;
+    gap: var(--space-4);
+    min-width: 0;
+  }
+
+  @media (min-width: 800px) {
+    .profile-body {
+      grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+      align-items: start;
+      gap: var(--space-5);
+    }
   }
 
   .profile-card-link {
@@ -84,7 +64,14 @@ const StyledProfilePage = styled.div`
 
   .profile-identity {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
+    gap: var(--space-4);
+    min-width: 0;
+  }
+
+  .profile-main {
+    display: flex;
+    flex-direction: column;
     gap: var(--space-3);
     min-width: 0;
   }
@@ -101,10 +88,10 @@ const StyledProfilePage = styled.div`
 
   .profile-avatar-edit {
     position: absolute;
-    top: -4px;
-    right: -4px;
-    width: 22px;
-    height: 22px;
+    top: -2px;
+    right: -2px;
+    width: 26px;
+    height: 26px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -125,6 +112,25 @@ const StyledProfilePage = styled.div`
     display: flex;
     flex-direction: column;
     gap: var(--space-1);
+  }
+
+  .profile-name {
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+    font-size: var(--font-title);
+    font-weight: 700;
+    letter-spacing: var(--tracking-title);
+    line-height: 1.2;
+    color: var(--text-primary);
+
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 
   .profile-bio {

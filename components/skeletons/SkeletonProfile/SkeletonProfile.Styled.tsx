@@ -1,15 +1,32 @@
 import styled from 'styled-components'
 
 const StyledSkeletonProfile = styled.div`
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: var(--space-4);
   width: 100%;
+
+  @media (min-width: 800px) {
+    grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+    align-items: start;
+  }
 
   .skel-identity {
     display: flex;
     align-items: center;
+    gap: var(--space-4);
+  }
+
+  .skel-copy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .skel-main {
+    display: flex;
+    flex-direction: column;
     gap: var(--space-3);
+    min-width: 0;
   }
 
   .skel-tabs {

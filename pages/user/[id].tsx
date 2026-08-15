@@ -210,29 +210,6 @@ const ProfilePage: NextPage = () => {
         <section className="profile-shell">
           <header className="profile-shell-head">
             <PageBackLink href="/" label="Back" compact />
-            {loading || !userDetails ? (
-              <h1 className="profile-shell-title">Profile</h1>
-            ) : isEditing ? (
-              <input
-                className="profile-name-input profile-shell-title-input"
-                type="text"
-                value={newProfileValues?.name}
-                onChange={(e) =>
-                  setNewProfileValues({
-                    name: e.target.value,
-                    bio: newProfileValues?.bio,
-                    avatar: newProfileValues?.avatar,
-                  })
-                }
-                maxLength={30}
-                aria-label="Display name"
-              />
-            ) : (
-              <h1 className="profile-shell-title">
-                <span>{userDetails.name}</span>
-                {userDetails.isAdmin ? <VerifiedBadge /> : null}
-              </h1>
-            )}
             <div className="profile-shell-actions">
               {userDetails && isThisUsersProfile() && !isEditing ? (
                 <button type="button" className="profile-card-link" onClick={() => setIsEditing(true)}>
@@ -265,7 +242,7 @@ const ProfilePage: NextPage = () => {
           {loading || !userStats || !userDetails ? (
             <SkeletonProfile />
           ) : (
-            <>
+            <div className="profile-body">
               <div className="profile-identity">
                 {isEditing ? (
                   <button
@@ -278,7 +255,7 @@ const ProfilePage: NextPage = () => {
                       type="user"
                       src={newProfileValues?.avatar?.emoji}
                       backgroundColor={newProfileValues?.avatar?.color}
-                      size={44}
+                      size={80}
                     />
                     <span className="profile-avatar-edit">
                       <CameraIcon />
@@ -289,10 +266,31 @@ const ProfilePage: NextPage = () => {
                     type="user"
                     src={userDetails.avatar?.emoji}
                     backgroundColor={userDetails.avatar?.color}
-                    size={44}
+                    size={80}
                   />
                 )}
                 <div className="profile-copy">
+                  {isEditing ? (
+                    <input
+                      className="profile-name-input"
+                      type="text"
+                      value={newProfileValues?.name}
+                      onChange={(e) =>
+                        setNewProfileValues({
+                          name: e.target.value,
+                          bio: newProfileValues?.bio,
+                          avatar: newProfileValues?.avatar,
+                        })
+                      }
+                      maxLength={30}
+                      aria-label="Display name"
+                    />
+                  ) : (
+                    <h1 className="profile-name">
+                      <span>{userDetails.name}</span>
+                      {userDetails.isAdmin ? <VerifiedBadge /> : null}
+                    </h1>
+                  )}
                   {isEditing ? (
                     <textarea
                       className="profile-bio-input"
@@ -316,6 +314,7 @@ const ProfilePage: NextPage = () => {
                 </div>
               </div>
 
+              <div className="profile-main">
               <div className="profile-tabs">
                 <Tabs>
                   <Tab isActive={selectedTab === 'stats'} onClick={() => setSelectedTab('stats')}>
@@ -442,7 +441,8 @@ const ProfilePage: NextPage = () => {
                   <HomeFriendsCard embedded />
                 </section>
               ) : null}
-            </>
+              </div>
+            </div>
           )}
         </section>
       </WidthController>
