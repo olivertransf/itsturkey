@@ -13,8 +13,9 @@ import { getStreetviewOptions } from '@utils/constants/googleMapOptions'
 import { KEY_CODES } from '@utils/constants/keyCodes'
 import { WatchersIndicator } from '@components/WatchersIndicator'
 import type { WatcherChip } from '@components/WatchersIndicator'
-import { getMapsKey, googleMapLoaderAsync, mailman, showToast } from '@utils/helpers'
+import { mailman, showToast } from '@utils/helpers'
 import type { StreetViewLiveView } from '@utils/helpers/streetViewLiveView'
+import type { GuessMapLive } from '@utils/helpers/guessMapLive'
 import { attachStreetViewPanZoomLock } from '@utils/helpers/lockStreetViewPanZoom'
 import type { LockedStreetViewPose } from '@utils/helpers/lockStreetViewPanZoom'
 import {
@@ -64,6 +65,8 @@ type Props = {
   onLiveViewChange?: (view: StreetViewLiveView) => void
   /** Spectator: force-follow this camera pose. */
   followLiveView?: StreetViewLiveView | null
+  onGuessMapLiveChange?: (live: GuessMapLive) => void
+  followGuessMapLive?: GuessMapLive | null
   /** Friends currently watching this match (shown to the player). */
   watchers?: WatcherChip[]
 }
@@ -84,6 +87,8 @@ const Streetview: FC<Props> = ({
   isSpectator = false,
   onLiveViewChange,
   followLiveView = null,
+  onGuessMapLiveChange,
+  followGuessMapLive = null,
   watchers = [],
 }) => {
   const router = useRouter()
@@ -172,27 +177,6 @@ const Streetview: FC<Props> = ({
       lockedPoseRef.current = null
     }
   }, [googleMapsConfig])
-
-  // Spectators hide GuessMap, so bootstrap Maps JS here for Street View.
-  useEffect(() => {
-    if (!isSpectator || googleMapsConfig) return
-
-    let cancelled = false
-    void googleMapLoaderAsync({
-      ...getMapsKey(user.mapsAPIKey, { allowFallback: false }),
-    }).then((mapsApi) => {
-      if (cancelled) return
-      setGoogleMapsConfig({
-        isLoaded: true,
-        map: null as unknown as google.maps.Map,
-        mapsApi,
-      })
-    })
-
-    return () => {
-      cancelled = true
-    }
-  }, [isSpectator, googleMapsConfig, user.mapsAPIKey])
 
   useEffect(() => {
     if (!googleMapsConfig) return
@@ -791,37 +775,43 @@ const Streetview: FC<Props> = ({
             </div>
           )}
 
-          {gameData.mode === 'standard' && !(isSpectator && !isDuel) && (
+          {gameData.mode === 'standard' && (
             <div data-streetview-ui>
               <GuessMap
                 currGuess={currGuess}
                 setCurrGuess={updateCurrGuess}
                 handleSubmitGuess={handleSubmitGuess}
-                mobileMapOpen={mobileMapOpen}
+                mobileMapOpen={followGuessMapLive?.mobileOpen ?? mobileMapOpen}
                 closeMobileMap={() => setMobileMapOpen(false)}
                 googleMapsConfig={googleMapsConfig}
                 setGoogleMapsConfig={setGoogleMapsConfig}
                 resetMap={view === 'Game'}
                 gameData={gameData}
                 duelLayout={isDuel}
-                guessLocked={isDuel && duelGuessLocked}
+                guessLocked={(isDuel && duelGuessLocked) || isSpectator}
                 submitLabel={isDuel ? 'Lock in' : undefined}
+                isSpectator={isSpectator}
+                followGuessMapLive={isSpectator ? followGuessMapLive : null}
+                onGuessMapLiveChange={isSpectator ? undefined : onGuessMapLiveChange}
               />
             </div>
           )}
 
-          {gameData.mode === 'streak' && !isSpectator && (
+          {gameData.mode === 'streak' && (
             <div data-streetview-ui>
               <StreaksGuessMap
                 countryStreakGuess={countryStreakGuess}
                 setCountryStreakGuess={setCountryStreakGuess}
                 handleSubmitGuess={handleSubmitGuess}
-                mobileMapOpen={mobileMapOpen}
+                mobileMapOpen={followGuessMapLive?.mobileOpen ?? mobileMapOpen}
                 closeMobileMap={() => setMobileMapOpen(false)}
                 googleMapsConfig={googleMapsConfig}
                 setGoogleMapsConfig={setGoogleMapsConfig}
                 resetMap={view === 'Game'}
                 gameData={gameData}
+                isSpectator={isSpectator}
+                followGuessMapLive={isSpectator ? followGuessMapLive : null}
+                onGuessMapLiveChange={isSpectator ? undefined : onGuessMapLiveChange}
               />
             </div>
           )}

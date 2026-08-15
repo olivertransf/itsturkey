@@ -13,6 +13,8 @@ import { getGuessMapOptions } from '@utils/constants/googleMapOptions'
 import { POLYGON_STYLES } from '@utils/constants/polygonStyles'
 import { formatPolygon, getMapsKey, googleMapLoaderAsync } from '@utils/helpers'
 import useGuessMap from '@utils/hooks/useGuessMap'
+import type { GuessMapLive } from '@utils/helpers/guessMapLive'
+import { getGuessMapIdleSize, GUESS_MAP_HOVER_UNIFORM_SCALE, GUESS_MAP_VMIN_MULTIPLIER } from '@utils/helpers/getGuessMapSize'
 import { StyledStreaksGuessMap } from './'
 import { LockOpenIcon, LockClosedIcon } from '@heroicons/react/solid'
 
@@ -26,6 +28,9 @@ type Props = {
   setGoogleMapsConfig: (googleMapsConfig: GoogleMapsConfigType) => void
   resetMap?: boolean
   gameData: Game
+  isSpectator?: boolean
+  followGuessMapLive?: GuessMapLive | null
+  onGuessMapLiveChange?: (live: GuessMapLive) => void
 }
 
 const StreaksGuessMap: FC<Props> = ({
@@ -38,6 +43,9 @@ const StreaksGuessMap: FC<Props> = ({
   setGoogleMapsConfig,
   resetMap,
   gameData,
+  isSpectator = false,
+  followGuessMapLive = null,
+  onGuessMapLiveChange,
 }) => {
   const [selectedCountryName, setSelectedCountryName] = useState('')
 
@@ -54,6 +62,8 @@ const StreaksGuessMap: FC<Props> = ({
     expandAndPin,
     changeMapSize,
     resetGuessMapDimensions,
+    setMapWidth,
+    setMapHeight,
   } = useGuessMap()
 
   const user = useAppSelector((state) => state.user)
@@ -61,8 +71,13 @@ const StreaksGuessMap: FC<Props> = ({
 
   const mapExpanded = hovering || isPinned || Boolean(mobileMapOpen)
   const tabletTouch = chromeMode === 'tabletTouch'
-  const showDesktopControls = mapExpanded && chromeMode !== 'phone'
+  const showDesktopControls = mapExpanded && chromeMode !== 'phone' && !isSpectator
   const wrapperRef = useRef<HTMLDivElement | null>(null)
+  const publishTimerRef = useRef<number | null>(null)
+  const onGuessMapLiveChangeRef = useRef(onGuessMapLiveChange)
+  onGuessMapLiveChangeRef.current = onGuessMapLiveChange
+  const lastFollowPinRef = useRef<string>('')
+  const lastClickRef = useRef<{ lat: number; lng: number } | null>(null)
 
   useEffect(() => {
     handleSetupMap()
@@ -93,7 +108,7 @@ const StreaksGuessMap: FC<Props> = ({
   }, [tabletTouch, mapExpanded, mobileMapOpen, setHovering, setIsPinned])
 
   const handleSetupMap = async () => {
-    if (!googleMapsConfig) return
+    if (!googleMapsConfig?.map || isSpectator) return
 
     const { map } = googleMapsConfig
 
@@ -103,7 +118,8 @@ const StreaksGuessMap: FC<Props> = ({
   }
 
   const handleResetMapState = () => {
-    if (!resetMap || !googleMapsConfig) return
+    if (isSpectator) return
+    if (!resetMap || !googleMapsConfig?.map) return
 
     const { map } = googleMapsConfig
 
@@ -122,6 +138,7 @@ const StreaksGuessMap: FC<Props> = ({
     if (!e.latLng) return
 
     const clickedCoords = [e.latLng.lng(), e.latLng.lat()]
+    lastClickRef.current = { lat: e.latLng.lat(), lng: e.latLng.lng() }
     const clickedPoint = formatPolygon(clickedCoords, {}, 'Point')
 
     Object.entries(countryBounds).map(([code, bounds]) => {
@@ -151,6 +168,99 @@ const StreaksGuessMap: FC<Props> = ({
       })
   }
 
+  useEffect(() => {
+    if (isSpectator || !onGuessMapLiveChange || !googleMapsConfig?.map) return
+    const map = googleMapsConfig.map
+    const publish = () => {
+      const center = map.getCenter()
+      const zoom = map.getZoom()
+      if (!center || zoom == null) return
+      const payload: GuessMapLive = {
+        lat: center.lat(),
+        lng: center.lng(),
+        zoom,
+        expanded: mapExpanded,
+        mapSize: Number(user.guessMapSize) || 2,
+        mobileOpen: Boolean(mobileMapOpen),
+      }
+      if (lastClickRef.current) {
+        payload.pinLat = lastClickRef.current.lat
+        payload.pinLng = lastClickRef.current.lng
+      }
+      onGuessMapLiveChangeRef.current?.(payload)
+    }
+    const schedule = () => {
+      if (publishTimerRef.current != null) return
+      publishTimerRef.current = window.setTimeout(() => {
+        publishTimerRef.current = null
+        publish()
+      }, 180)
+    }
+    const idleL = map.addListener('idle', schedule)
+    const centerL = map.addListener('center_changed', schedule)
+    const zoomL = map.addListener('zoom_changed', schedule)
+    publish()
+    return () => {
+      idleL.remove()
+      centerL.remove()
+      zoomL.remove()
+      if (publishTimerRef.current != null) {
+        window.clearTimeout(publishTimerRef.current)
+        publishTimerRef.current = null
+      }
+    }
+  }, [
+    isSpectator,
+    onGuessMapLiveChange,
+    googleMapsConfig,
+    mapExpanded,
+    mobileMapOpen,
+    user.guessMapSize,
+    countryStreakGuess,
+  ])
+
+  useEffect(() => {
+    if (!isSpectator || !followGuessMapLive || !googleMapsConfig?.map) return
+    const map = googleMapsConfig.map
+    const { lat, lng, zoom } = followGuessMapLive
+    map.panTo({ lat, lng })
+    map.setZoom(zoom)
+    const expanded = followGuessMapLive.expanded !== false
+    setIsPinned(expanded)
+    setHovering(expanded)
+    const size = followGuessMapLive.mapSize ?? 2
+    const idle = getGuessMapIdleSize(size)
+    const scale = expanded ? GUESS_MAP_HOVER_UNIFORM_SCALE : 1
+    const m = GUESS_MAP_VMIN_MULTIPLIER
+    setMapWidth(idle.width * m * scale)
+    setMapHeight(idle.height * m * scale)
+
+    const pinKey =
+      followGuessMapLive.pinLat != null && followGuessMapLive.pinLng != null
+        ? `${followGuessMapLive.pinLat.toFixed(4)},${followGuessMapLive.pinLng.toFixed(4)}`
+        : ''
+    if (pinKey && pinKey !== lastFollowPinRef.current) {
+      lastFollowPinRef.current = pinKey
+      void import('@utils/constants/countryBounds.json').then((mod) => {
+        addCountryPolygon(
+          {
+            latLng: { lat: () => followGuessMapLive.pinLat as number, lng: () => followGuessMapLive.pinLng as number },
+          } as google.maps.MapMouseEvent,
+          map,
+          mod.default
+        )
+      })
+    }
+  }, [
+    isSpectator,
+    followGuessMapLive,
+    googleMapsConfig,
+    setHovering,
+    setIsPinned,
+    setMapWidth,
+    setMapHeight,
+  ])
+
   const nudgeZoom = (delta: number) => {
     if (!googleMapsConfig?.map) return
     const map = googleMapsConfig.map
@@ -170,8 +280,9 @@ const StreaksGuessMap: FC<Props> = ({
       <div
         ref={wrapperRef}
         className="guessMapWrapper"
-        onMouseOver={tabletTouch ? undefined : handleMapHover}
-        onMouseLeave={tabletTouch ? undefined : handleMapLeave}
+        onMouseOver={isSpectator || tabletTouch ? undefined : handleMapHover}
+        onMouseLeave={isSpectator || tabletTouch ? undefined : handleMapLeave}
+        style={{ pointerEvents: isSpectator ? 'none' : undefined }}
       >
         {showDesktopControls && (
           <div className="controls">
@@ -231,7 +342,10 @@ const StreaksGuessMap: FC<Props> = ({
             defaultCenter={{ lat: 0, lng: 0 }}
             defaultZoom={1}
             yesIWantToUseGoogleMapApiInternals
-            onGoogleApiLoaded={({ map, maps }) => setGoogleMapsConfig({ isLoaded: true, map, mapsApi: maps })}
+            onGoogleApiLoaded={({ map, maps }) => {
+              if (!map || !maps) return
+              setGoogleMapsConfig({ isLoaded: true, map, mapsApi: maps })
+            }}
             options={getGuessMapOptions(gameData.gameSettings)}
           ></GoogleMapReact>
 
@@ -245,7 +359,7 @@ const StreaksGuessMap: FC<Props> = ({
             </div>
           )}
 
-          {tabletTouch && !mapExpanded && (
+          {tabletTouch && !mapExpanded && !isSpectator && (
             <button type="button" className="expand-map-hit" onClick={expandAndPin} aria-label="Expand map" />
           )}
         </div>
@@ -254,18 +368,20 @@ const StreaksGuessMap: FC<Props> = ({
           <XIcon />
         </button>
 
-        <div className="submit-button-wrapper">
-          <Button
-            variant={!countryStreakGuess ? 'solidCustom' : 'primary'}
-            backgroundColor="var(--background3)"
-            color="#fff"
-            width="100%"
-            disabled={!countryStreakGuess}
-            onClick={() => handleSubmitGuess()}
-          >
-            Submit Guess
-          </Button>
-        </div>
+        {!isSpectator ? (
+          <div className="submit-button-wrapper">
+            <Button
+              variant={!countryStreakGuess ? 'solidCustom' : 'primary'}
+              backgroundColor="var(--background3)"
+              color="#fff"
+              width="100%"
+              disabled={!countryStreakGuess}
+              onClick={() => handleSubmitGuess()}
+            >
+              Submit Guess
+            </Button>
+          </div>
+        ) : null}
       </div>
     </StyledStreaksGuessMap>
   )
