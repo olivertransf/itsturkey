@@ -12,7 +12,7 @@ export const StyledPlaySetup = styled.div`
   align-items: start;
 
   @media (min-width: 900px) {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1.7fr) minmax(200px, 0.7fr);
     align-items: stretch;
 
     .play-col-main {
