@@ -27,11 +27,13 @@ const CONSTRUCTOR_KEYS = ['LatLng', 'LatLngBounds', 'Map', 'Polyline', 'OverlayV
 const mapsApiReady = (maps: typeof google.maps | undefined): maps is typeof google.maps =>
   typeof maps?.LatLng === 'function' && typeof maps?.Map === 'function'
 
-const assignMissingConstructors = (target: MapsNs, source: Record<string, unknown> | undefined) => {
+const assignMissingConstructors = (target: MapsNs, source: object | undefined) => {
   if (!source) return
+  const rec = source as Record<string, unknown>
+  const dest = target as unknown as Record<string, unknown>
   for (const key of CONSTRUCTOR_KEYS) {
-    if (typeof (target as unknown as Record<string, unknown>)[key] !== 'function' && typeof source[key] === 'function') {
-      ;(target as unknown as Record<string, unknown>)[key] = source[key]
+    if (typeof dest[key] !== 'function' && typeof rec[key] === 'function') {
+      dest[key] = rec[key]
     }
   }
 }
