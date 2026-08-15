@@ -1,37 +1,41 @@
 import { FC } from 'react'
-import { SkeletonLeaderboard } from '@components/skeletons'
 import { Skeleton } from '@components/system'
 import { StyledSkeletonProfile } from './'
 
-type Props = {}
-
-const SkeletonProfile: FC<Props> = ({}) => {
+const SkeletonProfile: FC = () => {
   return (
     <StyledSkeletonProfile>
-      <div>
-        <Skeleton className="skeleton-banner" height={230} noBorder />
-
-        <div className="skeleton-profile-details">
-          <div className="skeleton-profile-heading">
-            <div className="skeleton-avatar-wrapper">
-              <Skeleton className="skeleton-avatar" variant="circular" height={125} width={125} />
-            </div>
-
-            <div className="skeleton-text-wrapper">
-              <Skeleton height={20} width={150} noBorder />
-              <Skeleton height={16} width={300} noBorder />
-            </div>
+      <div className="skel-card">
+        <div className="skel-head">
+          <Skeleton height={12} width={72} noBorder />
+        </div>
+        <div className="skel-identity">
+          <Skeleton variant="circular" height={44} width={44} />
+          <div className="skel-copy">
+            <Skeleton height={16} width={140} noBorder />
+            <Skeleton height={12} width={220} noBorder />
           </div>
-
-          <div className="skeleton-tabs">
-            <Skeleton height={50} noBorder />
-          </div>
-
-          <div className="skeleton-users-stats">
-            {Array.from({ length: 6 }).map((_, idx) => (
-              <Skeleton key={idx} height={118} />
-            ))}
-          </div>
+        </div>
+      </div>
+      <div className="skel-tabs">
+        <Skeleton height={28} width={72} noBorder />
+        <Skeleton height={28} width={72} noBorder />
+        <Skeleton height={28} width={72} noBorder />
+      </div>
+      <div className="skel-card">
+        <div className="skel-head">
+          <Skeleton height={12} width={56} noBorder />
+        </div>
+        <div className="skel-hero">
+          <Skeleton height={56} noBorder />
+          <Skeleton height={56} noBorder />
+          <Skeleton height={56} noBorder />
+        </div>
+        <div className="skel-meta">
+          <Skeleton height={36} noBorder />
+          <Skeleton height={36} noBorder />
+          <Skeleton height={36} noBorder />
+          <Skeleton height={36} noBorder />
         </div>
       </div>
     </StyledSkeletonProfile>

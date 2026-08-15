@@ -1,6 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
 import { useSession } from 'next-auth/react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
@@ -11,19 +9,17 @@ import { PageBackLink } from '@components/PageBackLink'
 import { PageHeader, WidthController } from '@components/layout'
 import { AvatarPickerModal } from '@components/modals'
 import { SkeletonLeaderboard, SkeletonProfile } from '@components/skeletons'
-import { Button, Tab, Tabs } from '@components/system'
+import { Avatar, Tab, Tabs } from '@components/system'
 import { TextWithLinks } from '@components/TextWithLinks'
 import { UserSettingsPanel } from '@components/UserSettingsPanel'
 import { VerifiedBadge } from '@components/VerifiedBadge'
-import { CameraIcon, UserAddIcon } from '@heroicons/react/outline'
-import { PencilAltIcon } from '@heroicons/react/solid'
+import { CameraIcon } from '@heroicons/react/outline'
 import { useAppDispatch, useAppSelector } from '@redux/hook'
 import { updateAvatar, updateBio, updateUsername } from '@redux/slices'
 import StyledProfilePage from '@styles/ProfilePage.Styled'
 import StyledSettingsPage from '@styles/SettingsPage.Styled'
 import { SITE_NAME } from '@utils/constants/site'
 import { UserGameHistoryType } from '@types'
-import { USER_AVATAR_PATH } from '@utils/constants/random'
 import { formatLargeNumber, formatRoundTime, mailman, showToast } from '@utils/helpers'
 
 import type { NextPage } from 'next'
@@ -36,16 +32,8 @@ type NewProfileValuesType = {
 type UserStatsType = { label: string; data: number }[]
 type ProfileTabsType = 'stats' | 'games' | 'friends' | 'settings'
 
-const STAT_GROUPS: { title: string; labels: string[] }[] = [
-  {
-    title: 'Standard',
-    labels: ['Games finished', 'Best score (pts)', 'Average score (pts)', 'Last 5 average (pts)'],
-  },
-  { title: 'Precision', labels: ['5k guesses', '5k rate (%)', 'Average miss (km)'] },
-  { title: 'Streaks', labels: ['Streaks finished', 'Best streak (countries)'] },
-  { title: 'Duels', labels: ['Duels finished', 'Duel wins', 'Duel win rate (%)'] },
-  { title: 'Daily', labels: ['Daily challenge wins'] },
-]
+const pickStat = (stats: UserStatsType | undefined, label: string) =>
+  stats?.find((s) => s.label === label)?.data ?? 0
 
 type UserGamesPaginationType = { page: number; hasMore: boolean }
 
@@ -216,7 +204,7 @@ const ProfilePage: NextPage = () => {
   }
 
   return (
-    <StyledProfilePage isEditing={isEditing}>
+    <StyledProfilePage>
       <WidthController>
         <Meta title={userDetails ? `${userDetails.name} — ${SITE_NAME}` : SITE_NAME} />
         <div className="page-back-toolbar">
@@ -228,102 +216,85 @@ const ProfilePage: NextPage = () => {
         <SkeletonProfile />
       ) : (
         <div className="profile-stack">
-          <div className="profile-details">
             <section className="profile-card">
-            <div className="profile-heading">
-              <div className="avatar-wrapper">
+              <header className="profile-card-head">
+                <h2 className="profile-card-title">Profile</h2>
+                {isThisUsersProfile() && !isEditing ? (
+                  <button type="button" className="profile-card-link" onClick={() => setIsEditing(true)}>
+                    Edit
+                  </button>
+                ) : null}
+                {isThisUsersProfile() && isEditing ? (
+                  <div className="profile-head-actions">
+                    <button type="button" className="profile-card-link" onClick={() => void updateUserInfo()}>
+                      Save
+                    </button>
+                    <button type="button" className="profile-card-link" onClick={() => cancelEditing()}>
+                      Cancel
+                    </button>
+                  </div>
+                ) : null}
+                {!isThisUsersProfile() && session?.user?.id && isFriendWithProfile === false ? (
+                  <button
+                    type="button"
+                    className="profile-card-link"
+                    disabled={addFriendBusy}
+                    onClick={() => void addProfileAsFriend()}
+                  >
+                    Add friend
+                  </button>
+                ) : null}
+              </header>
+              <div className="profile-identity">
                 {isEditing ? (
                   <button
-                    className="profile-avatar"
-                    style={{ backgroundColor: newProfileValues?.avatar?.color }}
+                    type="button"
+                    className="profile-avatar-btn"
                     onClick={() => setAvatarModalOpen(true)}
+                    aria-label="Change avatar"
                   >
-                    <Image
-                      src={`${USER_AVATAR_PATH}/${newProfileValues?.avatar?.emoji}.svg`}
-                      alt=""
-                      layout="fill"
-                      className="emoji"
+                    <Avatar
+                      type="user"
+                      src={newProfileValues?.avatar?.emoji}
+                      backgroundColor={newProfileValues?.avatar?.color}
+                      size={44}
                     />
-                    <div className="profile-avatar-editing-icon">
+                    <span className="profile-avatar-edit">
                       <CameraIcon />
-                    </div>
+                    </span>
                   </button>
                 ) : (
-                  <div className="profile-avatar" style={{ backgroundColor: userDetails.avatar?.color }}>
-                    <Image
-                      src={`${USER_AVATAR_PATH}/${userDetails.avatar?.emoji}.svg`}
-                      alt=""
-                      layout="fill"
-                      className="emoji"
-                    />
-                  </div>
-                )}
-
-                {isThisUsersProfile() && !isEditing && (
-                  <div className="profile-actions">
-                    <Button variant="solidGray" onClick={() => setIsEditing(true)}>
-                      <PencilAltIcon /> Edit Profile
-                    </Button>
-                  </div>
-                )}
-
-                {!isThisUsersProfile() && session?.user?.id && !isEditing && isFriendWithProfile === false && (
-                  <div className="profile-actions">
-                    <Button
-                      variant="primary"
-                      disabled={addFriendBusy}
-                      isLoading={addFriendBusy}
-                      spinnerSize={18}
-                      onClick={() => void addProfileAsFriend()}
-                    >
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                        <UserAddIcon style={{ width: 16, height: 16 }} />
-                        Add friend
-                      </span>
-                    </Button>
-                  </div>
-                )}
-
-                {isThisUsersProfile() && isEditing && (
-                  <div className="profile-actions">
-                    <Button variant="solidGray" onClick={() => updateUserInfo()}>
-                      Save Changes
-                    </Button>
-                    <Button variant="destroy" className="cancel-btn" onClick={() => cancelEditing()}>
-                      Cancel
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              <h1 className="profile-name">
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={newProfileValues?.name}
-                    onChange={(e) =>
-                      setNewProfileValues({
-                        name: e.target.value,
-                        bio: newProfileValues?.bio,
-                        avatar: newProfileValues?.avatar,
-                      })
-                    }
-                    maxLength={30}
+                  <Avatar
+                    type="user"
+                    src={userDetails.avatar?.emoji}
+                    backgroundColor={userDetails.avatar?.color}
+                    size={44}
                   />
-                ) : (
-                  <div className="name-container">
-                    <div className="name-wrapper">
-                      <span className="name">{userDetails.name}</span>
-                    </div>
-                    {userDetails.isAdmin && <VerifiedBadge />}
-                  </div>
                 )}
-              </h1>
-
-              {(userDetails.bio || isEditing) && (
-                <span className="profile-bio">
+                <div className="profile-copy">
+                  {isEditing ? (
+                    <input
+                      className="profile-name-input"
+                      type="text"
+                      value={newProfileValues?.name}
+                      onChange={(e) =>
+                        setNewProfileValues({
+                          name: e.target.value,
+                          bio: newProfileValues?.bio,
+                          avatar: newProfileValues?.avatar,
+                        })
+                      }
+                      maxLength={30}
+                    />
+                  ) : (
+                    <div className="profile-name-row">
+                      <span className="profile-name">{userDetails.name}</span>
+                      {userDetails.isAdmin ? <VerifiedBadge /> : null}
+                    </div>
+                  )}
                   {isEditing ? (
                     <textarea
+                      className="profile-bio-input"
                       value={newProfileValues?.bio}
                       onChange={(e) =>
                         setNewProfileValues({
@@ -333,13 +304,15 @@ const ProfilePage: NextPage = () => {
                         })
                       }
                       maxLength={200}
-                    ></textarea>
-                  ) : (
-                    <TextWithLinks>{userDetails.bio}</TextWithLinks>
-                  )}
-                </span>
-              )}
-            </div>
+                      rows={3}
+                    />
+                  ) : userDetails.bio ? (
+                    <p className="profile-bio">
+                      <TextWithLinks>{userDetails.bio}</TextWithLinks>
+                    </p>
+                  ) : null}
+                </div>
+              </div>
             </section>
 
             <div className="profile-tabs">
@@ -347,89 +320,119 @@ const ProfilePage: NextPage = () => {
                 <Tab isActive={selectedTab === 'stats'} onClick={() => setSelectedTab('stats')}>
                   Stats
                 </Tab>
-
                 <Tab isActive={selectedTab === 'games'} onClick={() => setSelectedTab('games')}>
                   Games
                 </Tab>
-
-                {isThisUsersProfile() && session && (
+                {isThisUsersProfile() && session ? (
                   <Tab isActive={selectedTab === 'friends'} onClick={() => setSelectedTab('friends')}>
                     Friends
                   </Tab>
-                )}
-
-                {isThisUsersProfile() && (
+                ) : null}
+                {isThisUsersProfile() ? (
                   <Tab isActive={selectedTab === 'settings'} onClick={() => setSelectedTab('settings')}>
                     Settings
                   </Tab>
-                )}
+                ) : null}
               </Tabs>
             </div>
 
-            {selectedTab === 'stats' && userStats && (
-              <div className="user-stats">
-                {STAT_GROUPS.map((group) => (
-                  <section key={group.title} className="profile-card">
-                    <header className="profile-card-head">
-                      <h3 className="profile-card-title">{group.title}</h3>
-                    </header>
-                    <ul className="stat-group-list">
-                      {group.labels.map((label) => {
-                        const row = userStats.find((s) => s.label === label)
-                        return (
-                          <li key={label} className="stat-item">
-                            <span className="stat-value">{formatLargeNumber(row?.data ?? 0)}</span>
-                            <span className="stat-label">{label}</span>
-                          </li>
-                        )
-                      })}
-                    </ul>
-                  </section>
-                ))}
+            {selectedTab === 'stats' && userStats ? (
+              <>
+                <section className="profile-card">
+                  <header className="profile-card-head">
+                    <h3 className="profile-card-title">Stats</h3>
+                  </header>
+                  <ul className="stats-hero">
+                    <li>
+                      <span className="stats-value">{formatLargeNumber(pickStat(userStats, 'Best score (pts)'))}</span>
+                      <span className="stats-label">Best</span>
+                    </li>
+                    <li>
+                      <span className="stats-value">{formatLargeNumber(pickStat(userStats, 'Average score (pts)'))}</span>
+                      <span className="stats-label">Career avg</span>
+                    </li>
+                    <li>
+                      <span className="stats-value">{formatLargeNumber(pickStat(userStats, 'Last 5 average (pts)'))}</span>
+                      <span className="stats-label">Last 5</span>
+                    </li>
+                  </ul>
+                  <dl className="stats-meta">
+                    <div>
+                      <dt>Games</dt>
+                      <dd>{formatLargeNumber(pickStat(userStats, 'Games finished'))}</dd>
+                    </div>
+                    <div>
+                      <dt>Avg miss</dt>
+                      <dd>{formatLargeNumber(pickStat(userStats, 'Average miss (km)'))} km</dd>
+                    </div>
+                    <div>
+                      <dt>Best streak</dt>
+                      <dd>{formatLargeNumber(pickStat(userStats, 'Best streak (countries)'))}</dd>
+                    </div>
+                    <div>
+                      <dt>Duels</dt>
+                      <dd>
+                        {formatLargeNumber(pickStat(userStats, 'Duel wins'))}/
+                        {formatLargeNumber(pickStat(userStats, 'Duels finished'))}
+                        {pickStat(userStats, 'Duels finished') > 0
+                          ? ` · ${pickStat(userStats, 'Duel win rate (%)')}%`
+                          : ''}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Daily wins</dt>
+                      <dd>{formatLargeNumber(pickStat(userStats, 'Daily challenge wins'))}</dd>
+                    </div>
+                    <div>
+                      <dt>Streaks</dt>
+                      <dd>{formatLargeNumber(pickStat(userStats, 'Streaks finished'))}</dd>
+                    </div>
+                  </dl>
+                </section>
 
                 {personalBests.length > 0 ? (
                   <section className="profile-card">
                     <header className="profile-card-head">
                       <h3 className="profile-card-title">Personal bests</h3>
                     </header>
-                    <ul className="personal-bests-list">
+                    <ul className="profile-list">
                       {personalBests.map((row) => (
-                        <li key={row.leaderboardKey} className="personal-best-row">
-                          <Link href={`/map/${encodeURIComponent(row.mapPageId)}`}>{row.label}</Link>
-                          <span className="personal-best-meta">
+                        <li key={row.leaderboardKey} className="profile-row">
+                          <Link href={`/map/${encodeURIComponent(row.mapPageId)}`} className="profile-row-name">
+                            {row.label}
+                          </Link>
+                          <span className="profile-row-meta">
                             {`${formatLargeNumber(row.totalPoints)} pts · ${formatRoundTime(row.totalTime)} · `}
-                            <Link href={`/results/${row.gameId}`} className="personal-best-results">
-                              Results
-                            </Link>
+                            <Link href={`/results/${row.gameId}`}>Results</Link>
                           </span>
                         </li>
                       ))}
                     </ul>
                   </section>
                 ) : null}
-              </div>
-            )}
+              </>
+            ) : null}
 
             {selectedTab === 'games' && (
               <section className="profile-card">
                 <header className="profile-card-head">
                   <h3 className="profile-card-title">Games</h3>
                 </header>
-                <div className="profile-card-body">
-                  {userGames ? (
-                    userGames.length ? (
-                      <GameHistoryList
-                        games={userGames}
-                        hasMore={userGamesPagination.hasMore}
-                        loadMore={getUserGames}
-                      />
-                    ) : (
-                      <span className="no-results-message">No finished games yet.</span>
-                    )
+                {userGames ? (
+                  userGames.length ? (
+                    <GameHistoryList
+                      games={userGames}
+                      hasMore={userGamesPagination.hasMore}
+                      loadMore={getUserGames}
+                    />
                   ) : (
+                    <p className="profile-empty">No finished games yet.</p>
+                  )
+                ) : (
+                  <div className="profile-card-body">
                     <SkeletonLeaderboard removeHeader />
-                  )}
-                </div>
+                  </div>
+                )}
               </section>
             )}
 
@@ -449,7 +452,6 @@ const ProfilePage: NextPage = () => {
             {selectedTab === 'friends' && isThisUsersProfile() && session && (
               <HomeFriendsCard />
             )}
-          </div>
         </div>
       )}
       </WidthController>

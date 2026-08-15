@@ -1,84 +1,61 @@
 import styled from 'styled-components'
 
-type StyledProps = {}
-
-const StyledSkeletonProfile = styled.div<StyledProps>`
+const StyledSkeletonProfile = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
   width: 100%;
 
-  .skeleton-profile-details {
-    max-width: 720px;
-    margin: 0 auto;
-    width: 100%;
-    position: relative;
-    z-index: 2;
-    margin-top: -100px;
-    padding: 20px;
+  .skel-card {
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    border: var(--border-default);
+    background: var(--bg-card);
+  }
 
-    .skeleton-profile-heading {
-      padding-bottom: 20px;
-      margin-bottom: 10px;
+  .skel-head {
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--divider-line);
+  }
 
-      .skeleton-avatar-wrapper {
-        background-color: #0e0e0e;
-        width: 125px;
-        height: 125px;
-        border-radius: 50%;
-        position: relative;
-        box-shadow: 0 0 0 5px #0e0e0e;
+  .skel-identity {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--pad-row-card);
+  }
 
-        &::after {
-          content: '';
-          position: absolute;
-          z-index: 1;
-          border-radius: 50%;
-          width: 100%;
-          height: 100%;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          box-shadow: inset 0 0 0 1px rgb(255, 255, 255, 0.1);
-        }
-      }
+  .skel-copy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    min-width: 0;
+  }
 
-      .skeleton-text-wrapper {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-        margin-top: 1rem;
-      }
-    }
+  .skel-tabs {
+    display: flex;
+    gap: var(--space-5);
+    padding: 4px 0 8px;
+  }
 
-    .skeleton-users-stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 12px;
-      margin-top: 30px;
-    }
+  .skel-hero {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: var(--space-3);
+    padding: var(--space-4);
+  }
+
+  .skel-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3) var(--space-4);
+    padding: var(--space-3) var(--space-4) var(--space-4);
+    border-top: 1px solid var(--divider-line);
   }
 
   @media (max-width: 600px) {
-    .skeleton-banner {
-      height: 125px;
-    }
-
-    .skeleton-profile-details {
-      margin-top: -45px;
-
-      .skeleton-profile-heading {
-        border: 0;
-        margin-bottom: 0;
-
-        .skeleton-avatar-wrapper {
-          height: 75px;
-          width: 75px;
-
-          .skeleton-avatar {
-            height: 75px;
-            width: 75px;
-          }
-        }
-      }
+    .skel-hero {
+      grid-template-columns: 1fr;
     }
   }
 `
