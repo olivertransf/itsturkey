@@ -6,7 +6,7 @@ const StyledSkeletonProfile = styled.div`
   width: 100%;
 
   @media (min-width: 800px) {
-    grid-template-columns: minmax(200px, 260px) minmax(0, 1fr);
+    grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
     align-items: start;
   }
 
@@ -15,7 +15,7 @@ const StyledSkeletonProfile = styled.div`
     flex-direction: column;
     align-items: center;
     gap: var(--space-3);
-    padding: var(--space-7) 0 var(--space-2);
+    padding: 72px 0 var(--space-2);
   }
 
   .skel-copy {

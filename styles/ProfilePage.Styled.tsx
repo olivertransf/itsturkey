@@ -36,7 +36,7 @@ const StyledProfilePage = styled.div`
 
   @media (min-width: 800px) {
     .profile-body {
-      grid-template-columns: minmax(200px, 260px) minmax(0, 1fr);
+      grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
       align-items: start;
       gap: var(--space-5);
     }
@@ -69,7 +69,7 @@ const StyledProfilePage = styled.div`
     text-align: center;
     gap: var(--space-3);
     min-width: 0;
-    padding: var(--space-7) 0 var(--space-2);
+    padding: 72px 0 var(--space-2);
   }
 
   .profile-main {
@@ -126,9 +126,9 @@ const StyledProfilePage = styled.div`
     flex-wrap: wrap;
     gap: var(--space-2);
     max-width: 100%;
-    font-size: var(--font-title);
-    font-weight: 700;
-    letter-spacing: var(--tracking-title);
+    font-size: clamp(1.5rem, 2.4vw, 2rem);
+    font-weight: 800;
+    letter-spacing: var(--tracking-display);
     line-height: 1.2;
     color: var(--text-primary);
 
@@ -157,10 +157,10 @@ const StyledProfilePage = styled.div`
   }
 
   .profile-name-input {
-    height: var(--control-height-sm);
+    height: var(--control-height-lg);
     padding: 0 var(--space-3);
-    font-size: var(--font-body);
-    font-weight: 700;
+    font-size: var(--font-display);
+    font-weight: 800;
     text-align: center;
   }
 
