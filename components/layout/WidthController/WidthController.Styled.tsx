@@ -9,7 +9,7 @@ const StyledWidthController = styled.div<StyledProps>`
   max-width: ${({ customWidth }) => customWidth ?? 'var(--mainMaxWidth)'};
   width: 100%;
   box-sizing: border-box;
-  padding: var(--space-page-y) var(--space-page-x);
+  padding: var(--space-page-y) var(--page-gutter);
   margin: 0 auto;
   min-height: 100%;
 

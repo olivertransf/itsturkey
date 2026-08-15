@@ -133,7 +133,7 @@ const MapPage: FC = () => {
 
   return (
     <StyledMapPage>
-      <WidthController customWidth="none">
+      <WidthController>
         <Meta title={mapDetails?.name ? `${SITE_NAME} — ${mapDetails.name}` : SITE_NAME} />
 
         {mapDetails ? (
