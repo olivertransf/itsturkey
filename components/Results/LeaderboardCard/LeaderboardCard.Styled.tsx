@@ -19,16 +19,18 @@ const StyledLeaderboardCard = styled.div`
 
   .leaderboardWrapper {
     display: grid;
-    gap: 25px;
-    background-color: var(--background2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
+    gap: 0;
+    background-color: var(--bg-card);
+    border: var(--border-default);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
 
     .gameInfoWrapper {
       display: flex;
       align-items: center;
       gap: 50px;
-      padding: 20px 16px;
+      padding: 18px;
+      border-bottom: 1px solid var(--divider-line);
 
       @media (max-width: 600px) {
         gap: 10px;
@@ -42,10 +44,11 @@ const StyledLeaderboardCard = styled.div`
         gap: 10px;
 
         .settingsAvatar {
-          background-color: #262626;
-          border-radius: 50%;
-          height: 50px;
-          width: 50px;
+          background-color: var(--control-fill);
+          border: 1px solid var(--border-subtle);
+          border-radius: var(--radius-md);
+          height: 40px;
+          width: 40px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -87,9 +90,12 @@ const StyledLeaderboardCard = styled.div`
 
   .leaderboardSection {
     .titleSection {
-      font-size: 14px;
-      color: var(--color3);
-      padding-bottom: 8px;
+      font-size: var(--font-compact);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-subtle);
+      padding: 12px 0 10px;
 
       &:first-child {
         padding-left: 16px;
@@ -108,7 +114,7 @@ const StyledLeaderboardCard = styled.div`
     .leaderboardRow {
       display: grid;
       grid-template-columns: 250px repeat(6, 1fr);
-      border-top: 1px solid #2f3133;
+      border-top: 1px solid var(--divider-line);
       cursor: pointer;
       padding: 6px 0;
 
@@ -117,11 +123,11 @@ const StyledLeaderboardCard = styled.div`
       }
 
       &.selected {
-        background-color: #222;
+        background-color: var(--bg-elevated);
       }
 
-      &:last-child {
-        border-radius: 0 0 6px 6px;
+      &:hover {
+        background-color: var(--bg-elevated);
       }
     }
 

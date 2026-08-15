@@ -19,20 +19,23 @@ const StyledStreaksLeaderboard = styled.div<StyledProps>`
     display: flex;
     justify-content: space-between;
     gap: 50px;
-    background-color: var(--background2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
-    padding: 25px;
+    background-color: var(--bg-card);
+    border: var(--border-default);
+    border-radius: var(--radius-xl);
+    padding: 18px;
 
     @media (max-width: 960px) {
       flex-direction: column;
     }
 
     .leaderboard-header {
-      font-size: 18px;
-      border-bottom: 1px solid #2f3133;
-      padding-bottom: 8px;
-      color: #dcdcdc;
+      font-size: var(--font-compact);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--divider-line);
+      padding: 0 0 12px;
+      color: var(--text-subtle);
     }
 
     .users-list {
@@ -42,12 +45,13 @@ const StyledStreaksLeaderboard = styled.div<StyledProps>`
         display: flex;
         align-items: center;
         justify-content: space-between;
-        border-bottom: 1px solid #2f3133;
-        padding: 16px;
+        border-bottom: 1px solid var(--divider-line);
+        padding: 14px 4px;
         cursor: pointer;
 
-        &.selected {
-          background-color: #222;
+        &.selected,
+        &:hover {
+          background-color: var(--bg-elevated);
         }
 
         .user-details {

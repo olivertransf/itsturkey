@@ -13,7 +13,7 @@ import styled, { css } from 'styled-components'
 const Root = styled.div<{ $embedded?: boolean; $sidebar?: boolean; $popover?: boolean }>`
   margin-top: ${({ $embedded, $sidebar, $popover }) => ($embedded || $sidebar || $popover ? 0 : 12)};
   border-radius: ${({ $popover }) => ($popover ? '16px' : '14px')};
-  background: ${({ $popover }) => ($popover ? 'rgba(12, 14, 18, 0.94)' : 'var(--bg-surface)')};
+  background: ${({ $popover }) => ($popover ? 'var(--bg-card)' : 'var(--bg-card)')};
   border: ${({ $popover }) =>
     $popover ? '1px solid rgba(255, 255, 255, 0.1)' : 'var(--border-default)'};
   overflow: hidden;
@@ -69,11 +69,13 @@ const SidebarHeader = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 11px 12px;
-  font-size: 13px;
+  padding: 14px 18px;
+  font-size: var(--font-compact);
   font-weight: 700;
-  color: #e4e4e7;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+  border-bottom: 1px solid var(--divider-line);
   flex-shrink: 0;
 `
 
@@ -156,12 +158,12 @@ const MessageBubble = styled.div<{ $isYou?: boolean }>`
   ${({ $isYou }) =>
     $isYou
       ? css`
-          background: rgba(110, 178, 232, 0.16);
-          border: 1px solid rgba(157, 200, 240, 0.24);
+          background: var(--control-fill);
+          border: 1px solid var(--border-subtle);
         `
       : css`
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: var(--bg-elevated);
+          border: 1px solid var(--border-subtle);
         `}
 `
 
@@ -205,7 +207,7 @@ const ComposerInput = styled.textarea`
   box-sizing: border-box;
 
   &:focus {
-    border-color: rgba(157, 200, 240, 0.5);
+    border-color: var(--border-strong);
     outline: none;
   }
 `

@@ -1,6 +1,5 @@
 import { FC } from 'react'
 import { Game } from '@backend/models'
-import { MapRowTile } from '@components/MapRowTile'
 import { Avatar } from '@components/system'
 import { CogIcon } from '@heroicons/react/outline'
 import { MapType } from '@types'
@@ -24,8 +23,6 @@ const LeaderboardCard: FC<Props> = ({ gameData, mapData, selectedGameIndex, setS
       <div className="leaderboardWrapper">
         <div className="gameInfoWrapper">
           <div className="gameInfoItem">
-            <MapRowTile mapId={String(mapData._id)} name={mapData.name} size={50} />
-
             <div className="gameInfoContent">
               <span className="label1">{mapData.name}</span>
               {(mapData.creator === 'GeoHub' || mapData.creatorDetails?.name) && (
