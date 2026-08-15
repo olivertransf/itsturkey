@@ -198,8 +198,8 @@
   --palette-surface: #1c1e22;
   --palette-surface-deep: #141618;
   --palette-bg-raised: #101214;
-  --palette-bg-root: #0a1730;
-  --bg-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Cpath d='M36 0H0M0 0V36' stroke='rgba(47,127,255,0.14)' stroke-width='1' fill='none'/%3E%3C/svg%3E");
+  --palette-bg-root: #0c0d0f;
+  --bg-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Cpath d='M36 0H0M0 0V36' stroke='rgba(255,255,255,0.06)' stroke-width='1' fill='none'/%3E%3C/svg%3E");
 
   --accent-primary: var(--palette-accent);
   --accent-primary-hover: #2566e6;
