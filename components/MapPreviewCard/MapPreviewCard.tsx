@@ -1,11 +1,10 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import { FC } from 'react'
 import { TrashIcon } from '@heroicons/react/outline'
 import { MapType } from '@types'
 import { flagEmojiFromIsoAlpha2 } from '@utils/helpers/flagEmoji'
 import { parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
-import { isGenericMapPreview, mapNameInitials, resolveMapImageSrc } from '@utils/helpers/mapPreviewSrc'
+import { mapNameInitials } from '@utils/helpers/mapPreviewSrc'
 import { StyledMapPreviewCard } from './'
 
 type Props = {
@@ -26,9 +25,6 @@ const MapPreviewCard: FC<Props> = ({
   const countryCode = typeof map._id === 'string' ? parseEquitableCountryMapKey(map._id) : null
   const flag = countryCode ? flagEmojiFromIsoAlpha2(countryCode) : ''
   const playHref = `/map/${encodeURIComponent(String(map._id))}`
-  const showPhoto = !isGenericMapPreview(map.previewImg)
-  const previewSrc = showPhoto ? resolveMapImageSrc(map.previewImg) : ''
-
   const identity = (
     <div className="mapNameWrapper">
       {countryCode && flag ? (
@@ -53,11 +49,6 @@ const MapPreviewCard: FC<Props> = ({
     <StyledMapPreviewCard isForDisplayOnly={isForDisplayOnly}>
       {type === 'large' && (
         <div className="large-card-wrapper">
-          {showPhoto ? (
-            <div className="map-avatar">
-              <Image src={previewSrc} alt="" layout="fill" objectFit="cover" sizes="384px" />
-            </div>
-          ) : null}
           <div className="contentWrapper">
             {identity}
             {showDescription && <div className="mapDescription">{map.description}</div>}
@@ -76,11 +67,6 @@ const MapPreviewCard: FC<Props> = ({
 
       {type === 'small' && (
         <div className="small-card-wrapper">
-          {showPhoto ? (
-            <div className="preview-image">
-              <Image src={previewSrc} alt="" layout="fill" objectFit="cover" sizes="384px" />
-            </div>
-          ) : null}
           <div className="contentWrapper">
             {identity}
             <div className="playWrapper">

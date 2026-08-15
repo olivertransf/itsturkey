@@ -1,10 +1,11 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import { FC, useState } from 'react'
 import { HeartIcon as HeartIconOutline } from '@heroicons/react/outline'
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/solid'
 import { MapType } from '@types'
-import { isGenericMapPreview, mapNameInitials, resolveMapImageSrc } from '@utils/helpers/mapPreviewSrc'
+import { flagEmojiFromIsoAlpha2 } from '@utils/helpers/flagEmoji'
+import { parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
+import { mapNameInitials } from '@utils/helpers/mapPreviewSrc'
 import { mailman, showToast } from '@utils/helpers'
 import { StyledLikedMapCard } from './'
 
@@ -15,7 +16,8 @@ type Props = {
 
 const LikedMapCard: FC<Props> = ({ map, reloadMaps }) => {
   const [isHoveringLike, setIsHoveringLike] = useState(false)
-  const showPhoto = !isGenericMapPreview(map.previewImg)
+  const countryCode = typeof map._id === 'string' ? parseEquitableCountryMapKey(map._id) : null
+  const flag = countryCode ? flagEmojiFromIsoAlpha2(countryCode) : ''
 
   const handleUnlike = async () => {
     const res = await mailman(`likes/${map._id}`, 'DELETE')
@@ -31,19 +33,17 @@ const LikedMapCard: FC<Props> = ({ map, reloadMaps }) => {
 
   return (
     <StyledLikedMapCard>
-      {showPhoto ? (
-        <div className="map-avatar">
-          <Image src={resolveMapImageSrc(map.previewImg)} alt="" layout="fill" objectFit="cover" sizes="720px" />
-        </div>
-      ) : null}
-
       <div className="contentWrapper">
         <div className="mapNameWrapper">
-          {!showPhoto ? (
+          {countryCode && flag ? (
+            <span className="map-flag" title={map.name} aria-hidden>
+              {flag}
+            </span>
+          ) : (
             <span className="map-letter" aria-hidden>
               {mapNameInitials(map.name)}
             </span>
-          ) : null}
+          )}
           <div className="mapName">{map.name}</div>
         </div>
         <div className="playWrapper">

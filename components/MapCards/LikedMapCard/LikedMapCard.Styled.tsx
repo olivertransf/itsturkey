@@ -36,6 +36,13 @@ const StyledLikedMapCard = styled.div`
     gap: var(--space-2);
     justify-content: flex-start;
 
+    .map-flag {
+      font-size: 22px;
+      line-height: 1;
+      flex-shrink: 0;
+      user-select: none;
+    }
+
     .map-letter {
       width: 36px;
       height: 36px;

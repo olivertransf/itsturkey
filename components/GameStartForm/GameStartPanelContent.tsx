@@ -1,7 +1,8 @@
 import { FC, useMemo } from 'react'
 import { PlonkitGuideLauncher } from '@components/PlonkitCountryGuide'
 import { MapPickerGrid } from '@components/MapPickerGrid'
-import { Avatar, Checkbox, Slider, ToggleSwitch } from '@components/system'
+import { MapRowTile } from '@components/MapRowTile'
+import { Checkbox, Slider, ToggleSwitch } from '@components/system'
 import { StyledGameSettingsModal } from '@components/modals/GameSettingsModal'
 import { MAX_TOTAL_ROUNDS } from '@utils/constants/gameModes'
 import { parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
@@ -73,7 +74,7 @@ const GameStartPanelContent: FC<Props> = ({
 
           {!hideMapSummary && (
             <div className="map-details-wrapper map-details-wrapper--compact">
-              <Avatar type="map" src={mapDetails.previewImg} size={50} />
+              <MapRowTile mapId={String(mapDetails._id)} name={mapDetails.name} size={50} />
               <div className="map-details">
                 <span className="map-name">{mapDetails.name}</span>
               </div>

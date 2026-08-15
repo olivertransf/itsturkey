@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { FC } from 'react'
+import { MapRowTile } from '@components/MapRowTile'
 import { Avatar, FlexGroup } from '@components/system'
 import { SearchIcon } from '@heroicons/react/outline'
 import { SearchResultType } from '@types'
@@ -50,7 +51,7 @@ const SearchResult: FC<Props> = ({ searchResult, hasNoResults, setIsFocused }) =
       {type === 'map' && (
         <Link href={`/map/${searchResult._id}`} className="linkWrapper" onClick={() => handleResultClick()}>
           <FlexGroup gap={12}>
-            <Avatar type="map" src={searchResult.previewImg} />
+            <MapRowTile mapId={String(searchResult._id)} name={searchResult.name || ''} />
             <div className="searchResultLabelWrapper">
               <span className="searchResultLabel">{searchResult.name}</span>
             </div>

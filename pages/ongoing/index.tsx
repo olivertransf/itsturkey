@@ -7,7 +7,8 @@ import { PageHeader, WidthController } from '@components/layout'
 import { Meta } from '@components/Meta'
 import { DestroyModal } from '@components/modals'
 import { SkeletonOngoingGames } from '@components/skeletons'
-import { Avatar, Pill, Spinner } from '@components/system'
+import { MapRowTile } from '@components/MapRowTile'
+import { Pill, Spinner } from '@components/system'
 import { ExclamationCircleIcon, TrashIcon } from '@heroicons/react/outline'
 import { useAppSelector } from '@redux/hook'
 import StyledOngoingGamesPage from '@styles/OngoingGamesPage.Styled'
@@ -171,14 +172,20 @@ const OngoingGamesPage: NextPage = () => {
                   >
                     <div className="flex-left">
                       <div className="map-details">
-                        <Avatar
-                          type="map"
-                          src={
+                        <MapRowTile
+                          mapId={String(
                             game.mode === 'streak'
-                              ? COUNTRY_STREAK_DETAILS.previewImg
+                              ? COUNTRY_STREAK_DETAILS._id
                               : game.isDailyChallenge
-                              ? DAILY_CHALLENGE_DETAILS.previewImg
-                              : game.mapDetails?.[0]?.previewImg
+                                ? DAILY_CHALLENGE_DETAILS._id
+                                : game.mapDetails?.[0]?._id ?? ''
+                          )}
+                          name={
+                            game.mode === 'streak'
+                              ? COUNTRY_STREAK_DETAILS.name
+                              : game.isDailyChallenge
+                                ? DAILY_CHALLENGE_DETAILS.name
+                                : game.mapDetails?.[0]?.name ?? 'Map'
                           }
                         />
                         <div className="mapNameWrapper">

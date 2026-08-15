@@ -7,7 +7,8 @@ import { WidthController } from '@components/layout'
 import { MapLeaderboard } from '@components/MapLeaderboard'
 import { Meta } from '@components/Meta'
 import { SkeletonLeaderboard, SkeletonMapInfo } from '@components/skeletons'
-import { Avatar, Button } from '@components/system'
+import { MapRowTile } from '@components/MapRowTile'
+import { Button } from '@components/system'
 import { VerifiedBadge } from '@components/VerifiedBadge'
 import { CheckIcon } from '@heroicons/react/outline'
 import { useAppSelector } from '@redux/hook'
@@ -78,7 +79,11 @@ const DailyChallengePage: FC = () => {
                   </div>
                   <div className="descriptionColumnRow">
                     <div className="descriptionColumn">
-                      <Avatar type="map" src={DAILY_CHALLENGE_DETAILS.previewImg} size={50} />
+                      <MapRowTile
+                        mapId={String(DAILY_CHALLENGE_DETAILS._id)}
+                        name={DAILY_CHALLENGE_DETAILS.name}
+                        size={50}
+                      />
                       <div className="map-details">
                         <div className="name-container">
                           <div className="name-wrapper">

@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { FC } from 'react'
 import InfiniteScroll from 'react-infinite-scroll-component'
-import { Avatar, Spinner } from '@components/system'
+import { MapRowTile } from '@components/MapRowTile'
+import { Spinner } from '@components/system'
 import { UserGameHistoryType } from '@types'
 import { formatShortTimeAgo } from '@utils/dateHelpers'
 import { formatLargeNumber, formatRoundTime } from '@utils/helpers'
@@ -120,7 +121,7 @@ const GameHistoryList: FC<Props> = ({ games, hasMore, loadMore }) => {
           return (
             <Row key={String(game._id)}>
               <Main>
-                <Avatar type="map" src={game.mapAvatar} />
+                <MapRowTile mapId={String(game.mapId)} name={game.mapName} />
                 <Copy>
                   <Link href={`/map/${encodeURIComponent(String(game.mapId))}`} className="map-name">
                     {game.mapName}

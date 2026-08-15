@@ -1,8 +1,7 @@
 import { SearchIcon } from '@heroicons/react/outline'
 import { CheckIcon } from '@heroicons/react/solid'
-import Image from 'next/image'
 import { FC, useMemo, useState } from 'react'
-import { isGenericMapPreview, mapNameInitials, resolveMapImageSrc } from '@utils/helpers/mapPreviewSrc'
+import { mapNameInitials } from '@utils/helpers/mapPreviewSrc'
 import type { MapPickerRow } from '@utils/loadMapPickerOptions'
 import { parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
 import { flagEmojiFromIsoAlpha2 } from '@utils/helpers/flagEmoji'
@@ -11,7 +10,6 @@ import {
   ColumnList,
   LeadFlag,
   LeadInitials,
-  LeadMedia,
   LoadingHint,
   MapRow,
   PickerRoot,
@@ -109,8 +107,6 @@ const MapPickerGrid: FC<Props> = ({
               const id = String(row._id)
               const selected = id === String(value)
               const countryCode = parseEquitableCountryMapKey(id)
-              const thumbSrc = resolveMapImageSrc(row.previewImg)
-              const usePlaceholderArt = isGenericMapPreview(row.previewImg)
               const descRaw = row.description?.trim()
               const desc = showDescriptions ? descRaw : undefined
 
@@ -128,20 +124,10 @@ const MapPickerGrid: FC<Props> = ({
                     <LeadFlag title={row.name}>
                       <span aria-hidden>{flagEmojiFromIsoAlpha2(countryCode)}</span>
                     </LeadFlag>
-                  ) : usePlaceholderArt ? (
+                  ) : (
                     <LeadInitials title={row.name}>
                       <span aria-hidden>{mapNameInitials(row.name)}</span>
                     </LeadInitials>
-                  ) : (
-                    <LeadMedia>
-                      <Image
-                        src={thumbSrc}
-                        alt=""
-                        width={28}
-                        height={28}
-                        style={{ objectFit: 'cover' }}
-                      />
-                    </LeadMedia>
                   )}
                   <TextCol>
                     <RowTitle>{row.name}</RowTitle>

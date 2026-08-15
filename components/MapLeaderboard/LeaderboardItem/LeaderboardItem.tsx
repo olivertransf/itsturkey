@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { FC } from 'react'
+import { MapRowTile } from '@components/MapRowTile'
 import { Avatar, FlexGroup } from '@components/system'
 import { ChartBarIcon } from '@heroicons/react/outline'
 import { LightningBoltIcon } from '@heroicons/react/solid'
@@ -22,12 +23,10 @@ const LeaderboardItem: FC<Props> = ({ finishPlace, row, removeResults }) => {
         <div className="userSection">
           <span className="userPlace">{`#${finishPlace}`}</span>
           <div className="userInfo">
-            <Avatar type="map" src={row.mapAvatar} />
+            <MapRowTile mapId={String(row.mapId)} name={row.mapName} />
 
-            <Link href={`/map/${row.mapId}`}>
-              <a className="username-wrapper">
-                <span className="username">{row.mapName}</span>
-              </a>
+            <Link href={`/map/${row.mapId}`} className="username-wrapper">
+              <span className="username">{row.mapName}</span>
             </Link>
           </div>
         </div>
@@ -45,10 +44,8 @@ const LeaderboardItem: FC<Props> = ({ finishPlace, row, removeResults }) => {
             {row.totalTime && <span className="totalTime">{formatRoundTime(row.totalTime)}</span>}
 
             {!removeResults && (
-              <Link href={`/results/${row._id}`}>
-                <a className="results-link">
-                  <ChartBarIcon />
-                </a>
+              <Link href={`/results/${row._id}`} className="results-link">
+                <ChartBarIcon />
               </Link>
             )}
           </FlexGroup>
@@ -67,10 +64,8 @@ const LeaderboardItem: FC<Props> = ({ finishPlace, row, removeResults }) => {
         <div className="userInfo">
           <Avatar type="user" src={row.userAvatar.emoji} backgroundColor={row.userAvatar.color} />
 
-          <Link href={`/user/${row.userId}`}>
-            <a className="username-wrapper">
-              <span className="username">{row.userName}</span>
-            </a>
+          <Link href={`/user/${row.userId}`} className="username-wrapper">
+            <span className="username">{row.userName}</span>
           </Link>
         </div>
       </div>
@@ -90,10 +85,8 @@ const LeaderboardItem: FC<Props> = ({ finishPlace, row, removeResults }) => {
           {row.totalTime && <span className="totalTime">{formatRoundTime(row.totalTime)}</span>}
 
           {!removeResults && (
-            <Link href={`/results/${row.gameId}`}>
-              <a className="results-link">
-                <ChartBarIcon />
-              </a>
+            <Link href={`/results/${row.gameId}`} className="results-link">
+              <ChartBarIcon />
             </Link>
           )}
         </FlexGroup>

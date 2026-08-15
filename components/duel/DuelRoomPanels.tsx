@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import type { FC, ReactNode } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 import {
   ClipboardCopyIcon,
@@ -21,8 +20,8 @@ import {
 import { Button } from '@components/system'
 import { DuelHpMeter, DuelPointsMeter } from '@components/duel/DuelHpMeter'
 import { duelAvatarAccent, duelHudAvatarIcon } from '@components/duel/duelHudAvatar'
+import { MapRowTile } from '@components/MapRowTile'
 import { showToast } from '@utils/helpers'
-import { resolveMapImageSrc } from '@utils/helpers/mapPreviewSrc'
 import DuelChatPanel from './DuelChatPanel'
 import type { DuelClientPayload, DuelChatMessageClient, DuelGuessAvatar, DuelViewerRole } from './duelApiTypes'
 import styled from 'styled-components'
@@ -455,14 +454,10 @@ const MatchSummaryCard = styled.div`
 `
 
 const MatchSummaryPreview = styled.div`
-  position: relative;
-  width: 72px;
-  height: 72px;
   flex-shrink: 0;
-  border-radius: 12px;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `
 
 const MatchSummaryBody = styled.div`
@@ -571,14 +566,12 @@ async function copyDuelRoomCode(shortCode: string) {
 
 const DuelLobbyMatchSummary: FC<{ match: DuelLobbyMatchInfo }> = ({ match }) => {
   const mapName = match.mapDetails?.name ?? 'Map'
-  const preview = match.mapDetails?.previewImg
+  const mapId = match.mapDetails?._id
 
   return (
     <MatchSummaryCard>
       <MatchSummaryPreview>
-        {preview ? (
-          <Image src={resolveMapImageSrc(preview)} alt="" layout="fill" objectFit="cover" sizes="72px" />
-        ) : null}
+        <MapRowTile mapId={mapId != null ? String(mapId) : undefined} name={mapName} size={48} />
       </MatchSummaryPreview>
       <MatchSummaryBody>
         <MatchSummaryTitle title={mapName}>{mapName}</MatchSummaryTitle>

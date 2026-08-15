@@ -11,7 +11,8 @@ import { GoogleMapsSearch } from '@components/GoogleMapsSearch'
 import { Meta } from '@components/Meta'
 import { CreateMapModal, SaveMapModal } from '@components/modals'
 import { SelectMapLayers } from '@components/selects/SelectMapLayers'
-import { Avatar, Button, Skeleton } from '@components/system'
+import { MapRowTile } from '@components/MapRowTile'
+import { Button, Skeleton } from '@components/system'
 import { ChevronLeftIcon, PencilAltIcon, PencilIcon } from '@heroicons/react/outline'
 import StyledCreateMapPage from '@styles/CreateMapPage.Styled'
 import { GoogleMapsConfigType, LocationType, MapType, PageType, StreetViewCoverageType } from '@types'
@@ -264,7 +265,7 @@ const CreateMapPage: PageType = () => {
             <div className="menu-group">
               {!isLoading && mapDetails ? (
                 <div className="map-details">
-                  <Avatar type="map" src={mapDetails.previewImg} size={34} />
+                  <MapRowTile mapId={String(mapDetails._id)} name={mapDetails.name} size={34} />
                   <div className="map-name-wrapper">
                     <span className="map-name">{mapDetails.name}</span>
                   </div>
@@ -397,5 +398,9 @@ const CreateMapPage: PageType = () => {
 }
 
 CreateMapPage.noLayout = true
+
+export const getServerSideProps = async () => ({
+  redirect: { destination: '/maps', permanent: false },
+})
 
 export default CreateMapPage
