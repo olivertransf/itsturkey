@@ -193,6 +193,16 @@ const StyledHomeFriendsCard = styled.div`
   .status-dot--offline {
     background: var(--text-subtle);
   }
+
+  &.friends-card--embedded {
+    border: 0;
+    background: transparent;
+    border-radius: 0;
+
+    .friends-card-head {
+      padding: var(--space-3) var(--space-4);
+    }
+  }
 `
 
 export default StyledHomeFriendsCard

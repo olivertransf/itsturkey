@@ -234,11 +234,13 @@ const UserSettingsPanel: FC<Props> = ({ embedded }) => {
 
   return (
     <>
-      <div className={`header ${embedded ? 'header--embedded' : ''}`}>
-        <div className="header-details">
-          <h1>{embedded ? 'Settings' : 'Account'}</h1>
-          <h2>{embedded ? 'Distance, API key, friends' : 'Manage your settings'}</h2>
-        </div>
+      <div className={`header ${embedded ? 'header--embedded header--toolbar' : ''}`}>
+        {embedded ? null : (
+          <div className="header-details">
+            <h1>Account</h1>
+            <h2>Manage your settings</h2>
+          </div>
+        )}
 
         <Button
           variant={hasEdited && keyReadyToSave ? 'primary' : 'solidGray'}
@@ -354,13 +356,11 @@ const UserSettingsPanel: FC<Props> = ({ embedded }) => {
                 JavaScript API (and billing) on the key.
               </p>
 
-              <Link href="/custom-key-instructions.pdf" passHref>
-                <a target="_blank" rel="noopener noreferrer">
-                  <Button className="cta-button" variant="solidGray">
-                    View Instructions
-                    <ArrowRightIcon />
-                  </Button>
-                </a>
+              <Link href="/custom-key-instructions.pdf" target="_blank" rel="noopener noreferrer">
+                <Button className="cta-button" variant="solidGray">
+                  View Instructions
+                  <ArrowRightIcon />
+                </Button>
               </Link>
             </div>
           ) : (

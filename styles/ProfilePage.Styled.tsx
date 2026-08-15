@@ -1,46 +1,65 @@
 import styled from 'styled-components'
 
 const StyledProfilePage = styled.div`
-  .profile-stack {
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+
+  .profile-shell {
+    width: 100%;
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
-    width: 100%;
-    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
-  }
-
-  .profile-card {
-    width: 100%;
-    min-width: 0;
-    box-sizing: border-box;
-    overflow: hidden;
-    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    border-radius: var(--radius-xl);
     border: var(--border-default);
-    background: var(--bg-card);
+    background-color: var(--bg-card);
   }
 
-  .profile-card-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--space-3);
-    padding: var(--space-3) var(--space-4);
-    border-bottom: 1px solid var(--divider-line);
+  .profile-shell-head {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    column-gap: var(--space-3);
   }
 
-  .profile-card-title {
+  .profile-shell-head > *:first-child {
+    justify-self: start;
+  }
+
+  .profile-shell-title {
+    grid-column: 2;
     margin: 0;
-    font-size: var(--font-meta);
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-width: 0;
+    text-align: center;
+    font-size: var(--font-title);
+    font-weight: 700;
+    letter-spacing: var(--tracking-title);
+    line-height: 1.2;
+    color: var(--text-primary);
+
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 
-  .profile-head-actions {
+  .profile-shell-title-input {
+    grid-column: 2;
+    width: min(280px, 100%);
+    text-align: center;
+  }
+
+  .profile-shell-actions {
+    justify-self: end;
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: var(--space-3);
+    min-height: 1em;
   }
 
   .profile-card-link {
@@ -63,15 +82,10 @@ const StyledProfilePage = styled.div`
     }
   }
 
-  .profile-card-body {
-    padding: var(--space-4);
-  }
-
   .profile-identity {
     display: flex;
     align-items: flex-start;
     gap: var(--space-3);
-    padding: var(--pad-row-card);
     min-width: 0;
   }
 
@@ -113,23 +127,6 @@ const StyledProfilePage = styled.div`
     gap: var(--space-1);
   }
 
-  .profile-name-row {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    min-width: 0;
-  }
-
-  .profile-name {
-    font-size: var(--font-body);
-    font-weight: 700;
-    letter-spacing: var(--tracking-title);
-    color: var(--text-primary);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
   .profile-bio {
     margin: 0;
     font-size: var(--font-meta);
@@ -165,12 +162,33 @@ const StyledProfilePage = styled.div`
   }
 
   .profile-tabs {
-    margin-bottom: 0;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 4px 8px 8px;
-    margin-left: -8px;
-    margin-right: -8px;
+    padding: 0 0 4px;
+  }
+
+  .profile-panel {
+    min-width: 0;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    border: var(--border-default);
+    background-color: var(--bg-elevated);
+  }
+
+  .profile-panel--flush .profile-empty,
+  .profile-panel-pad {
+    padding: var(--space-4);
+  }
+
+  .profile-panel-title {
+    margin: 0;
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--divider-line);
+    font-size: var(--font-meta);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
   }
 
   .stats-hero {
@@ -284,7 +302,6 @@ const StyledProfilePage = styled.div`
 
   .profile-empty {
     margin: 0;
-    padding: var(--space-4);
     font-size: var(--font-meta);
     color: var(--text-muted);
   }
@@ -293,6 +310,8 @@ const StyledProfilePage = styled.div`
     margin-top: 0;
     width: 100%;
     max-width: 100%;
+    padding: var(--space-4);
+    box-sizing: border-box;
   }
 
   @media (max-width: 600px) {

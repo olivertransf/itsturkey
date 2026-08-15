@@ -14,6 +14,11 @@ const StyledSettingsPage = styled.div`
       margin-bottom: var(--space-4);
     }
 
+    &.header--toolbar {
+      justify-content: flex-end;
+      align-items: center;
+    }
+
     .header-details {
       h1 {
         font-size: var(--font-title);

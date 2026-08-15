@@ -6,7 +6,7 @@ import { GameHistoryList } from '@components/GameHistoryList'
 import { HomeFriendsCard } from '@components/HomeFriendsCard'
 import { Meta } from '@components/Meta'
 import { PageBackLink } from '@components/PageBackLink'
-import { PageHeader, WidthController } from '@components/layout'
+import { WidthController } from '@components/layout'
 import { AvatarPickerModal } from '@components/modals'
 import { SkeletonLeaderboard, SkeletonProfile } from '@components/skeletons'
 import { Avatar, Tab, Tabs } from '@components/system'
@@ -207,44 +207,65 @@ const ProfilePage: NextPage = () => {
     <StyledProfilePage>
       <WidthController>
         <Meta title={userDetails ? `${userDetails.name} — ${SITE_NAME}` : SITE_NAME} />
-        <div className="page-back-toolbar">
-          <PageBackLink href="/" label="Back to home" compact />
-        </div>
-        <PageHeader>Profile</PageHeader>
+        <section className="profile-shell">
+          <header className="profile-shell-head">
+            <PageBackLink href="/" label="Back" compact />
+            {loading || !userDetails ? (
+              <h1 className="profile-shell-title">Profile</h1>
+            ) : isEditing ? (
+              <input
+                className="profile-name-input profile-shell-title-input"
+                type="text"
+                value={newProfileValues?.name}
+                onChange={(e) =>
+                  setNewProfileValues({
+                    name: e.target.value,
+                    bio: newProfileValues?.bio,
+                    avatar: newProfileValues?.avatar,
+                  })
+                }
+                maxLength={30}
+                aria-label="Display name"
+              />
+            ) : (
+              <h1 className="profile-shell-title">
+                <span>{userDetails.name}</span>
+                {userDetails.isAdmin ? <VerifiedBadge /> : null}
+              </h1>
+            )}
+            <div className="profile-shell-actions">
+              {userDetails && isThisUsersProfile() && !isEditing ? (
+                <button type="button" className="profile-card-link" onClick={() => setIsEditing(true)}>
+                  Edit
+                </button>
+              ) : null}
+              {userDetails && isThisUsersProfile() && isEditing ? (
+                <>
+                  <button type="button" className="profile-card-link" onClick={() => void updateUserInfo()}>
+                    Save
+                  </button>
+                  <button type="button" className="profile-card-link" onClick={() => cancelEditing()}>
+                    Cancel
+                  </button>
+                </>
+              ) : null}
+              {userDetails && !isThisUsersProfile() && session?.user?.id && isFriendWithProfile === false ? (
+                <button
+                  type="button"
+                  className="profile-card-link"
+                  disabled={addFriendBusy}
+                  onClick={() => void addProfileAsFriend()}
+                >
+                  Add friend
+                </button>
+              ) : null}
+            </div>
+          </header>
 
-      {loading || !userStats ? (
-        <SkeletonProfile />
-      ) : (
-        <div className="profile-stack">
-            <section className="profile-card">
-              <header className="profile-card-head">
-                <h2 className="profile-card-title">Profile</h2>
-                {isThisUsersProfile() && !isEditing ? (
-                  <button type="button" className="profile-card-link" onClick={() => setIsEditing(true)}>
-                    Edit
-                  </button>
-                ) : null}
-                {isThisUsersProfile() && isEditing ? (
-                  <div className="profile-head-actions">
-                    <button type="button" className="profile-card-link" onClick={() => void updateUserInfo()}>
-                      Save
-                    </button>
-                    <button type="button" className="profile-card-link" onClick={() => cancelEditing()}>
-                      Cancel
-                    </button>
-                  </div>
-                ) : null}
-                {!isThisUsersProfile() && session?.user?.id && isFriendWithProfile === false ? (
-                  <button
-                    type="button"
-                    className="profile-card-link"
-                    disabled={addFriendBusy}
-                    onClick={() => void addProfileAsFriend()}
-                  >
-                    Add friend
-                  </button>
-                ) : null}
-              </header>
+          {loading || !userStats || !userDetails ? (
+            <SkeletonProfile />
+          ) : (
+            <>
               <div className="profile-identity">
                 {isEditing ? (
                   <button
@@ -273,26 +294,6 @@ const ProfilePage: NextPage = () => {
                 )}
                 <div className="profile-copy">
                   {isEditing ? (
-                    <input
-                      className="profile-name-input"
-                      type="text"
-                      value={newProfileValues?.name}
-                      onChange={(e) =>
-                        setNewProfileValues({
-                          name: e.target.value,
-                          bio: newProfileValues?.bio,
-                          avatar: newProfileValues?.avatar,
-                        })
-                      }
-                      maxLength={30}
-                    />
-                  ) : (
-                    <div className="profile-name-row">
-                      <span className="profile-name">{userDetails.name}</span>
-                      {userDetails.isAdmin ? <VerifiedBadge /> : null}
-                    </div>
-                  )}
-                  {isEditing ? (
                     <textarea
                       className="profile-bio-input"
                       value={newProfileValues?.bio}
@@ -305,6 +306,7 @@ const ProfilePage: NextPage = () => {
                       }
                       maxLength={200}
                       rows={3}
+                      placeholder="Bio"
                     />
                   ) : userDetails.bio ? (
                     <p className="profile-bio">
@@ -313,147 +315,136 @@ const ProfilePage: NextPage = () => {
                   ) : null}
                 </div>
               </div>
-            </section>
 
-            <div className="profile-tabs">
-              <Tabs>
-                <Tab isActive={selectedTab === 'stats'} onClick={() => setSelectedTab('stats')}>
-                  Stats
-                </Tab>
-                <Tab isActive={selectedTab === 'games'} onClick={() => setSelectedTab('games')}>
-                  Games
-                </Tab>
-                {isThisUsersProfile() && session ? (
-                  <Tab isActive={selectedTab === 'friends'} onClick={() => setSelectedTab('friends')}>
-                    Friends
+              <div className="profile-tabs">
+                <Tabs>
+                  <Tab isActive={selectedTab === 'stats'} onClick={() => setSelectedTab('stats')}>
+                    Stats
                   </Tab>
-                ) : null}
-                {isThisUsersProfile() ? (
-                  <Tab isActive={selectedTab === 'settings'} onClick={() => setSelectedTab('settings')}>
-                    Settings
+                  <Tab isActive={selectedTab === 'games'} onClick={() => setSelectedTab('games')}>
+                    Games
                   </Tab>
-                ) : null}
-              </Tabs>
-            </div>
+                  {isThisUsersProfile() && session ? (
+                    <Tab isActive={selectedTab === 'friends'} onClick={() => setSelectedTab('friends')}>
+                      Friends
+                    </Tab>
+                  ) : null}
+                  {isThisUsersProfile() ? (
+                    <Tab isActive={selectedTab === 'settings'} onClick={() => setSelectedTab('settings')}>
+                      Settings
+                    </Tab>
+                  ) : null}
+                </Tabs>
+              </div>
 
-            {selectedTab === 'stats' && userStats ? (
-              <>
-                <section className="profile-card">
-                  <header className="profile-card-head">
-                    <h3 className="profile-card-title">Stats</h3>
-                  </header>
-                  <ul className="stats-hero">
-                    <li>
-                      <span className="stats-value">{formatLargeNumber(pickStat(userStats, 'Best score (pts)'))}</span>
-                      <span className="stats-label">Best</span>
-                    </li>
-                    <li>
-                      <span className="stats-value">{formatLargeNumber(pickStat(userStats, 'Average score (pts)'))}</span>
-                      <span className="stats-label">Career avg</span>
-                    </li>
-                    <li>
-                      <span className="stats-value">{formatLargeNumber(pickStat(userStats, 'Last 5 average (pts)'))}</span>
-                      <span className="stats-label">Last 5</span>
-                    </li>
-                  </ul>
-                  <dl className="stats-meta">
-                    <div>
-                      <dt>Games</dt>
-                      <dd>{formatLargeNumber(pickStat(userStats, 'Games finished'))}</dd>
-                    </div>
-                    <div>
-                      <dt>Avg miss</dt>
-                      <dd>{formatLargeNumber(pickStat(userStats, 'Average miss (km)'))} km</dd>
-                    </div>
-                    <div>
-                      <dt>Best streak</dt>
-                      <dd>{formatLargeNumber(pickStat(userStats, 'Best streak (countries)'))}</dd>
-                    </div>
-                    <div>
-                      <dt>Duels</dt>
-                      <dd>
-                        {formatLargeNumber(pickStat(userStats, 'Duel wins'))}/
-                        {formatLargeNumber(pickStat(userStats, 'Duels finished'))}
-                        {pickStat(userStats, 'Duels finished') > 0
-                          ? ` · ${pickStat(userStats, 'Duel win rate (%)')}%`
-                          : ''}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>Daily wins</dt>
-                      <dd>{formatLargeNumber(pickStat(userStats, 'Daily challenge wins'))}</dd>
-                    </div>
-                    <div>
-                      <dt>Streaks</dt>
-                      <dd>{formatLargeNumber(pickStat(userStats, 'Streaks finished'))}</dd>
-                    </div>
-                  </dl>
-                </section>
-
-                {personalBests.length > 0 ? (
-                  <section className="profile-card">
-                    <header className="profile-card-head">
-                      <h3 className="profile-card-title">Personal bests</h3>
-                    </header>
-                    <ul className="profile-list">
-                      {personalBests.map((row) => (
-                        <li key={row.leaderboardKey} className="profile-row">
-                          <Link href={`/map/${encodeURIComponent(row.mapPageId)}`} className="profile-row-name">
-                            {row.label}
-                          </Link>
-                          <span className="profile-row-meta">
-                            {`${formatLargeNumber(row.totalPoints)} pts · ${formatRoundTime(row.totalTime)} · `}
-                            <Link href={`/results/${row.gameId}`}>Results</Link>
-                          </span>
-                        </li>
-                      ))}
+              {selectedTab === 'stats' ? (
+                <>
+                  <section className="profile-panel">
+                    <ul className="stats-hero">
+                      <li>
+                        <span className="stats-value">{formatLargeNumber(pickStat(userStats, 'Best score (pts)'))}</span>
+                        <span className="stats-label">Best</span>
+                      </li>
+                      <li>
+                        <span className="stats-value">{formatLargeNumber(pickStat(userStats, 'Average score (pts)'))}</span>
+                        <span className="stats-label">Career avg</span>
+                      </li>
+                      <li>
+                        <span className="stats-value">{formatLargeNumber(pickStat(userStats, 'Last 5 average (pts)'))}</span>
+                        <span className="stats-label">Last 5</span>
+                      </li>
                     </ul>
+                    <dl className="stats-meta">
+                      <div>
+                        <dt>Games</dt>
+                        <dd>{formatLargeNumber(pickStat(userStats, 'Games finished'))}</dd>
+                      </div>
+                      <div>
+                        <dt>Avg miss</dt>
+                        <dd>{formatLargeNumber(pickStat(userStats, 'Average miss (km)'))} km</dd>
+                      </div>
+                      <div>
+                        <dt>Best streak</dt>
+                        <dd>{formatLargeNumber(pickStat(userStats, 'Best streak (countries)'))}</dd>
+                      </div>
+                      <div>
+                        <dt>Duels</dt>
+                        <dd>
+                          {formatLargeNumber(pickStat(userStats, 'Duel wins'))}/
+                          {formatLargeNumber(pickStat(userStats, 'Duels finished'))}
+                          {pickStat(userStats, 'Duels finished') > 0
+                            ? ` · ${pickStat(userStats, 'Duel win rate (%)')}%`
+                            : ''}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Daily wins</dt>
+                        <dd>{formatLargeNumber(pickStat(userStats, 'Daily challenge wins'))}</dd>
+                      </div>
+                      <div>
+                        <dt>Streaks</dt>
+                        <dd>{formatLargeNumber(pickStat(userStats, 'Streaks finished'))}</dd>
+                      </div>
+                    </dl>
                   </section>
-                ) : null}
-              </>
-            ) : null}
 
-            {selectedTab === 'games' && (
-              <section className="profile-card">
-                <header className="profile-card-head">
-                  <h3 className="profile-card-title">Games</h3>
-                </header>
-                {userGames ? (
-                  userGames.length ? (
-                    <GameHistoryList
-                      games={userGames}
-                      hasMore={userGamesPagination.hasMore}
-                      loadMore={getUserGames}
-                    />
+                  {personalBests.length > 0 ? (
+                    <section className="profile-panel">
+                      <h2 className="profile-panel-title">Personal bests</h2>
+                      <ul className="profile-list">
+                        {personalBests.map((row) => (
+                          <li key={row.leaderboardKey} className="profile-row">
+                            <Link href={`/map/${encodeURIComponent(row.mapPageId)}`} className="profile-row-name">
+                              {row.label}
+                            </Link>
+                            <span className="profile-row-meta">
+                              {`${formatLargeNumber(row.totalPoints)} pts · ${formatRoundTime(row.totalTime)} · `}
+                              <Link href={`/results/${row.gameId}`}>Results</Link>
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  ) : null}
+                </>
+              ) : null}
+
+              {selectedTab === 'games' ? (
+                <section className="profile-panel profile-panel--flush">
+                  {userGames ? (
+                    userGames.length ? (
+                      <GameHistoryList
+                        games={userGames}
+                        hasMore={userGamesPagination.hasMore}
+                        loadMore={getUserGames}
+                      />
+                    ) : (
+                      <p className="profile-empty">No finished games yet.</p>
+                    )
                   ) : (
-                    <p className="profile-empty">No finished games yet.</p>
-                  )
-                ) : (
-                  <div className="profile-card-body">
-                    <SkeletonLeaderboard removeHeader />
-                  </div>
-                )}
-              </section>
-            )}
+                    <div className="profile-panel-pad">
+                      <SkeletonLeaderboard removeHeader />
+                    </div>
+                  )}
+                </section>
+              ) : null}
 
-            {selectedTab === 'settings' && isThisUsersProfile() && (
-              <section className="profile-card">
-                <header className="profile-card-head">
-                  <h3 className="profile-card-title">Settings</h3>
-                </header>
-                <div className="profile-card-body">
+              {selectedTab === 'settings' && isThisUsersProfile() ? (
+                <section className="profile-panel">
                   <StyledSettingsPage className="profile-settings-embed">
                     <UserSettingsPanel embedded />
                   </StyledSettingsPage>
-                </div>
-              </section>
-            )}
+                </section>
+              ) : null}
 
-            {selectedTab === 'friends' && isThisUsersProfile() && session && (
-              <HomeFriendsCard />
-            )}
-        </div>
-      )}
+              {selectedTab === 'friends' && isThisUsersProfile() && session ? (
+                <section className="profile-panel profile-panel--flush">
+                  <HomeFriendsCard embedded />
+                </section>
+              ) : null}
+            </>
+          )}
+        </section>
       </WidthController>
 
       <AvatarPickerModal
