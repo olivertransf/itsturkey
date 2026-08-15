@@ -1,5 +1,6 @@
 import { MAP_PICKER_EXCLUDED_IDS } from '@utils/constants/mapPicker'
 import { DEFAULT_MAP_PREVIEW_FILE } from '@utils/helpers/mapPreviewSrc'
+import { getHomeDefaultWorldMapId, parseHomeMapCards } from '@utils/helpers/homeMapCards'
 import { OFFICIAL_WORLD_ID } from '@utils/constants/random'
 import officialMapsFallback from '@utils/constants/officialMaps.json'
 import { mailman } from '@utils/helpers'
@@ -56,7 +57,8 @@ const officialSeedRows = (officialMapsFallback as { _id: string }[]).filter(
 const MAIN_MAP_IDS_ORDER = officialSeedRows.map((x) => String(x._id))
 
 const labelPickerRow = (row: MapPickerRow): MapPickerRow => {
-  if (row._id === OFFICIAL_WORLD_ID) {
+  const defaultWorldId = getHomeDefaultWorldMapId()
+  if (row._id === defaultWorldId && !row.name.startsWith('Default World')) {
     return { ...row, name: 'Default World' }
   }
   return row
@@ -123,16 +125,31 @@ export async function loadMapPickerOptions(params: {
   if (!countryRes?.error) mergeRows(byId, countryRes?.data)
   if (!continentRes?.error) mergeRows(byId, continentRes?.data)
 
+  mergeRows(
+    byId,
+    parseHomeMapCards().map((card) => ({
+      _id: card._id,
+      name: card.name,
+      description: card.description,
+      previewImg: card.previewImg || DEFAULT_MAP_PREVIEW_FILE,
+    }))
+  )
+
   if (!byId.size) {
     mergeRows(byId, officialSeedRows as unknown[])
   }
 
   stripExcludedFromMap(byId)
 
+  const defaultWorldId = getHomeDefaultWorldMapId()
+  if (defaultWorldId !== OFFICIAL_WORLD_ID) {
+    byId.delete(OFFICIAL_WORLD_ID)
+  }
+
   let rows = sortPickerRows(Array.from(byId.values()).map(labelPickerRow))
 
   if (params.includeAllMapsOption) {
-    const world = byId.get(OFFICIAL_WORLD_ID) ?? rows.find((r) => r._id === OFFICIAL_WORLD_ID) ?? rows[0]
+    const world = byId.get(defaultWorldId) ?? rows.find((r) => r._id === defaultWorldId) ?? rows[0]
     const previewImg = world?.previewImg?.trim() ? world.previewImg : DEFAULT_MAP_PREVIEW_FILE
 
     rows = [

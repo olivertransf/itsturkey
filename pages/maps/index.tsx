@@ -11,6 +11,7 @@ import { Tab, Tabs } from '@components/system'
 import StyledMapsPage from '@styles/MapsPage.Styled'
 import { MapType } from '@types'
 import { mailman, showToast } from '@utils/helpers'
+import { parseHomeMapCards } from '@utils/helpers/homeMapCards'
 import { readRecentMapIds } from '@utils/helpers/recentMapsStorage'
 
 type EquitableCountryMapRow = Pick<MapType, '_id' | 'name' | 'description' | 'previewImg'> & {
@@ -21,32 +22,15 @@ type EquitableContinentMapRow = Pick<MapType, '_id' | 'name' | 'previewImg'> & {
 
 type BrowseTab = 'world' | 'countries' | 'continents' | 'liked' | 'recent'
 
-const parseHomeMapCards = (): Pick<MapType, '_id' | 'name' | 'description' | 'previewImg'>[] => {
-  const raw = process.env.NEXT_PUBLIC_HOME_MAP_CARDS
-  if (!raw) return []
-
-  try {
-    const parsed = JSON.parse(raw)
-    if (!Array.isArray(parsed)) return []
-
-    return parsed
-      .map((item) => {
-        if (!item || typeof item !== 'object') return null
-        const rec = item as Record<string, unknown>
-        const _id = rec._id
-        const name = rec.name
-        const previewImg = rec.previewImg
-        if (typeof _id !== 'string' || typeof name !== 'string' || typeof previewImg !== 'string') {
-          return null
-        }
-        const description = typeof rec.description === 'string' ? rec.description : ''
-        return { _id, name, description, previewImg }
-      })
-      .filter(Boolean) as Pick<MapType, '_id' | 'name' | 'description' | 'previewImg'>[]
-  } catch {
-    return []
-  }
-}
+const hubHomeMaps = (): Pick<MapType, '_id' | 'name' | 'description' | 'previewImg'>[] =>
+  parseHomeMapCards()
+    .filter((card): card is typeof card & { previewImg: string } => typeof card.previewImg === 'string')
+    .map((card) => ({
+      _id: card._id,
+      name: card.name,
+      description: card.description ?? '',
+      previewImg: card.previewImg,
+    }))
 
 const MapsPage: FC = () => {
   const { status } = useSession()
@@ -68,7 +52,7 @@ const MapsPage: FC = () => {
   const [recentMaps, setRecentMaps] = useState<Pick<MapType, '_id' | 'name' | 'description' | 'previewImg'>[]>([])
   const [loadingRecent, setLoadingRecent] = useState(false)
 
-  const homeMaps = useMemo(() => parseHomeMapCards(), [])
+  const homeMaps = useMemo(() => hubHomeMaps(), [])
 
   const getEquitableCountryMaps = async () => {
     const res = await mailman('maps/equitable-by-country')

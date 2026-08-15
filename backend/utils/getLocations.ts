@@ -7,6 +7,7 @@ import { parseEquitableContinentMapKey, parseEquitableCountryMapKey } from '@bac
 import { COUNTRY_CODES_BY_CONTINENT } from '@utils/constants/iso2ContinentSlug'
 import { COUNTRY_STREAKS_ID, EQUITABLE_COUNTRY_STREAK_ID, OFFICIAL_WORLD_ID } from '@utils/constants/random'
 import { OFFICIAL_COUNTRIES } from '@utils/constants/officialCountries'
+import { resolveStandardMapIdForLocations } from '@utils/helpers/homeMapCards'
 
 export type GetLocationsOptions = {
   /** Skip these location doc ids (e.g. rounds already played in an HP duel). */
@@ -125,8 +126,13 @@ const getLocations = async (mapId: string, count: number = 5, options?: GetLocat
     return locations
   }
 
+  const playableMapId = resolveStandardMapIdForLocations(mapId)
+
   // Determine if this map is an official or custom map
-  const map = await collections.maps?.findOne({ _id: new ObjectId(mapId) })
+  let map = await collections.maps?.findOne({ _id: new ObjectId(playableMapId) })
+  if (!map) {
+    map = await collections.maps?.findOne({ mergedFrom: new ObjectId(playableMapId), isDeleted: { $ne: true } })
+  }
 
   if (!map) {
     return null
@@ -134,7 +140,7 @@ const getLocations = async (mapId: string, count: number = 5, options?: GetLocat
 
   const locationCollection = map.creator === 'GeoHub' ? 'locations' : 'userLocations'
 
-  const mapMatch: Record<string, unknown> = { mapId: new ObjectId(mapId) }
+  const mapMatch: Record<string, unknown> = { mapId: map._id }
   if (excludeIds.length > 0) {
     mapMatch._id = { $nin: excludeIds }
   }

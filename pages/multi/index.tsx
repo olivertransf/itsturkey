@@ -21,6 +21,7 @@ import {
 import type { AllowedMultiPanelCount } from '@utils/constants/gameModes'
 import { OFFICIAL_WORLD_ID } from '@utils/constants/random'
 import { SITE_NAME } from '@utils/constants/site'
+import { getHomeDefaultWorldMapId } from '@utils/helpers/homeMapCards'
 import { DEFAULT_MAP_PREVIEW_FILE } from '@utils/helpers/mapPreviewSrc'
 import { loadMapPickerOptions } from '@utils/loadMapPickerOptions'
 import type { MapPickerRow } from '@utils/loadMapPickerOptions'
@@ -35,7 +36,7 @@ import type { VisualRestrictions } from '@utils/constants/visualRestrictions'
 
 const MultiLobbyPage: NextPage = () => {
   const router = useRouter()
-  const [mapField, setMapField] = useState<string>(OFFICIAL_WORLD_ID)
+  const [mapField, setMapField] = useState<string>(getHomeDefaultWorldMapId())
   const [mapOptions, setMapOptions] = useState<MapPickerRow[]>([])
   const [mapsLoading, setMapsLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -65,13 +66,19 @@ const MultiLobbyPage: NextPage = () => {
     if (!router.isReady) return
     const q = router.query.mapId
     if (typeof q === 'string' && q.length > 0 && !isMapExcludedFromPicker(q)) {
-      setMapField(q)
+      const homeDefault = getHomeDefaultWorldMapId()
+      setMapField(q === OFFICIAL_WORLD_ID && homeDefault !== OFFICIAL_WORLD_ID ? homeDefault : q)
     }
   }, [router.isReady, router.query.mapId])
 
   useEffect(() => {
+    const homeDefault = getHomeDefaultWorldMapId()
     if (isMapExcludedFromPicker(mapField)) {
-      setMapField(OFFICIAL_WORLD_ID)
+      setMapField(homeDefault)
+      return
+    }
+    if (mapField === OFFICIAL_WORLD_ID && homeDefault !== OFFICIAL_WORLD_ID) {
+      setMapField(homeDefault)
     }
   }, [mapField])
 

@@ -11,7 +11,7 @@ import {
   requirePlayableUser,
   throwError,
 } from '@backend/utils'
-import { OFFICIAL_WORLD_ID } from '@utils/constants/random'
+import { getHomeDefaultWorldMapId, parseHomeMapCards, resolveStandardMapIdForLocations } from '@utils/helpers/homeMapCards'
 
 type MultiGuessrMapSource = {
   _id: string
@@ -19,40 +19,12 @@ type MultiGuessrMapSource = {
 }
 
 const getFallbackMapSources = (): MultiGuessrMapSource[] => {
-  const raw = process.env.NEXT_PUBLIC_HOME_MAP_CARDS
-
-  if (!raw) {
-    return [{ _id: OFFICIAL_WORLD_ID, name: 'World' }]
+  const cards = parseHomeMapCards()
+  if (cards.length) {
+    return cards.map((card) => ({ _id: card._id, name: card.name }))
   }
 
-  try {
-    const parsed = JSON.parse(raw)
-
-    if (!Array.isArray(parsed)) {
-      return [{ _id: OFFICIAL_WORLD_ID, name: 'World' }]
-    }
-
-    const maps = parsed
-      .map((item) => {
-        if (!item || typeof item !== 'object') return null
-
-        const rec = item as Record<string, unknown>
-        const _id = rec._id
-        const name = rec.name
-
-        if (typeof _id !== 'string') return null
-
-        return {
-          _id,
-          name: typeof name === 'string' ? name : undefined,
-        }
-      })
-      .filter(Boolean) as MultiGuessrMapSource[]
-
-    return maps.length ? maps : [{ _id: OFFICIAL_WORLD_ID, name: 'World' }]
-  } catch {
-    return [{ _id: OFFICIAL_WORLD_ID, name: 'World' }]
-  }
+  return [{ _id: getHomeDefaultWorldMapId(), name: 'World' }]
 }
 
 const getRandomMapSource = (maps: MultiGuessrMapSource[]) => maps[Math.floor(Math.random() * maps.length)]
@@ -80,7 +52,7 @@ const createMultiSession = async (req: NextApiRequest, res: NextApiResponse) => 
 
   for (let panelIndex = 0; panelIndex < panelCount; panelIndex++) {
     const panelMap = useAllMaps ? getRandomMapSource(poolMaps) : null
-    const panelMapId = panelMap?._id ?? mapId
+    const panelMapId = resolveStandardMapIdForLocations(String(panelMap?._id ?? mapId))
     let locations = await getLocations(panelMapId, totalRoundsPerPanel)
     let resolvedPanelMap = panelMap
 
@@ -136,7 +108,7 @@ const createMultiSession = async (req: NextApiRequest, res: NextApiResponse) => 
   const panelGameIds = Object.values(gamesResult.insertedIds)
   const session: MultiSession = {
     userId: new ObjectId(userId),
-    mapId: useAllMaps ? 'all' : mapId,
+    mapId: useAllMaps ? 'all' : resolveStandardMapIdForLocations(String(mapId)),
     mapName: useAllMaps ? 'All Maps' : mapName,
     panelCount: panelCount as MultiSession['panelCount'],
     totalRoundsPerPanel,

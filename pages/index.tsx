@@ -11,48 +11,17 @@ import { Meta } from '@components/Meta'
 import StyledHomePage from '@styles/HomePage.Styled'
 import type { MapType } from '@types'
 import { GEOHUB_UPSTREAM_REPO_URL, SITE_NAME } from '@utils/constants/site'
+import { parseHomeMapCards } from '@utils/helpers/homeMapCards'
 
-const parseHomeMapCards = (): Pick<MapType, '_id' | 'name' | 'description' | 'previewImg'>[] | null => {
-  const raw = process.env.NEXT_PUBLIC_HOME_MAP_CARDS
-
-  if (!raw) {
-    return null
-  }
-
-  try {
-    const parsed = JSON.parse(raw)
-
-    if (!Array.isArray(parsed)) {
-      return null
-    }
-
-    return parsed
-      .map((item) => {
-        if (!item || typeof item !== 'object') return null
-
-        const rec = item as Record<string, unknown>
-        const _id = rec._id
-        const name = rec.name
-        const previewImg = rec.previewImg
-
-        if (typeof _id !== 'string' || typeof name !== 'string' || typeof previewImg !== 'string') {
-          return null
-        }
-
-        const description = typeof rec.description === 'string' ? rec.description : ''
-
-        return { _id, name, description, previewImg }
-      })
-      .filter(Boolean) as Pick<MapType, '_id' | 'name' | 'description' | 'previewImg'>[]
-  } catch {
-    return null
-  }
-}
-
-const getHomeMaps = (): Pick<MapType, '_id' | 'name' | 'description' | 'previewImg'>[] => {
-  const fromEnv = parseHomeMapCards()
-  return fromEnv && fromEnv.length > 0 ? fromEnv : []
-}
+const getHomeMaps = (): Pick<MapType, '_id' | 'name' | 'description' | 'previewImg'>[] =>
+  parseHomeMapCards()
+    .filter((card): card is typeof card & { previewImg: string } => typeof card.previewImg === 'string')
+    .map((card) => ({
+      _id: card._id,
+      name: card.name,
+      description: card.description ?? '',
+      previewImg: card.previewImg,
+    }))
 
 const Home: NextPage = () => {
   const { data: session } = useSession()
