@@ -104,15 +104,7 @@ const StyledHomePage = styled.div`
   }
 
   .home-shell--with-friends .home-body {
-    grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
-
-    @media (max-width: 960px) {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  .home-shell--with-friends .home-body {
-    grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 420px);
 
     @media (max-width: 960px) {
       grid-template-columns: 1fr;
