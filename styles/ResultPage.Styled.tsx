@@ -6,11 +6,13 @@ const StyledResultPage = styled.div`
     height: 100dvh;
     overflow: hidden auto;
     display: grid;
-    grid-template-rows: var(--navbarHeight) calc(100% - 250px - var(--navbarHeight)) auto;
+    grid-template-rows: auto minmax(0, 1fr) auto;
 
-    // Navbar goes position fixed at 600px
-    @media (max-width: 600px) {
-      grid-template-rows: calc(100% - 250px) auto;
+    .result-back {
+      display: flex;
+      align-items: center;
+      min-height: 48px;
+      padding: 0 var(--page-gutter);
     }
   }
 

@@ -1,6 +1,5 @@
 import { useRouter } from 'next/router'
 import { FC, ReactNode, useEffect, useState } from 'react'
-import { Navbar } from '../Navbar'
 import { StyledLayout } from './'
 import { mailman } from '@utils/helpers'
 import { BanType } from '@types'
@@ -12,8 +11,7 @@ type Props = {
 
 const Layout: FC<Props> = ({ children }) => {
   const [banMessage, setBanMessage] = useState('')
-  const { asPath, pathname } = useRouter()
-  const hideNavbar = pathname === '/'
+  const { asPath } = useRouter()
 
   useEffect(() => {
     document.getElementById('main')?.scrollTo({ top: 0 })
@@ -45,7 +43,6 @@ const Layout: FC<Props> = ({ children }) => {
   return (
     <StyledLayout>
       <div className="app-layout">
-        {hideNavbar ? null : <Navbar />}
         <div className="appBody">
           <main id="main">{children}</main>
         </div>
