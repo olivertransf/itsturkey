@@ -28,6 +28,7 @@ type Game = {
   challengeId?: ObjectId | string | null
   userDetails?: User
   createdAt?: Date
+  updatedAt?: Date
   mapDetails?: MapType
   state: 'started' | 'finished'
   mode: 'standard' | 'streak'

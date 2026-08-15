@@ -120,6 +120,7 @@ const createMultiSession = async (req: NextApiRequest, res: NextApiResponse) => 
       totalRounds: totalRoundsPerPanel,
       unlimited: false,
       createdAt: new Date(),
+      updatedAt: new Date(),
     })
   }
 

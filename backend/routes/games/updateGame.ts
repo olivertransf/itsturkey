@@ -83,6 +83,7 @@ const updateGame = async (req: NextApiRequest, res: NextApiResponse) => {
 
     await collections.games?.updateOne(getGameQuery, {
       $set: {
+        updatedAt: new Date(),
         liveView: {
           ...liveView,
           updatedAt: new Date(),
@@ -109,6 +110,7 @@ const updateGame = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     game.state = 'finished'
+    game.updatedAt = new Date()
 
     await collections.games?.findOneAndUpdate(getGameQuery, { $set: game })
 
@@ -224,6 +226,7 @@ const updateGame = async (req: NextApiRequest, res: NextApiResponse) => {
   game.totalDistance.metric += distance.metric
   game.totalDistance.imperial += distance.imperial
   game.totalTime += Math.floor(guessTime)
+  game.updatedAt = new Date()
 
   if (game.mode === 'standard' && game.unlimited && !isGameFinished && game.round > game.rounds.length) {
     const BATCH = 10

@@ -27,6 +27,7 @@ export {
   unhideAllOngoingGames,
   unhideOngoingGame,
 } from './hiddenOngoingGames'
+export { compareLastUsedDesc, pickLastUsedAt } from './lastUsedAt'
 export { default as formatPolygon } from './formatPolygon'
 export { default as formatRoundTime } from './formatRoundTime'
 export { default as formatSettingsLabel } from './formatSettingsLabel'

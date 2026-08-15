@@ -13,8 +13,8 @@ import { useAppSelector } from '@redux/hook'
 import StyledOngoingGamesPage from '@styles/OngoingGamesPage.Styled'
 import { GameType, MapType } from '@types'
 import { COUNTRY_STREAK_DETAILS, DAILY_CHALLENGE_DETAILS } from '@utils/constants/random'
-import { formatMonthDayYear } from '@utils/dateHelpers'
-import { formatOngoingScore, mailman, showToast } from '@utils/helpers'
+import { formatMonthDayYearTime } from '@utils/dateHelpers'
+import { formatOngoingScore, mailman, pickLastUsedAt, showToast } from '@utils/helpers'
 import {
   hideOngoingGame,
   isOngoingGameHidden,
@@ -197,14 +197,20 @@ const OngoingGamesPage: NextPage = () => {
                         <div className="game-info-pills">
                           <Pill label={`Round ${game.round}`} className="game-info-pill round" />
                           <Pill label={formatOngoingScore(game.totalPoints)} className="game-info-pill score" />
-                          <Pill label={formatMonthDayYear(game.createdAt)} className="game-info-pill created" />
+                          <Pill
+                            label={formatMonthDayYearTime(pickLastUsedAt(game))}
+                            className="game-info-pill created"
+                          />
                         </div>
                       )}
 
                       {game.mode === 'streak' && (
                         <div className="game-info-pills">
                           <Pill label={`${game.streak} Streak`} className="game-info-pill round" />
-                          <Pill label={formatMonthDayYear(game.createdAt)} className="game-info-pill created" />
+                          <Pill
+                            label={formatMonthDayYearTime(pickLastUsedAt(game))}
+                            className="game-info-pill created"
+                          />
                         </div>
                       )}
 

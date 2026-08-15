@@ -12,7 +12,14 @@ const getUnfinishedGames = async (req: NextApiRequest, res: NextApiResponse) => 
   const games = await collections.games
     ?.aggregate([
       { $match: query },
-      { $sort: { createdAt: -1 } },
+      {
+        $addFields: {
+          lastUsedAt: {
+            $max: ['$updatedAt', '$liveView.updatedAt', '$guessMapLive.updatedAt', '$createdAt'],
+          },
+        },
+      },
+      { $sort: { lastUsedAt: -1, createdAt: -1 } },
       { $skip: page * gamesPerPage },
       { $limit: gamesPerPage + 1 },
       {

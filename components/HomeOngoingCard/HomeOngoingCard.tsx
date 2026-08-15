@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { mailman, showToast } from '@utils/helpers'
+import { compareLastUsedDesc, mailman, pickLastUsedAt, showToast } from '@utils/helpers'
 import {
   hideOngoingGame,
   isOngoingGameHidden,
@@ -22,26 +22,14 @@ type UnfinishedGame = {
   mapName?: string
   mapDetails?: { name?: string }[]
   createdAt?: Date | string
+  updatedAt?: Date | string
+  lastUsedAt?: Date | string
   liveView?: { updatedAt?: Date | string }
   guessMapLive?: { updatedAt?: Date | string }
 }
 
 const VISIBLE_LIMIT = 2
 const MAX_PAGES = 5
-
-const toDate = (value: Date | string | undefined) => {
-  if (!value) return undefined
-  const date = value instanceof Date ? value : new Date(value)
-  return Number.isNaN(date.getTime()) ? undefined : date
-}
-
-const lastUsedAt = (game: UnfinishedGame) => {
-  const candidates = [game.liveView?.updatedAt, game.guessMapLive?.updatedAt, game.createdAt]
-    .map(toDate)
-    .filter((date): date is Date => Boolean(date))
-  if (candidates.length === 0) return undefined
-  return candidates.reduce((latest, date) => (date > latest ? date : latest))
-}
 
 const mapLabel = (game: UnfinishedGame) => {
   if (game.mode === 'streak') return COUNTRY_STREAK_DETAILS.name
@@ -58,7 +46,7 @@ const roundLabel = (game: UnfinishedGame) => {
 }
 
 const metaLabel = (game: UnfinishedGame) => {
-  const when = formatMonthDayYearTime(lastUsedAt(game))
+  const when = formatMonthDayYearTime(pickLastUsedAt(game))
   return when ? `${roundLabel(game)} · ${when}` : roundLabel(game)
 }
 
@@ -106,7 +94,11 @@ const HomeOngoingCard: FC = () => {
   }, [load])
 
   const visible = useMemo(
-    () => games.filter((game) => !hiddenIds.includes(String(game._id))).slice(0, VISIBLE_LIMIT),
+    () =>
+      games
+        .filter((game) => !hiddenIds.includes(String(game._id)))
+        .sort(compareLastUsedDesc)
+        .slice(0, VISIBLE_LIMIT),
     [games, hiddenIds]
   )
   const hiddenCount = useMemo(
