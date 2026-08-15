@@ -67,10 +67,6 @@ const Home: NextPage = () => {
         <div className={`home-shell${showFriendsRail ? ' home-shell--with-friends' : ''}`}>
           <div className="home-body">
             <div className="home-main">
-              <header className="home-hero">
-                <h1 className="home-hero-title">it's turkey</h1>
-              </header>
-
               {showFriendsRail ? <HomeOngoingCard /> : null}
 
               <section className="home-panel">

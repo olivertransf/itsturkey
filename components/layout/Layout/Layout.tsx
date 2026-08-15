@@ -44,7 +44,12 @@ const Layout: FC<Props> = ({ children }) => {
     <StyledLayout>
       <div className="app-layout">
         <div className="appBody">
-          <main id="main">{children}</main>
+          <main id="main">
+            <header className="app-hero">
+              <h1 className="app-hero-title">it's turkey</h1>
+            </header>
+            {children}
+          </main>
         </div>
 
         {banMessage && (

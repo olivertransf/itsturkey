@@ -50,6 +50,24 @@ const StyledLayout = styled.div`
     -webkit-overflow-scrolling: touch;
   }
 
+  .app-hero {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding: var(--space-5) var(--page-gutter) var(--space-2);
+    box-sizing: border-box;
+  }
+
+  .app-hero-title {
+    margin: 0;
+    text-align: center;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    letter-spacing: var(--tracking-display);
+    line-height: 1.05;
+    color: var(--text-primary);
+  }
+
   .mainContent {
     max-width: var(--mainMaxWidth);
     width: 100%;

@@ -11,10 +11,10 @@ const StyledHomePage = styled.div`
     box-sizing: border-box;
     display: flex;
     justify-content: stretch;
-    padding: var(--space-5) var(--page-gutter) var(--pad-page-y-bottom);
+    padding: var(--space-3) var(--page-gutter) var(--pad-page-y-bottom);
 
     @media (max-width: 600px) {
-      padding: var(--space-4) var(--page-gutter) var(--pad-page-y-bottom);
+      padding: var(--space-3) var(--page-gutter) var(--pad-page-y-bottom);
     }
   }
 
@@ -50,22 +50,6 @@ const StyledHomePage = styled.div`
     flex-direction: column;
     align-items: stretch;
     gap: var(--space-6);
-  }
-
-  .home-hero {
-    display: flex;
-    justify-content: center;
-    padding: var(--space-2) 0 var(--space-1);
-  }
-
-  .home-hero-title {
-    margin: 0;
-    text-align: center;
-    font-size: clamp(2rem, 5vw, 3rem);
-    font-weight: 800;
-    letter-spacing: var(--tracking-display);
-    line-height: 1.05;
-    color: var(--text-primary);
   }
 
   .home-play-grid {
