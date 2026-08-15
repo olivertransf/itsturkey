@@ -119,11 +119,21 @@ const StyledHomePage = styled.div`
     gap: var(--space-6);
   }
 
-  .home-play-grid {
+  .home-play-grid,
+  .home-maps-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    justify-content: center;
+    justify-items: stretch;
     gap: 12px;
-    padding: 16px;
+    width: 100%;
+    max-width: 920px;
+    margin-inline: auto;
+    padding: 18px;
+    box-sizing: border-box;
+  }
+
+  .home-play-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 
     @media (max-width: 800px) {
       grid-template-columns: 1fr;
@@ -131,10 +141,7 @@ const StyledHomePage = styled.div`
   }
 
   .home-maps-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    padding: 16px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
 
     @media (max-width: 800px) {
       grid-template-columns: 1fr;
@@ -217,7 +224,7 @@ const StyledHomePage = styled.div`
     align-items: baseline;
     justify-content: space-between;
     gap: var(--space-3);
-    padding: 14px 18px;
+    padding: 18px;
     border-bottom: 1px solid var(--divider-line);
   }
 
