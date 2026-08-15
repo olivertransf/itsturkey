@@ -52,25 +52,63 @@ const StyledMapsPage = styled.div`
     background-color: var(--bg-elevated);
   }
 
+  .maps-country-search {
+    position: relative;
+    margin: 10px 10px 0;
+  }
+
+  .maps-country-search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+    pointer-events: none;
+  }
+
+  .maps-country-search-input {
+    width: 100%;
+    height: var(--control-height-sm);
+    box-sizing: border-box;
+    padding: 0 10px 0 32px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    font-size: var(--font-meta);
+
+    &::placeholder {
+      color: var(--text-muted);
+    }
+
+    &:focus-visible {
+      outline: var(--focus-ring);
+      outline-offset: 2px;
+    }
+  }
+
   .maps-row-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    padding: 16px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    padding: 10px;
 
-    @media (max-width: 800px) {
+    @media (max-width: 900px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @media (max-width: 560px) {
       grid-template-columns: 1fr;
     }
   }
 
   .maps-row-grid .home-row-card {
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: space-between;
-    gap: var(--space-4);
-    min-height: 132px;
-    padding: 18px;
-    border-radius: var(--radius-lg);
+    min-height: 44px;
+    padding: 8px 10px;
+    gap: 10px;
+    border-radius: var(--radius-md);
     background: var(--bg-card);
     border: var(--border-default);
     box-shadow: none;
@@ -81,19 +119,13 @@ const StyledMapsPage = styled.div`
     }
   }
 
-  .maps-row-grid .home-row-letter,
-  .maps-row-grid .home-row-flag {
-    display: none;
-  }
-
   .maps-row-grid .home-row-title {
-    white-space: normal;
-    font-size: var(--font-title);
+    font-size: var(--font-meta);
   }
 
-  .maps-row-grid .home-row-actions {
-    justify-content: flex-end;
-    margin-top: auto;
+  .maps-row-grid .home-play-btn {
+    height: 28px;
+    padding: 0 10px;
   }
 
   .maps-empty {

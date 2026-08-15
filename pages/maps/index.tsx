@@ -1,5 +1,6 @@
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { useSession } from 'next-auth/react'
+import { SearchIcon } from '@heroicons/react/outline'
 import { WidthController } from '@components/layout'
 import { PageBackLink } from '@components/PageBackLink'
 import EquitableContinentRowCard from '@components/EquitableContinentRowCard'
@@ -11,6 +12,7 @@ import { Tab, Tabs } from '@components/system'
 import StyledMapsPage from '@styles/MapsPage.Styled'
 import { MapType } from '@types'
 import { mailman, showToast } from '@utils/helpers'
+import { filterCountryMapsByQuery } from '@utils/helpers/filterCountryMapsByQuery'
 import { parseHomeMapCards } from '@utils/helpers/homeMapCards'
 import { readRecentMapIds } from '@utils/helpers/recentMapsStorage'
 
@@ -51,8 +53,13 @@ const MapsPage: FC = () => {
 
   const [recentMaps, setRecentMaps] = useState<Pick<MapType, '_id' | 'name' | 'description' | 'previewImg'>[]>([])
   const [loadingRecent, setLoadingRecent] = useState(false)
+  const [countryQuery, setCountryQuery] = useState('')
 
   const homeMaps = useMemo(() => hubHomeMaps(), [])
+  const visibleCountryMaps = useMemo(
+    () => filterCountryMapsByQuery(equitableByCountry, countryQuery),
+    [equitableByCountry, countryQuery]
+  )
 
   const getEquitableCountryMaps = async () => {
     const res = await mailman('maps/equitable-by-country')
@@ -207,11 +214,30 @@ const MapsPage: FC = () => {
               ) : equitableByCountry.length === 0 ? (
                 <p className="maps-empty">No country maps yet.</p>
               ) : (
-                <div className="maps-row-grid">
-                  {equitableByCountry.map((map) => (
-                    <EquitableCountryRowCard key={String(map._id)} map={map} />
-                  ))}
-                </div>
+                <>
+                  <div className="maps-country-search">
+                    <SearchIcon className="maps-country-search-icon" aria-hidden />
+                    <input
+                      type="search"
+                      className="maps-country-search-input"
+                      placeholder="Search countries…"
+                      aria-label="Search countries"
+                      value={countryQuery}
+                      onChange={(e) => setCountryQuery(e.target.value)}
+                      autoComplete="off"
+                      spellCheck={false}
+                    />
+                  </div>
+                  {visibleCountryMaps.length === 0 ? (
+                    <p className="maps-empty">No countries match your search.</p>
+                  ) : (
+                    <div className="maps-row-grid">
+                      {visibleCountryMaps.map((map) => (
+                        <EquitableCountryRowCard key={String(map._id)} map={map} />
+                      ))}
+                    </div>
+                  )}
+                </>
               )
             ) : null}
 
