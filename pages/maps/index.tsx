@@ -1,6 +1,7 @@
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { PageHeader, WidthController } from '@components/layout'
+import { WidthController } from '@components/layout'
+import { PageBackLink } from '@components/PageBackLink'
 import EquitableContinentRowCard from '@components/EquitableContinentRowCard'
 import EquitableCountryRowCard from '@components/EquitableCountryRowCard'
 import { HomeWorldCard } from '@components/HomeWorldCard'
@@ -183,118 +184,98 @@ const MapsPage: FC = () => {
     <StyledMapsPage>
       <WidthController>
         <Meta title="Browse Maps" />
-        <PageHeader>Maps</PageHeader>
+        <section className="maps-shell">
+          <header className="maps-shell-head">
+            <PageBackLink href="/" label="Back" compact />
+            <h1 className="maps-shell-title">Maps</h1>
+          </header>
 
-        <div className="browse-tabs-row">
-          <Tabs>
-            {tabItems
-              .filter((t) => !t.hidden)
-              .map((t) => (
-                <Tab key={t.id} isActive={activeTab === t.id} onClick={() => setActiveTab(t.id)}>
-                  {t.label}
-                </Tab>
-              ))}
-          </Tabs>
-        </div>
+          <div className="browse-tabs-row">
+            <Tabs>
+              {tabItems
+                .filter((t) => !t.hidden)
+                .map((t) => (
+                  <Tab key={t.id} isActive={activeTab === t.id} onClick={() => setActiveTab(t.id)}>
+                    {t.label}
+                  </Tab>
+                ))}
+            </Tabs>
+          </div>
 
-        <div className="page-wrapper">
-          {activeTab === 'world' && (
-            <div id="world-maps">
-              <div className="section-title">World maps</div>
-              <p className="section-subtext">
-                Featured world maps. Countries and continents have their own tabs.
-              </p>
-              {homeMaps.length === 0 ? (
-                <p className="section-subtext">No world maps configured — check home or pick a country below.</p>
+          <div className="maps-panel">
+            {activeTab === 'world' ? (
+              homeMaps.length === 0 ? (
+                <p className="maps-empty">No world maps configured.</p>
               ) : (
-                <div className="maps-wrapper equitable-countries-grid">
+                <div className="maps-tile-grid">
                   {homeMaps.map((map) => (
                     <HomeWorldCard key={String(map._id)} mapId={String(map._id)} name={map.name} />
                   ))}
                 </div>
-              )}
-            </div>
-          )}
+              )
+            ) : null}
 
-          {activeTab === 'countries' && (
-            <div id="equitable-by-country">
-              <div className="section-title">By country</div>
-
-              {loadingEquitableCountries ? (
+            {activeTab === 'countries' ? (
+              loadingEquitableCountries ? (
                 <SkeletonCards />
               ) : equitableCountriesError ? (
-                <p className="section-subtext" style={{ color: 'var(--text-muted)' }}>
-                  {equitableCountriesError}
-                </p>
+                <p className="maps-empty">{equitableCountriesError}</p>
               ) : equitableByCountry.length === 0 ? (
-                <p className="section-subtext">No country-tagged pins found for the configured source maps.</p>
+                <p className="maps-empty">No country maps yet.</p>
               ) : (
-                <div className="maps-wrapper equitable-countries-grid">
+                <div className="maps-tile-grid">
                   {equitableByCountry.map((map) => (
                     <EquitableCountryRowCard key={String(map._id)} map={map} />
                   ))}
                 </div>
-              )}
-            </div>
-          )}
+              )
+            ) : null}
 
-          {activeTab === 'continents' && (
-            <div id="equitable-by-continent">
-              <div className="section-title">By continent</div>
-
-              {loadingEquitableContinents ? (
+            {activeTab === 'continents' ? (
+              loadingEquitableContinents ? (
                 <SkeletonCards />
               ) : equitableContinentsError ? (
-                <p className="section-subtext" style={{ color: 'var(--text-muted)' }}>
-                  {equitableContinentsError}
-                </p>
+                <p className="maps-empty">{equitableContinentsError}</p>
               ) : equitableByContinent.length === 0 ? (
-                <p className="section-subtext">No continent-sized pools found for the configured source maps.</p>
+                <p className="maps-empty">No continent maps yet.</p>
               ) : (
-                <div className="maps-wrapper equitable-countries-grid">
+                <div className="maps-tile-grid">
                   {equitableByContinent.map((map) => (
                     <EquitableContinentRowCard key={String(map._id)} map={map} />
                   ))}
                 </div>
-              )}
-            </div>
-          )}
+              )
+            ) : null}
 
-          {activeTab === 'liked' && isAuthenticated && (
-            <div id="liked-maps">
-              <div className="section-title">Liked maps</div>
-              {loadingLiked ? (
+            {activeTab === 'liked' && isAuthenticated ? (
+              loadingLiked ? (
                 <SkeletonCards />
               ) : likedMaps.length === 0 ? (
-                <p className="section-subtext">Like a map from its page to see it here.</p>
+                <p className="maps-empty">Like a map from its page to see it here.</p>
               ) : (
-                <div className="maps-wrapper equitable-countries-grid">
+                <div className="maps-tile-grid">
                   {likedMaps.map((map) => (
                     <HomeWorldCard key={String(map._id)} mapId={String(map._id)} name={map.name} />
                   ))}
                 </div>
-              )}
-            </div>
-          )}
+              )
+            ) : null}
 
-          {activeTab === 'recent' && (
-            <div id="recent-maps">
-              <div className="section-title">Recently viewed</div>
-              <p className="section-subtext">Last {8} map pages you opened on this device.</p>
-              {loadingRecent ? (
+            {activeTab === 'recent' ? (
+              loadingRecent ? (
                 <SkeletonCards />
               ) : recentMaps.length === 0 ? (
-                <p className="section-subtext">Open a map page to build your recent list.</p>
+                <p className="maps-empty">Open a map page to build your recent list.</p>
               ) : (
-                <div className="maps-wrapper equitable-countries-grid">
+                <div className="maps-tile-grid">
                   {recentMaps.map((map) => (
                     <HomeWorldCard key={String(map._id)} mapId={String(map._id)} name={map.name} />
                   ))}
                 </div>
-              )}
-            </div>
-          )}
-        </div>
+              )
+            ) : null}
+          </div>
+        </section>
       </WidthController>
     </StyledMapsPage>
   )

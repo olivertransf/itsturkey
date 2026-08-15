@@ -1,12 +1,13 @@
-/** Left-edge tint for map picker rows (home cards no longer use accents). */
+const PALETTE = ['#2f7fff', '#2563eb', '#7c3aed', '#db2777', '#ea580c', '#16a34a', '#0891b2', '#ca8a04', '#e11d48', '#4f46e5']
+
 export function getHomeMapAccentColor(name: string): string {
   if (name.startsWith('Default World')) {
-    return name.includes('2') ? '#6366f1' : '#2563eb'
+    return '#2563eb'
   }
   if (name.startsWith('Equitable World')) {
-    if (name.includes('III')) return '#d97706'
-    if (name.includes('II')) return '#0d9488'
     return '#2f7fff'
   }
-  return '#64748b'
+  let h = 0
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0
+  return PALETTE[h % PALETTE.length] ?? PALETTE[0]
 }

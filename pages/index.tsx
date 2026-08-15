@@ -67,51 +67,61 @@ const Home: NextPage = () => {
         <div className={`home-shell${showFriendsRail ? ' home-shell--with-friends' : ''}`}>
           <div className="home-body">
             <div className="home-main">
+              <header className="home-hero">
+                <p className="home-hero-kicker">Guess the place</p>
+                <h1 className="home-hero-title">
+                  <span aria-hidden>🇹🇷</span>
+                  {SITE_NAME}
+                </h1>
+              </header>
+
               {showFriendsRail ? <HomeOngoingCard /> : null}
 
-              <section className="home-panel">
-                <header className="home-panel-head">
-                  <h2 className="home-panel-title">Play</h2>
-                </header>
-                <div className="home-panel-body">
-                  <HomeModeTile title="Country streak" description="Name countries until you miss">
-                    <Link href="/streak" className="mode-play">
-                      Play
-                    </Link>
-                  </HomeModeTile>
-                  <HomeModeTile title="MultiGuessr" description="Several panoramas, one pin each">
-                    <Link href="/multi" className="mode-play">
-                      Play
-                    </Link>
-                  </HomeModeTile>
-                  <HomeModeTile title="Duels" description="Same locations, 1v1">
-                    <Link href="/duel/join" className="mode-secondary">
-                      Join
-                    </Link>
-                    <Link href="/duel" className="mode-play">
-                      Create
-                    </Link>
-                  </HomeModeTile>
-                </div>
-              </section>
-
-              <section className="home-panel">
-                <header className="home-panel-head">
-                  <h2 className="home-panel-title">Maps</h2>
-                  <Link href="/maps" className="home-panel-link">
-                    All maps
-                  </Link>
-                </header>
-                {homeMaps.length > 0 ? (
-                  <div className="home-panel-body">
-                    {homeMaps.map((map) => (
-                      <HomeWorldCard key={String(map._id)} mapId={String(map._id)} name={map.name} />
-                    ))}
+              <div className="home-play-maps">
+                <section className="home-panel">
+                  <header className="home-panel-head">
+                    <h2 className="home-panel-title">Play</h2>
+                  </header>
+                  <div className="home-tile-grid">
+                    <HomeModeTile title="Country streak" description="Name countries until you miss" accent="#ca8a04">
+                      <Link href="/streak" className="mode-play">
+                        Play
+                      </Link>
+                    </HomeModeTile>
+                    <HomeModeTile title="MultiGuessr" description="Several panoramas, one pin each" accent="#7c3aed">
+                      <Link href="/multi" className="mode-play">
+                        Play
+                      </Link>
+                    </HomeModeTile>
+                    <HomeModeTile title="Duels" description="Same locations, 1v1" accent="#2f7fff">
+                      <Link href="/duel/join" className="mode-secondary">
+                        Join
+                      </Link>
+                      <Link href="/duel" className="mode-play">
+                        Create
+                      </Link>
+                    </HomeModeTile>
                   </div>
-                ) : (
-                  <p className="home-empty-quiet">No featured maps yet.</p>
-                )}
-              </section>
+                </section>
+
+                <section className="home-panel">
+                  <header className="home-panel-head">
+                    <h2 className="home-panel-title">Maps</h2>
+                    <Link href="/maps" className="home-panel-link">
+                      All maps
+                    </Link>
+                  </header>
+                  {homeMaps.length > 0 ? (
+                    <div className="home-tile-grid">
+                      {homeMaps.map((map) => (
+                        <HomeWorldCard key={String(map._id)} mapId={String(map._id)} name={map.name} />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="home-empty-quiet">No featured maps yet.</p>
+                  )}
+                </section>
+              </div>
 
               <footer className="home-footer">
                 <p className="home-footer-note">

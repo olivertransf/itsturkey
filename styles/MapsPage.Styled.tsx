@@ -2,82 +2,68 @@ import styled from 'styled-components'
 
 const StyledMapsPage = styled.div`
   width: 100%;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
 
-  .browse-tabs-row {
-    margin-bottom: var(--stack-gap-md);
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding: 4px 8px 8px;
-    margin-left: -8px;
-    margin-right: -8px;
+  .maps-shell {
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    border-radius: var(--radius-xl);
+    border: var(--border-default);
+    background-color: var(--bg-card);
   }
 
-  .page-wrapper {
+  .maps-shell-head {
     display: grid;
-    gap: var(--stack-gap-lg);
-    width: 100%;
-    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    column-gap: var(--space-3);
+  }
 
-    .section-title {
-      font-size: var(--font-title);
-      font-weight: 700;
-      letter-spacing: var(--tracking-title);
-      text-transform: none;
-      color: var(--text-primary);
-      text-align: left;
-      margin: 0;
-      padding: 0;
-      line-height: 1.15;
-    }
+  .maps-shell-head > *:first-child {
+    justify-self: start;
+  }
 
-    .section-subtext {
-      margin: 0 0 var(--space-4);
-      font-size: var(--font-body);
-      line-height: 1.5;
-      color: var(--text-muted);
-      max-width: 52rem;
-    }
+  .maps-shell-title {
+    grid-column: 2;
+    margin: 0;
+    text-align: center;
+    font-size: var(--font-title);
+    font-weight: 700;
+    letter-spacing: var(--tracking-title);
+    line-height: 1.2;
+    color: var(--text-primary);
+  }
 
-    .maps-wrapper {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-2);
-      align-items: stretch;
-      width: 100%;
-    }
+  .browse-tabs-row {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 0 4px;
+  }
 
-    .maps-wrapper.equitable-countries-grid {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-2);
-      align-items: stretch;
-    }
+  .maps-panel {
+    min-width: 0;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    border: var(--border-default);
+    background-color: var(--bg-elevated);
+  }
 
-    .more-btn-wrapper {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: var(--stack-gap-lg) 0 var(--stack-gap-sm);
+  .maps-tile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: var(--space-3);
+    padding: var(--space-3);
+  }
 
-      button {
-        background-color: var(--bg-elevated);
-        color: var(--text-primary);
-        border-radius: var(--radius-md);
-        padding: var(--space-2) var(--space-4);
-        font-size: var(--font-meta);
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid var(--border-subtle);
-        transition: background var(--duration-fast) var(--ease), border-color var(--duration-fast) var(--ease);
-
-        &:hover {
-          background: var(--control-fill);
-          border-color: var(--border-strong);
-        }
-      }
-    }
+  .maps-empty {
+    margin: 0;
+    padding: var(--space-4);
+    font-size: var(--font-meta);
+    color: var(--text-muted);
   }
 `
 
