@@ -34,6 +34,7 @@ type Game = {
   mode: 'standard' | 'streak'
   streak: number
   isDailyChallenge?: boolean
+  playPhase?: 'playing' | 'recap'
   /** Latest Street View pose for friend spectate follow. */
   liveView?: {
     heading: number
@@ -42,6 +43,17 @@ type Game = {
     panoId?: string
     lat?: number
     lng?: number
+    updatedAt?: Date | string
+  }
+  guessMapLive?: {
+    lat: number
+    lng: number
+    zoom: number
+    pinLat?: number
+    pinLng?: number
+    expanded?: boolean
+    mapSize?: number
+    mobileOpen?: boolean
     updatedAt?: Date | string
   }
 }

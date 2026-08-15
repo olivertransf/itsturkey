@@ -7,6 +7,8 @@ type UserGameHistory = {
   totalPoints: number
   totalTime: number
   playedAt?: string
+  mode?: 'standard' | 'streak'
+  streak?: number
 }
 
 export default UserGameHistory

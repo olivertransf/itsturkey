@@ -12,7 +12,12 @@ type User = {
   lastSeenAt?: Date
   presenceActivity?: 'idle' | 'browsing' | 'in_game' | 'in_duel' | 'spectating'
   /** Active match or spectate target pointer for friends Watch / watcher chips. */
-  presenceSession?: { kind: 'duel' | 'game' | 'multi'; id: string }
+  presenceSession?: {
+    kind: 'duel' | 'game' | 'multi'
+    id: string
+    mode?: 'standard' | 'streak'
+    duelStatus?: 'waiting' | 'in_progress'
+  }
   createdAt?: Date
   isAdmin?: boolean
   mapsAPIKey?: string

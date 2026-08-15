@@ -1,4 +1,5 @@
 import type { GameSettingsType, LocationType, MapType } from '@types'
+import type { GuessMapLive } from '@utils/helpers/guessMapLive'
 
 /** SVG key under `/images/userAvatars` + pin ring color; matches `User.avatar` shape. */
 export type DuelGuessAvatar = { emoji: string; color: string }
@@ -88,4 +89,8 @@ export type DuelClientPayload = {
     } | null
   }
   chatMessages?: DuelChatMessageClient[]
+  guessMapLives?: {
+    host: GuessMapLive | null
+    guest: GuessMapLive | null
+  }
 }

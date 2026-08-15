@@ -90,3 +90,33 @@ export const formatTimeAgo = (dateRaw: Date | undefined) => {
 
   return 'just now'
 }
+
+export const formatShortTimeAgo = (dateRaw: Date | undefined) => {
+  if (!dateRaw) return ''
+
+  const date = new Date(dateRaw)
+  const now = new Date()
+  const timeDifferenceInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+
+  const minutes = Math.floor(timeDifferenceInSeconds / 60)
+  const hours = Math.floor(timeDifferenceInSeconds / 3600)
+  const days = Math.floor(timeDifferenceInSeconds / 86400)
+  const weeks = Math.floor(timeDifferenceInSeconds / 604800)
+
+  if (weeks >= 4) {
+    return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`
+  }
+  if (days >= 7) {
+    return `${weeks}w ago`
+  }
+  if (days >= 1) {
+    return `${days}d ago`
+  }
+  if (hours >= 1) {
+    return `${hours}h ago`
+  }
+  if (minutes >= 1) {
+    return `${minutes}m ago`
+  }
+  return 'just now'
+}

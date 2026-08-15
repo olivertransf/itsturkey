@@ -24,7 +24,7 @@ const getUserScores = async (req: NextApiRequest, res: NextApiResponse) => {
   const page = req.query.page ? Number(req.query.page) : 0
   const gamesPerPage = 20
 
-  const query = { userId: new ObjectId(userId), mode: 'standard', state: 'finished' }
+  const query = { userId: new ObjectId(userId), state: 'finished', mode: { $in: ['standard', 'streak'] } }
   const games = await collections.games
     ?.aggregate([
       { $match: query },
@@ -38,6 +38,8 @@ const getUserScores = async (req: NextApiRequest, res: NextApiResponse) => {
           totalPoints: 1,
           totalTime: 1,
           createdAt: 1,
+          mode: 1,
+          streak: 1,
         },
       },
       {
@@ -77,6 +79,9 @@ const getUserScores = async (req: NextApiRequest, res: NextApiResponse) => {
     totalPoints: item.totalPoints,
     totalTime: item.totalTime,
     playedAt: item.createdAt ? new Date(item.createdAt).toISOString() : undefined,
+    gameId: String(item._id),
+    mode: item.mode === 'streak' ? 'streak' : 'standard',
+    streak: typeof item.streak === 'number' ? item.streak : undefined,
   }))
 
   // We set limit to gamesPerPage + 1 so we know if there is atleast 1 more game after this batch

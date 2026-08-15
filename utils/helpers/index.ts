@@ -54,6 +54,8 @@ export {
   normalizeStreetViewLiveView,
 } from './streetViewLiveView'
 export type { StreetViewLiveView } from './streetViewLiveView'
+export { normalizeGuessMapLive } from './guessMapLive'
+export type { GuessMapLive } from './guessMapLive'
 export { default as parseJsonFile } from './parseJsonFile'
 export { default as randomElement } from './randomElement'
 export { default as randomInt } from './randomInt'

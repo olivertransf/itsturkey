@@ -110,6 +110,10 @@ const MultiPanel: FC<Props> = ({
         return
       }
 
+      if (latestGame._id) {
+        void mailman(`games/${latestGame._id}`, 'PUT', JSON.stringify({ playPhase: 'playing' }))
+      }
+
       roundStartedAtRef.current = new Date().getTime()
       setView('Game')
       setPanelState('playing')
