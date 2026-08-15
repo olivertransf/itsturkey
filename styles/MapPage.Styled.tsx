@@ -1,6 +1,10 @@
 import styled from 'styled-components'
 
 const StyledMapPage = styled.div`
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+
   .mapPlayCard {
     width: 100%;
     box-sizing: border-box;

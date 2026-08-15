@@ -2,6 +2,9 @@ import styled from 'styled-components'
 
 const StyledMapsPage = styled.div`
   width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
   padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
 
   .maps-shell {

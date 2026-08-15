@@ -16,9 +16,12 @@ const StyledWidthController = styled.div<StyledProps>`
   ${({ $center }) =>
     $center
       ? `
+    flex: 1 1 auto;
+    min-height: 100%;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
-    justify-content: safe center;
+    justify-content: center;
     align-items: stretch;
   `
       : ''}
