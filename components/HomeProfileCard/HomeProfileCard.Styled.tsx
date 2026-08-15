@@ -5,7 +5,7 @@ const StyledHomeProfileCard = styled.div`
   min-width: 0;
   box-sizing: border-box;
   overflow: hidden;
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   border: var(--border-default);
   background: var(--bg-card);
 
@@ -20,21 +20,21 @@ const StyledHomeProfileCard = styled.div`
 
   .profile-card-title {
     margin: 0;
-    font-size: var(--font-section);
-    font-weight: 700;
-    letter-spacing: var(--tracking-title);
-    text-transform: none;
-    color: var(--text-primary);
+    font-size: var(--font-meta);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
   }
 
   .profile-card-link {
     font-size: var(--font-compact);
     font-weight: 600;
-    color: var(--accent-primary);
+    color: var(--text-muted);
     text-decoration: none;
 
     &:hover {
-      color: var(--accent-primary-hover);
+      color: var(--text-primary);
     }
   }
 

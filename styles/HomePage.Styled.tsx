@@ -82,6 +82,64 @@ const StyledHomePage = styled.div`
     gap: var(--space-3);
   }
 
+  .home-panel {
+    width: 100%;
+    border-radius: var(--radius-lg);
+    border: var(--border-default);
+    background: var(--bg-card);
+    overflow: hidden;
+  }
+
+  .home-panel-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--divider-line);
+  }
+
+  .home-panel-title {
+    margin: 0;
+    font-size: var(--font-meta);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .home-panel-link {
+    font-size: var(--font-compact);
+    font-weight: 600;
+    color: var(--text-muted);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--text-primary);
+    }
+  }
+
+  .home-panel-body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .home-panel-body .home-row-card {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    border-bottom: 1px solid var(--divider-line);
+    box-shadow: none;
+
+    &:hover {
+      background: var(--bg-elevated);
+    }
+  }
+
+  .home-panel-body > *:last-child .home-row-card {
+    border-bottom: 0;
+  }
+
   .mode-grid {
     display: flex;
     flex-direction: column;
@@ -90,7 +148,8 @@ const StyledHomePage = styled.div`
 
   .home-empty-quiet {
     margin: 0;
-    font-size: var(--font-body);
+    padding: var(--space-4);
+    font-size: var(--font-meta);
     color: var(--text-muted);
   }
 

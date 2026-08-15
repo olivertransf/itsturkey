@@ -5,85 +5,158 @@ const StyledHomeUserStats = styled.div`
   min-width: 0;
   box-sizing: border-box;
   overflow: hidden;
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   border: var(--border-default);
   background: var(--bg-card);
 
   .stats-head {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     justify-content: space-between;
     gap: var(--space-3);
-    padding: var(--pad-row-card);
+    padding: var(--space-3) var(--space-4);
     border-bottom: 1px solid var(--divider-line);
   }
 
   .stats-title {
     margin: 0;
-    font-size: var(--font-section);
-    font-weight: 700;
-    letter-spacing: var(--tracking-title);
-    text-transform: none;
-    color: var(--text-primary);
+    font-size: var(--font-meta);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
   }
 
   .stats-link {
     font-size: var(--font-compact);
     font-weight: 600;
-    color: var(--accent-primary);
+    color: var(--text-muted);
     text-decoration: none;
 
     &:hover {
-      color: var(--accent-primary-hover);
+      color: var(--text-primary);
     }
   }
 
   .stats-loading {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    display: flex;
+    flex-direction: column;
     gap: var(--space-2);
-    padding: var(--space-3);
+    padding: var(--space-4);
   }
 
   .stats-skel {
-    height: 54px;
-    border-radius: var(--radius-md);
+    height: 44px;
+    border-radius: var(--radius-sm);
     background: var(--control-fill);
+
+    &--wide {
+      height: 72px;
+    }
   }
 
-  .stats-grid {
+  .stats-hero {
     list-style: none;
     margin: 0;
-    padding: var(--space-3);
+    padding: var(--space-4);
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: var(--space-2);
+    gap: var(--space-3);
   }
 
-  .stats-item {
+  .stats-hero li {
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-    padding: var(--space-3);
-    border-radius: var(--radius-md);
-    background: var(--control-fill);
-    border: 1px solid var(--border-subtle);
+    gap: 4px;
   }
 
   .stats-value {
-    font-size: var(--font-title);
-    font-weight: 700;
-    letter-spacing: var(--tracking-title);
-    line-height: 1.2;
+    font-size: 1.25rem;
+    font-weight: 650;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
     color: var(--text-primary);
     font-variant-numeric: tabular-nums;
   }
 
   .stats-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
     font-size: var(--font-compact);
     line-height: 1.3;
     color: var(--text-muted);
+  }
+
+  .stats-delta {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+
+    &.is-up {
+      color: var(--success);
+    }
+
+    &.is-down {
+      color: var(--danger);
+    }
+  }
+
+  .stats-meter {
+    padding: 0 var(--space-4) var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .stats-meter-head {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--font-compact);
+    font-weight: 600;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stats-meter-track {
+    height: 4px;
+    border-radius: var(--radius-pill);
+    background: var(--control-fill);
+    overflow: hidden;
+  }
+
+  .stats-meter-fill {
+    height: 100%;
+    background: var(--accent-primary);
+  }
+
+  .stats-meta {
+    margin: 0;
+    padding: var(--space-3) var(--space-4) var(--space-4);
+    border-top: 1px solid var(--divider-line);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3) var(--space-4);
+  }
+
+  .stats-meta div {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .stats-meta dt {
+    font-size: var(--font-compact);
+    color: var(--text-subtle);
+  }
+
+  .stats-meta dd {
+    margin: 0;
+    font-size: var(--font-meta);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
   }
 `
 

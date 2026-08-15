@@ -1,7 +1,6 @@
 import { useSession } from 'next-auth/react'
 import type { NextPage } from 'next'
 import Link from 'next/link'
-import { GlobeAltIcon, LightningBoltIcon, ViewGridIcon } from '@heroicons/react/outline'
 import { HomeFriendsCard } from '@components/HomeFriendsCard'
 import { HomeModeTile } from '@components/HomeModeTile'
 import { HomeOngoingCard } from '@components/HomeOngoingCard'
@@ -70,49 +69,41 @@ const Home: NextPage = () => {
             <div className="home-main">
               {showFriendsRail ? <HomeOngoingCard /> : null}
 
-              <section className="home-section">
-                <h2 className="section-title">Play</h2>
-                <div className="mode-grid">
-                  <HomeModeTile
-                    accent="streak"
-                    title="Country Streak"
-                    description="Keep naming countries until you miss."
-                    icon={<GlobeAltIcon />}
-                  >
+              <section className="home-panel">
+                <header className="home-panel-head">
+                  <h2 className="home-panel-title">Play</h2>
+                </header>
+                <div className="home-panel-body">
+                  <HomeModeTile title="Country streak" description="Name countries until you miss">
                     <Link href="/streak" className="mode-play">
                       Play
                     </Link>
                   </HomeModeTile>
-                  <HomeModeTile
-                    accent="multi"
-                    title="MultiGuessr"
-                    description="Several Street Views at once. One map guess each."
-                    icon={<ViewGridIcon />}
-                  >
+                  <HomeModeTile title="MultiGuessr" description="Several panoramas, one pin each">
                     <Link href="/multi" className="mode-play">
                       Play
                     </Link>
                   </HomeModeTile>
-                  <HomeModeTile
-                    accent="duel"
-                    title="Duels"
-                    description="1v1 on the same locations. Invite a friend or join a code."
-                    icon={<LightningBoltIcon />}
-                  >
-                    <Link href="/duel" className="mode-play">
-                      Create
-                    </Link>
+                  <HomeModeTile title="Duels" description="Same locations, 1v1">
                     <Link href="/duel/join" className="mode-secondary">
                       Join
+                    </Link>
+                    <Link href="/duel" className="mode-play">
+                      Create
                     </Link>
                   </HomeModeTile>
                 </div>
               </section>
 
-              <section className="home-section">
-                <h2 className="section-title">Maps</h2>
+              <section className="home-panel">
+                <header className="home-panel-head">
+                  <h2 className="home-panel-title">Maps</h2>
+                  <Link href="/maps" className="home-panel-link">
+                    All maps
+                  </Link>
+                </header>
                 {homeMaps.length > 0 ? (
-                  <div className="card-grid">
+                  <div className="home-panel-body">
                     {homeMaps.map((map) => (
                       <HomeWorldCard key={String(map._id)} mapId={String(map._id)} name={map.name} />
                     ))}
@@ -121,12 +112,6 @@ const Home: NextPage = () => {
                   <p className="home-empty-quiet">No featured maps yet.</p>
                 )}
               </section>
-
-              <div className="home-geo-cta-row">
-                <Link href="/maps" className="home-geo-cta">
-                  Browse all maps
-                </Link>
-              </div>
 
               <footer className="home-footer">
                 <p className="home-footer-note">
