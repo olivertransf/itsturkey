@@ -36,7 +36,7 @@ const StyledProfilePage = styled.div`
 
   @media (min-width: 800px) {
     .profile-body {
-      grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
+      grid-template-columns: minmax(200px, 260px) minmax(0, 1fr);
       align-items: start;
       gap: var(--space-5);
     }
@@ -69,7 +69,7 @@ const StyledProfilePage = styled.div`
     text-align: center;
     gap: var(--space-3);
     min-width: 0;
-    padding: var(--space-2) 0;
+    padding: var(--space-7) 0 var(--space-2);
   }
 
   .profile-main {

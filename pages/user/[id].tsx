@@ -255,7 +255,7 @@ const ProfilePage: NextPage = () => {
                       type="user"
                       src={newProfileValues?.avatar?.emoji}
                       backgroundColor={newProfileValues?.avatar?.color}
-                      size={112}
+                      size={152}
                     />
                     <span className="profile-avatar-edit">
                       <CameraIcon />
@@ -266,7 +266,7 @@ const ProfilePage: NextPage = () => {
                     type="user"
                     src={userDetails.avatar?.emoji}
                     backgroundColor={userDetails.avatar?.color}
-                    size={112}
+                    size={152}
                   />
                 )}
                 <div className="profile-copy">
