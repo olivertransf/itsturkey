@@ -127,13 +127,6 @@ const HomeOngoingCard: FC = () => {
 
   return (
     <StyledHomeOngoingCard>
-      <header className="ongoing-head">
-        <h2 className="ongoing-title">Continue</h2>
-        <Link href="/ongoing" className="ongoing-link">
-          All
-        </Link>
-      </header>
-
       {visible.length > 0 ? (
         <ul className="ongoing-list">
           {visible.map((game) => (
@@ -161,6 +154,9 @@ const HomeOngoingCard: FC = () => {
           ) : null}
         </div>
       )}
+      <Link href="/ongoing" className="ongoing-link">
+        All
+      </Link>
     </StyledHomeOngoingCard>
   )
 }
