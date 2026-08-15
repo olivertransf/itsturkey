@@ -1,8 +1,8 @@
-import { CSSProperties, FC, useEffect, useMemo, useState } from 'react'
-import { useRouter } from 'next/router'
+import { CSSProperties, FC, useCallback, useEffect, useMemo, useState } from 'react'
 import Game from '@backend/models/game'
 import MultiSession from '@backend/models/multiSession'
-import { Button } from '@components/system'
+import { PageBackLink } from '@components/PageBackLink'
+import type { WatcherChip } from '@components/WatchersIndicator'
 import { formatLargeNumber, mailman } from '@utils/helpers'
 import MultiFinalResults from './MultiFinalResults'
 import MultiPanel from './MultiPanel'
@@ -11,11 +11,16 @@ import { StyledMultiGameView } from './MultiGameView.Styled'
 type Props = {
   session: MultiSession
   panels: Game[]
+  isSpectator?: boolean
+  watchers?: WatcherChip[]
 }
 
-const MultiGameView: FC<Props> = ({ session, panels }) => {
+const MultiGameView: FC<Props> = ({ session, panels, isSpectator = false, watchers = [] }) => {
   const [panelGames, setPanelGames] = useState(panels)
-  const router = useRouter()
+  const [playableById, setPlayableById] = useState<Record<string, boolean>>({})
+  const [activePanelId, setActivePanelId] = useState<string | null>(
+    panels[0]?._id != null ? String(panels[0]._id) : null
+  )
   const totalPoints = useMemo(
     () => panelGames.reduce((total, panel) => total + (panel.totalPoints ?? 0), 0),
     [panelGames]
@@ -30,18 +35,31 @@ const MultiGameView: FC<Props> = ({ session, panels }) => {
   }, [panels])
 
   useEffect(() => {
-    if (!allPanelsFinished || session.state === 'finished') {
+    if (isSpectator || !allPanelsFinished || session.state === 'finished') {
       return
     }
 
     void mailman(`multi/${session._id}`, 'PUT', JSON.stringify({ endSession: true }))
-  }, [allPanelsFinished, session._id, session.state])
+  }, [isSpectator, allPanelsFinished, session._id, session.state])
+
+  useEffect(() => {
+    if (activePanelId && playableById[activePanelId] !== false) return
+    const next = panelGames.find((panel) => {
+      const id = String(panel._id ?? '')
+      return id && panel.state !== 'finished' && playableById[id] !== false
+    })
+    if (next?._id) setActivePanelId(String(next._id))
+  }, [activePanelId, playableById, panelGames])
 
   const updatePanelGame = (nextGame: Game) => {
     setPanelGames((currentGames) =>
       currentGames.map((game) => (String(game._id) === String(nextGame._id) ? nextGame : game))
     )
   }
+
+  const reportPlayable = useCallback((panelId: string, playable: boolean) => {
+    setPlayableById((current) => (current[panelId] === playable ? current : { ...current, [panelId]: playable }))
+  }, [])
 
   if (allPanelsFinished) {
     return <MultiFinalResults session={{ ...session, state: 'finished' }} panels={panelGames} />
@@ -51,31 +69,43 @@ const MultiGameView: FC<Props> = ({ session, panels }) => {
     <StyledMultiGameView>
       <div className="multi-header">
         <div className="multi-title">
-          <h1>MultiGuessr</h1>
-          <span>{session.mapName}</span>
+          <PageBackLink href={isSpectator ? '/' : exitHref} label="Exit" compact />
+          <div className="multi-title-text">
+            <span className="multi-kicker">MultiGuessr</span>
+            <h1>{session.mapName || 'World'}</h1>
+          </div>
         </div>
 
         <div className="multi-stats">
-          <span>{formatLargeNumber(totalPoints)} pts</span>
+          <span>
+            <strong>{formatLargeNumber(totalPoints)}</strong> pts
+          </span>
           <span>
             {panelsFinished}/{panelGames.length} done
           </span>
-          <Button variant="solidGray" size="sm" onClick={() => router.push(exitHref)}>
-            Exit
-          </Button>
+          {!isSpectator && watchers.length > 0 ? (
+            <span>{watchers.map((w) => w.name).join(', ')} watching</span>
+          ) : null}
         </div>
       </div>
 
       <div className="multi-grid" style={{ '--multi-columns': gridColumns } as CSSProperties}>
-        {panelGames.map((panel, index) => (
-          <MultiPanel
-            key={String(panel._id ?? index)}
-            game={panel}
-            panelIndex={index}
-            cooldownSeconds={session.cooldownSeconds}
-            onGameChange={updatePanelGame}
-          />
-        ))}
+        {panelGames.map((panel, index) => {
+          const panelId = String(panel._id ?? index)
+          return (
+            <MultiPanel
+              key={panelId}
+              game={panel}
+              panelIndex={index}
+              cooldownSeconds={session.cooldownSeconds}
+              onGameChange={updatePanelGame}
+              isSpectator={isSpectator}
+              isActive={activePanelId === panelId}
+              onSelect={() => setActivePanelId(panelId)}
+              onPlayableChange={reportPlayable}
+            />
+          )
+        })}
       </div>
     </StyledMultiGameView>
   )

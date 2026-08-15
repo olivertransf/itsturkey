@@ -150,6 +150,17 @@ const StyledStreetView = styled.div<StyledProps>`
     overflow: hidden;
   }
 
+  .pano-loading {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-primary);
+    pointer-events: none;
+  }
+
   .streetview-fx-stack {
     ${layerFill}
   }

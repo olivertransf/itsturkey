@@ -1,6 +1,10 @@
 import styled from 'styled-components'
 
-const StyledGameStatus = styled.div`
+type StyledProps = {
+  $compact?: boolean
+}
+
+const StyledGameStatus = styled.div<StyledProps>`
   background-color: var(--hud-surface);
   backdrop-filter: blur(10px);
   border-radius: var(--radius-md);
@@ -57,6 +61,21 @@ const StyledGameStatus = styled.div`
       margin-top: 0;
     }
   }
+
+  ${({ $compact }) =>
+    $compact &&
+    `
+    top: max(44px, calc(12px + env(safe-area-inset-top, 0px)));
+    right: max(10px, env(safe-area-inset-right, 0px));
+
+    .infoSection {
+      padding: 8px 10px;
+    }
+
+    .value.time {
+      font-size: 1rem;
+    }
+  `}
 `
 
 export default StyledGameStatus

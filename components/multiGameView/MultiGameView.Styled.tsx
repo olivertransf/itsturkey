@@ -2,41 +2,65 @@ import styled from 'styled-components'
 
 export const StyledMultiGameView = styled.div`
   min-height: 100vh;
-  background: #050505;
-  color: #fff;
+  min-height: 100dvh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
 
   .multi-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    padding: 14px 18px;
-    background: rgba(10, 10, 10, 0.96);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 10px 16px;
+    background: var(--bg-elevated);
+    border-bottom: var(--border-default);
   }
 
   .multi-title {
     display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  .multi-title-text {
+    display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .multi-kicker {
+    color: var(--text-muted);
+    font-size: var(--font-compact);
+    font-weight: 700;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
   }
 
   .multi-title h1 {
     margin: 0;
-    font-size: 18px;
-  }
-
-  .multi-title span {
-    color: #a1a1aa;
-    font-size: 13px;
+    font-size: var(--font-section);
+    font-weight: 700;
+    letter-spacing: var(--tracking-title);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .multi-stats {
     display: flex;
     align-items: center;
     gap: 14px;
-    color: #d4d4d8;
-    font-size: 13px;
+    color: var(--text-muted);
+    font-size: var(--font-compact);
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .multi-stats strong {
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
   }
 
   .multi-grid {
@@ -44,15 +68,20 @@ export const StyledMultiGameView = styled.div`
     grid-template-columns: repeat(var(--multi-columns), minmax(0, 1fr));
     gap: 8px;
     padding: 8px;
-    height: calc(100vh - 69px);
-    height: calc(100dvh - 69px);
+    height: calc(100vh - 58px);
+    height: calc(100dvh - 58px);
   }
 
   @media (max-width: 900px) {
+    .multi-header {
+      flex-wrap: wrap;
+      padding: 10px 12px;
+    }
+
     .multi-grid {
       grid-template-columns: 1fr;
       height: auto;
-      min-height: calc(100vh - 69px);
+      min-height: calc(100vh - 58px);
     }
   }
 `
@@ -60,13 +89,20 @@ export const StyledMultiGameView = styled.div`
 export const StyledMultiPanel = styled.div`
   position: relative;
   overflow: hidden;
-  min-height: 360px;
-  border-radius: 14px;
-  background: #101010;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  height: 100%;
+  min-height: 280px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+  border: var(--border-default);
+
+  &.is-active {
+    border-color: rgba(47, 127, 255, 0.7);
+    box-shadow: 0 0 0 1px rgba(47, 127, 255, 0.35);
+  }
 
   .panel-streetview {
     height: 100%;
+    min-height: 0;
   }
 
   .panel-overlay {
@@ -76,59 +112,69 @@ export const StyledMultiPanel = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.72);
-    backdrop-filter: blur(3px);
+    background: rgba(12, 13, 15, 0.78);
   }
 
   .panel-card {
-    min-width: 220px;
-    padding: 18px 20px;
-    border-radius: 14px;
+    min-width: 180px;
+    padding: 16px 18px;
+    border-radius: var(--radius-lg);
     text-align: center;
-    background: rgba(20, 20, 20, 0.96);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--bg-elevated);
+    border: var(--border-default);
   }
 
   .panel-card strong {
     display: block;
     margin-bottom: 6px;
-    font-size: 22px;
+    font-size: 1.25rem;
   }
 
   .panel-card span {
-    color: #a1a1aa;
-    font-size: 13px;
+    color: var(--text-muted);
+    font-size: var(--font-compact);
   }
 
   .panel-label {
     position: absolute;
-    top: 12px;
-    left: 12px;
+    top: 10px;
+    left: 10px;
     z-index: 4;
-    padding: 7px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
     border-radius: 999px;
-    background: rgba(0, 0, 0, 0.72);
-    color: #fff;
-    font-size: 12px;
+    background: var(--hud-surface);
+    border: 1px solid var(--border-strong);
+    color: var(--text-primary);
+    font-size: var(--font-compact);
     font-weight: 700;
+    pointer-events: none;
+  }
+
+  .panel-label span {
+    color: var(--text-muted);
+    font-weight: 600;
   }
 `
 
 export const StyledMultiFinalResults = styled.div`
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 32px;
-  background: #050505;
-  color: #fff;
+  background: var(--bg-primary);
+  color: var(--text-primary);
 
   .final-card {
-    width: min(760px, 100%);
+    width: min(640px, 100%);
     padding: 28px;
-    border-radius: 18px;
-    background: #101010;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-lg);
+    background: var(--bg-elevated);
+    border: var(--border-default);
   }
 
   .total-points {
@@ -138,12 +184,21 @@ export const StyledMultiFinalResults = styled.div`
 
   .total-points strong {
     display: block;
-    font-size: 46px;
+    font-size: 2.5rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .total-points span {
+    color: var(--text-muted);
+    font-size: var(--font-compact);
+    font-weight: 700;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
   }
 
   .panel-results {
     display: grid;
-    gap: 10px;
+    gap: 8px;
   }
 
   .panel-result-row {
@@ -151,9 +206,10 @@ export const StyledMultiFinalResults = styled.div`
     justify-content: space-between;
     gap: 16px;
     padding: 12px 14px;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.04);
-    color: #d4d4d8;
+    border-radius: var(--radius-md);
+    background: var(--bg-surface);
+    color: var(--text-muted);
+    font-weight: 600;
   }
 
   .final-actions {

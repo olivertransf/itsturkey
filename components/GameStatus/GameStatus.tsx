@@ -9,9 +9,10 @@ type Props = {
   gameData: Game
   handleSubmitGuess: (timedOut?: boolean) => void
   readOnly?: boolean
+  compact?: boolean
 }
 
-const GameStatus: FC<Props> = ({ gameData, handleSubmitGuess, readOnly = false }) => {
+const GameStatus: FC<Props> = ({ gameData, handleSubmitGuess, readOnly = false, compact = false }) => {
   const timeLimit = gameData.gameSettings?.timeLimit
   const hasTimeLimit = gameData.gameSettings.timeLimit !== 0
 
@@ -40,70 +41,94 @@ const GameStatus: FC<Props> = ({ gameData, handleSubmitGuess, readOnly = false }
       ? gameData.totalRounds ?? gameData.rounds?.length ?? DEFAULT_TOTAL_ROUNDS
       : null
 
+  if (compact && (!hasTimeLimit || readOnly)) return null
+
+  const renderFullStatus = () => {
+    switch (gameData.mode) {
+      case 'standard':
+        return (
+          <>
+            <div className="infoSection mapName">
+              <div className="label">
+                <span>Map</span>
+              </div>
+              <div className="value">
+                <span>{gameData.mapDetails?.name}</span>
+              </div>
+            </div>
+
+            <div className="infoSection">
+              <div className="label">
+                <span>Round</span>
+              </div>
+              <div className="value">
+                <span>
+                  {finiteTotal != null ? `${gameData.round} / ${finiteTotal}` : `${gameData.round} (∞)`}
+                </span>
+              </div>
+            </div>
+
+            <div className="infoSection">
+              <div className="label">
+                <span>Points</span>
+              </div>
+              <div className="value">
+                <span>{formatLargeNumber(gameData.totalPoints)}</span>
+              </div>
+            </div>
+
+            {hasTimeLimit && !readOnly && (
+              <div className="infoSection">
+                <div className="label">
+                  <span>Time</span>
+                </div>
+                <div className="value time">
+                  <span>{formatStatusTimer(timeLeft as number)}</span>
+                </div>
+              </div>
+            )}
+          </>
+        )
+      case 'streak':
+        return (
+          <>
+            <div className="streak-section">
+              <LightningBoltIcon />
+              {gameData.streak}
+            </div>
+
+            {hasTimeLimit && !readOnly && (
+              <div className="infoSection">
+                <div className="label">
+                  <span>Time</span>
+                </div>
+                <div className="value time">
+                  <span>{formatStatusTimer(timeLeft as number)}</span>
+                </div>
+              </div>
+            )}
+          </>
+        )
+      default: {
+        const _exhaustive: never = gameData.mode
+        return _exhaustive
+      }
+    }
+  }
+
   return (
-    <StyledGameStatus>
-      {gameData.mode === 'standard' && (
-        <>
-          <div className="infoSection mapName">
-            <div className="label">
-              <span>Map</span>
-            </div>
-            <div className="value">
-              <span>{gameData.mapDetails?.name}</span>
-            </div>
+    <StyledGameStatus $compact={compact}>
+      {compact ? (
+        <div className="infoSection">
+          <div className="label">
+            <span>Time</span>
           </div>
-
-          <div className="infoSection">
-            <div className="label">
-              <span>Round</span>
-            </div>
-            <div className="value">
-              <span>
-                {finiteTotal != null ? `${gameData.round} / ${finiteTotal}` : `${gameData.round} (∞)`}
-              </span>
-            </div>
+          <div className="value time">
+            <span>{formatStatusTimer(timeLeft as number)}</span>
           </div>
-
-          <div className="infoSection">
-            <div className="label">
-              <span>Points</span>
-            </div>
-            <div className="value">
-              <span>{formatLargeNumber(gameData.totalPoints)}</span>
-            </div>
-          </div>
-
-          {hasTimeLimit && !readOnly && (
-            <div className="infoSection">
-              <div className="label">
-                <span>Time</span>
-              </div>
-              <div className="value time">
-                <span>{formatStatusTimer(timeLeft as number)}</span>
-              </div>
-            </div>
-          )}
-        </>
-      )}
-
-      {gameData.mode === 'streak' && (
-        <>
-          <div className="streak-section">
-            <LightningBoltIcon />
-            {gameData.streak}
-          </div>
-
-          {hasTimeLimit && !readOnly && (
-            <div className="infoSection">
-              <div className="label">
-                <span>Time</span>
-              </div>
-              <div className="value time">
-                <span>{formatStatusTimer(timeLeft as number)}</span>
-              </div>
-            </div>
-          )}
-        </>
+        </div>
+      ) : (
+        renderFullStatus()
       )}
     </StyledGameStatus>
   )

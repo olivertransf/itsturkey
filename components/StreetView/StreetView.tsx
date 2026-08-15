@@ -3,7 +3,6 @@ import { useRouter } from 'next/router'
 import { Game } from '@backend/models'
 import { GameStatus } from '@components/GameStatus'
 import { GuessMap } from '@components/GuessMap'
-import { LoadingPage } from '@components/layout'
 import { StreaksGuessMap } from '@components/StreaksGuessMap'
 import { StreetViewControls } from '@components/StreetViewControls'
 import { MapIcon } from '@heroicons/react/outline'
@@ -13,7 +12,9 @@ import { getStreetviewOptions } from '@utils/constants/googleMapOptions'
 import { KEY_CODES } from '@utils/constants/keyCodes'
 import { WatchersIndicator } from '@components/WatchersIndicator'
 import type { WatcherChip } from '@components/WatchersIndicator'
-import { mailman, showToast } from '@utils/helpers'
+import { DailyQuotaModal } from '@components/modals/DailyQuotaModal'
+import { Spinner } from '@components/system'
+import { mailman, getMapsKey, googleMapLoaderAsync, showToast } from '@utils/helpers'
 import type { StreetViewLiveView } from '@utils/helpers/streetViewLiveView'
 import type { GuessMapLive } from '@utils/helpers/guessMapLive'
 import { attachStreetViewPanZoomLock } from '@utils/helpers/lockStreetViewPanZoom'
@@ -24,7 +25,6 @@ import {
   pixelateFilterCellSize,
 } from '@utils/constants/visualRestrictions'
 import { StyledStreetView } from './'
-import { DailyQuotaModal } from '@components/modals/DailyQuotaModal'
 
 const triggerPanoramaResize = (pano: google.maps.StreetViewPanorama | null) => {
   if (!pano) return
@@ -67,6 +67,9 @@ type Props = {
   followGuessMapLive?: GuessMapLive | null
   /** Friends currently watching this match (shown to the player). */
   watchers?: WatcherChip[]
+  hideExit?: boolean
+  hideGuessMap?: boolean
+  compactStatus?: boolean
 }
 
 const Streetview: FC<Props> = ({
@@ -88,6 +91,9 @@ const Streetview: FC<Props> = ({
   onGuessMapLiveChange,
   followGuessMapLive = null,
   watchers = [],
+  hideExit,
+  hideGuessMap = false,
+  compactStatus = false,
 }) => {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
@@ -104,6 +110,8 @@ const Streetview: FC<Props> = ({
   const [mobileMapOpen, setMobileMapOpen] = useState(false)
   const [googleMapsConfig, setGoogleMapsConfig] = useState<GoogleMapsConfigType>()
   const [showQuotaModal, setShowQuotaModal] = useState(false)
+  const [panoReady, setPanoReady] = useState(false)
+  const hideExitControl = hideExit ?? isDuel
   const location = gameData.rounds[gameData.round - 1]
   const game = useAppSelector((state) => state.game)
   const user = useAppSelector((state) => state.user)
@@ -139,24 +147,8 @@ const Streetview: FC<Props> = ({
     lockedPoseRef.current = null
   }, [lockPan, lockZoom])
 
-  // Initializes Streetview & loads first pano
   useEffect(() => {
-    if (!googleMapsConfig) return
-
-    initializeStreetView()
-
-    const timeoutId = setTimeout(checkForQuotaExceeded, 300)
-
-    return () => {
-      clearTimeout(timeoutId)
-      detachPanZoomLockRef.current?.()
-      detachPanZoomLockRef.current = null
-      lockedPoseRef.current = null
-    }
-  }, [googleMapsConfig])
-
-  useEffect(() => {
-    if (!googleMapsConfig) return
+    if (!panoReady) return
 
     const pano = panoramaRef.current
     const el = panoContainerRef.current
@@ -174,11 +166,11 @@ const Streetview: FC<Props> = ({
       ro.disconnect()
       window.removeEventListener('resize', onWinResize)
     }
-  }, [googleMapsConfig, visualFx.pixelate, visualFx.pixelateLevel])
+  }, [panoReady, visualFx.pixelate, visualFx.pixelateLevel])
 
   // Publish live camera for spectators (throttled).
   useEffect(() => {
-    if (isSpectator || !onLiveViewChange || !googleMapsConfig) return
+    if (isSpectator || !onLiveViewChange || !panoReady) return
     const pano = panoramaRef.current
     if (!pano) return
 
@@ -222,7 +214,7 @@ const Streetview: FC<Props> = ({
         liveViewPublishTimerRef.current = null
       }
     }
-  }, [isSpectator, onLiveViewChange, googleMapsConfig, view, gameData.round])
+  }, [isSpectator, onLiveViewChange, panoReady, view, gameData.round])
 
   // Spectator: smooth-follow the player's camera (lerp POV; jump on pano change).
   useEffect(() => {
@@ -252,7 +244,7 @@ const Streetview: FC<Props> = ({
   }, [isSpectator, followLiveView])
 
   useEffect(() => {
-    if (!isSpectator || !googleMapsConfig) {
+    if (!isSpectator || !panoReady) {
       if (followRafRef.current != null) {
         cancelAnimationFrame(followRafRef.current)
         followRafRef.current = null
@@ -289,7 +281,7 @@ const Streetview: FC<Props> = ({
         followRafRef.current = null
       }
     }
-  }, [isSpectator, googleMapsConfig, lockPoseTo])
+  }, [isSpectator, panoReady, lockPoseTo])
 
   // Loads all subsequent panos
   useEffect(() => {
@@ -324,7 +316,7 @@ const Streetview: FC<Props> = ({
 
   const initializeStreetView = () => {
     const panoEl = panoContainerRef.current ?? document.getElementById(panoElementId)
-    if (!panoEl) return
+    if (!panoEl) return false
 
     const svService = new google.maps.StreetViewService()
 
@@ -346,9 +338,52 @@ const Streetview: FC<Props> = ({
 
     serviceRef.current = svService
     panoramaRef.current = svPanorama
+    setPanoReady(true)
 
     loadNewPano()
+    return true
   }
+
+  useEffect(() => {
+    let cancelled = false
+    let quotaTimer: ReturnType<typeof setTimeout> | undefined
+    let retryTimer: ReturnType<typeof setTimeout> | undefined
+    let attempts = 0
+
+    const boot = () => {
+      void googleMapLoaderAsync(getMapsKey(user.mapsAPIKey, { allowFallback: false }))
+        .then(() => {
+          if (cancelled) return
+          if (initializeStreetView()) {
+            quotaTimer = setTimeout(checkForQuotaExceeded, 300)
+            return
+          }
+          if (attempts >= 12) return
+          attempts += 1
+          retryTimer = setTimeout(boot, 50)
+        })
+        .catch(() => {
+          if (!cancelled) {
+            setLoading(false)
+            showToast('error', 'Could not load Street View')
+          }
+        })
+    }
+
+    boot()
+
+    return () => {
+      cancelled = true
+      if (quotaTimer) clearTimeout(quotaTimer)
+      if (retryTimer) clearTimeout(retryTimer)
+      detachPanZoomLockRef.current?.()
+      detachPanZoomLockRef.current = null
+      lockedPoseRef.current = null
+      panoramaRef.current = null
+      serviceRef.current = null
+      setPanoReady(false)
+    }
+  }, [panoElementId, user.mapsAPIKey])
 
   const loadNewPano = async () => {
     setLoading(true)
@@ -644,7 +679,7 @@ const Streetview: FC<Props> = ({
         root.removeEventListener(type, blockInteraction, opts)
       }
     }
-  }, [fullyFrozenView, view, googleMapsConfig])
+  }, [fullyFrozenView, view, panoReady])
 
   const pixelFilterId = `${panoElementId}-pixelate`
   const pixelCell = visualFx.pixelate
@@ -657,9 +692,12 @@ const Streetview: FC<Props> = ({
   return (
     <>
       <StyledStreetView showMap={!loading} $fx={visualFx}>
-        {loading && <LoadingPage />}
-
         <div className="streetview-pano">
+          {loading ? (
+            <div className="pano-loading" aria-live="polite">
+              <Spinner size={40} />
+            </div>
+          ) : null}
           {visualFx.pixelate ? (
             <svg className="sv-pixelate-defs" aria-hidden>
               <filter id={pixelFilterId} x="0%" y="0%" width="100%" height="100%">
@@ -721,7 +759,7 @@ const Streetview: FC<Props> = ({
             <StreetViewControls
               handleBackToStart={handleBackToStart}
               handleExitGame={handleExitGame}
-              hideExit={isDuel}
+              hideExit={hideExitControl}
               hudPrimaryStyle={isDuel}
               handleUndoLastMove={
                 !isDuel && !isSpectator && gameData.gameSettings.canMove ? handleUndoLastMove : undefined
@@ -748,11 +786,12 @@ const Streetview: FC<Props> = ({
                 gameData={gameData}
                 handleSubmitGuess={handleSubmitGuess}
                 readOnly={isSpectator}
+                compact={compactStatus}
               />
             </div>
           )}
 
-          {gameData.mode === 'standard' && (
+          {!hideGuessMap && gameData.mode === 'standard' && (
             <div data-streetview-ui>
               <GuessMap
                 currGuess={currGuess}
@@ -774,7 +813,7 @@ const Streetview: FC<Props> = ({
             </div>
           )}
 
-          {gameData.mode === 'streak' && (
+          {!hideGuessMap && gameData.mode === 'streak' && (
             <div data-streetview-ui>
               <StreaksGuessMap
                 countryStreakGuess={countryStreakGuess}
@@ -793,7 +832,7 @@ const Streetview: FC<Props> = ({
             </div>
           )}
 
-          {!isSpectator ? (
+          {!isSpectator && !hideGuessMap ? (
             <button
               data-streetview-ui
               className="toggle-map-button"

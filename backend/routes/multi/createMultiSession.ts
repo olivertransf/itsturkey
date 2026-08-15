@@ -5,6 +5,8 @@ import {
   collections,
   getLocations,
   isUserBanned,
+  mapIdForMultiPanelGame,
+  storesMultiMapIdAsObjectId,
   normalizeMultiSessionSettings,
   requirePlayableUser,
   throwError,
@@ -99,8 +101,9 @@ const createMultiSession = async (req: NextApiRequest, res: NextApiResponse) => 
       return throwError(res, 400, 'Failed to get locations')
     }
 
+    const storedMapId = mapIdForMultiPanelGame(String(resolvedPanelMap?._id ?? panelMapId))
     panelGames.push({
-      mapId: new ObjectId(resolvedPanelMap?._id ?? panelMapId) as unknown as string,
+      mapId: (storesMultiMapIdAsObjectId(storedMapId) ? new ObjectId(storedMapId) : storedMapId) as unknown as string,
       mapName: resolvedPanelMap?.name ?? mapName,
       gameSettings: {
         ...gameSettings,

@@ -12,6 +12,8 @@ export { canAccessGame, getAnonymousGameId, getExistingAnonymousGameId } from '.
 export { default as requirePlayableUser } from './requirePlayableUser'
 export {
   calculateMultiSessionTotalPoints,
+  mapIdForMultiPanelGame,
+  storesMultiMapIdAsObjectId,
   normalizeMultiSessionSettings,
 } from './multiSession'
 export { default as isUserAnAdmin } from './isUserAnAdmin'
