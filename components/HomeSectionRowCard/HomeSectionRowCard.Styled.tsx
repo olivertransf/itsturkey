@@ -104,10 +104,10 @@ const StyledHomeSectionRowCard = styled.div<{ $hasDescription: boolean }>`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: var(--control-height-md);
-    padding: 0 var(--space-4);
-    border-radius: var(--radius-md);
-    font-size: var(--font-body);
+    height: 32px;
+    padding: 0 14px;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-meta);
     font-weight: 700;
     white-space: nowrap;
     box-sizing: border-box;
@@ -132,11 +132,11 @@ const StyledHomeSectionRowCard = styled.div<{ $hasDescription: boolean }>`
   }
 
   .home-play-btn--icon {
-    width: var(--control-height-md);
-    height: var(--control-height-md);
-    min-width: var(--control-height-md);
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
     padding: 0;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
   }
 
   .home-play-btn--icon svg {

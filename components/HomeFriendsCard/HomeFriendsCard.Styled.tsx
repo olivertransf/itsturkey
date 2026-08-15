@@ -20,7 +20,7 @@ const StyledHomeFriendsCard = styled.div`
     align-items: flex-start;
     justify-content: space-between;
     gap: var(--space-3);
-    padding: var(--pad-row-card);
+    padding: 14px 18px;
     border-bottom: 1px solid var(--divider-line);
   }
 

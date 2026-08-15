@@ -55,6 +55,8 @@ const StyledMapsPage = styled.div`
   .maps-row-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 16px;
 
     @media (max-width: 800px) {
       grid-template-columns: 1fr;
@@ -62,27 +64,36 @@ const StyledMapsPage = styled.div`
   }
 
   .maps-row-grid .home-row-card {
-    border: 0;
-    border-radius: 0;
-    background: transparent;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: var(--space-4);
+    min-height: 132px;
+    padding: 18px;
+    border-radius: var(--radius-lg);
+    background: var(--bg-card);
+    border: var(--border-default);
     box-shadow: none;
-    border-right: 1px solid var(--divider-line);
-    border-bottom: 1px solid var(--divider-line);
 
     &:hover {
-      background: var(--bg-elevated);
+      border-color: var(--border-strong);
+      background: var(--control-fill);
     }
   }
 
-  .maps-row-grid > *:nth-child(2n) .home-row-card {
-    border-right: 0;
+  .maps-row-grid .home-row-letter,
+  .maps-row-grid .home-row-flag {
+    display: none;
   }
 
-  @media (max-width: 800px) {
-    .maps-row-grid .home-row-card,
-    .maps-row-grid > *:nth-child(2n) .home-row-card {
-      border-right: 0;
-    }
+  .maps-row-grid .home-row-title {
+    white-space: normal;
+    font-size: var(--font-title);
+  }
+
+  .maps-row-grid .home-row-actions {
+    justify-content: flex-end;
+    margin-top: auto;
   }
 
   .maps-empty {

@@ -5,7 +5,7 @@ const StyledHomeUserStats = styled.div`
   min-width: 0;
   box-sizing: border-box;
   overflow: hidden;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   border: var(--border-default);
   background: var(--bg-card);
 
@@ -14,17 +14,17 @@ const StyledHomeUserStats = styled.div`
     align-items: baseline;
     justify-content: space-between;
     gap: var(--space-3);
-    padding: var(--space-3) var(--space-4);
+    padding: 14px 18px;
     border-bottom: 1px solid var(--divider-line);
   }
 
   .stats-title {
     margin: 0;
-    font-size: var(--font-meta);
-    font-weight: 600;
-    letter-spacing: 0.04em;
+    font-size: var(--font-compact);
+    font-weight: 700;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--text-muted);
+    color: var(--text-subtle);
   }
 
   .stats-link {

@@ -2,7 +2,6 @@ import Link from 'next/link'
 import { FC } from 'react'
 import HomeSectionRowCard from '@components/HomeSectionRowCard'
 import { MapType } from '@types'
-import { flagEmojiFromIsoAlpha2 } from '@utils/helpers/flagEmoji'
 import { parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
 
 type Props = {
@@ -15,20 +14,10 @@ const EquitableCountryRowCard: FC<Props> = ({ map, isForDisplayOnly }) => {
   if (!code) return null
 
   const countryName = map.name?.trim() || code.toUpperCase()
-  const flag = flagEmojiFromIsoAlpha2(code)
   const href = `/map/${encodeURIComponent(String(map._id))}`
 
   return (
-    <HomeSectionRowCard
-      title={countryName}
-      titleLeading={
-        flag ? (
-          <span className="home-row-flag" title={countryName} aria-hidden>
-            {flag}
-          </span>
-        ) : undefined
-      }
-    >
+    <HomeSectionRowCard title={countryName}>
       {!isForDisplayOnly ? (
         <Link href={href} className="home-play-btn">
           Play

@@ -5,21 +5,27 @@ const StyledHomeModeTile = styled.article`
   flex-direction: column;
   align-items: stretch;
   justify-content: space-between;
-  gap: var(--space-3);
+  gap: var(--space-4);
   min-width: 0;
-  min-height: 96px;
-  padding: 16px;
-  background: transparent;
-  border: 0;
-  border-right: 1px solid var(--divider-line);
-  border-bottom: 1px solid var(--divider-line);
+  min-height: 132px;
+  padding: 18px;
+  background: var(--bg-elevated);
+  border: var(--border-default);
+  border-radius: var(--radius-lg);
+  transition: border-color var(--duration-fast) var(--ease), background-color var(--duration-fast) var(--ease);
+
+  &:hover {
+    border-color: var(--border-strong);
+    background: var(--control-fill);
+  }
 
   .mode-copy {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 6px;
     flex: 1;
     min-width: 0;
+    padding-right: 4px;
   }
 
   .mode-title {
@@ -34,13 +40,15 @@ const StyledHomeModeTile = styled.article`
   .mode-desc {
     margin: 0;
     font-size: var(--font-meta);
-    line-height: 1.4;
+    line-height: 1.45;
     color: var(--text-muted);
   }
 
   .mode-actions {
     display: flex;
     flex-wrap: nowrap;
+    justify-content: flex-end;
+    align-self: flex-end;
     gap: var(--space-2);
     flex-shrink: 0;
   }
@@ -50,11 +58,11 @@ const StyledHomeModeTile = styled.article`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: var(--control-height-md);
-    padding: 0 var(--space-3);
+    height: 32px;
+    padding: 0 14px;
     border-radius: var(--radius-sm);
     font-size: var(--font-meta);
-    font-weight: 600;
+    font-weight: 700;
     text-decoration: none;
     border: 0;
     cursor: pointer;

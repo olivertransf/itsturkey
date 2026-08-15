@@ -54,17 +54,17 @@ const StyledLayout = styled.div`
     display: flex;
     justify-content: center;
     width: 100%;
-    padding: var(--space-5) var(--page-gutter) var(--space-2);
+    padding: var(--space-7) var(--page-gutter) var(--space-4);
     box-sizing: border-box;
   }
 
   .app-hero-title {
     margin: 0;
     text-align: center;
-    font-size: clamp(2rem, 5vw, 3rem);
+    font-size: clamp(2.25rem, 6vw, 3.5rem);
     font-weight: 800;
     letter-spacing: var(--tracking-display);
-    line-height: 1.05;
+    line-height: 1;
     color: var(--text-primary);
   }
 

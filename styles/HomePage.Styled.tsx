@@ -55,23 +55,19 @@ const StyledHomePage = styled.div`
   .home-play-grid {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-
-    > *:nth-child(3n) {
-      border-right: 0;
-    }
+    gap: 12px;
+    padding: 16px;
 
     @media (max-width: 800px) {
       grid-template-columns: 1fr;
-
-      > * {
-        border-right: 0;
-      }
     }
   }
 
   .home-maps-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 16px;
 
     @media (max-width: 800px) {
       grid-template-columns: 1fr;
@@ -82,38 +78,33 @@ const StyledHomePage = styled.div`
     flex-direction: column;
     align-items: stretch;
     justify-content: space-between;
-    gap: var(--space-3);
-    min-height: 96px;
-    padding: 16px;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
+    gap: var(--space-4);
+    min-height: 132px;
+    padding: 18px;
+    border-radius: var(--radius-lg);
+    background: var(--bg-elevated);
+    border: var(--border-default);
     box-shadow: none;
-    border-right: 1px solid var(--divider-line);
-    border-bottom: 1px solid var(--divider-line);
 
     &:hover {
-      background: var(--bg-elevated);
+      border-color: var(--border-strong);
+      background: var(--control-fill);
     }
+  }
+
+  .home-maps-grid .home-row-letter,
+  .home-maps-grid .home-row-flag {
+    display: none;
   }
 
   .home-maps-grid .home-row-title {
     white-space: normal;
+    font-size: var(--font-title);
   }
 
   .home-maps-grid .home-row-actions {
-    justify-content: flex-start;
-  }
-
-  .home-maps-grid > *:nth-child(2n) .home-row-card {
-    border-right: 0;
-  }
-
-  @media (max-width: 800px) {
-    .home-maps-grid .home-row-card,
-    .home-maps-grid > *:nth-child(2n) .home-row-card {
-      border-right: 0;
-    }
+    justify-content: flex-end;
+    margin-top: auto;
   }
 
   .home-friends-rail {
@@ -137,7 +128,7 @@ const StyledHomePage = styled.div`
 
   .home-panel {
     width: 100%;
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-xl);
     border: var(--border-default);
     background: var(--bg-card);
     overflow: hidden;
@@ -148,17 +139,17 @@ const StyledHomePage = styled.div`
     align-items: baseline;
     justify-content: space-between;
     gap: var(--space-3);
-    padding: var(--space-3) var(--space-4);
+    padding: 14px 18px;
     border-bottom: 1px solid var(--divider-line);
   }
 
   .home-panel-title {
     margin: 0;
-    font-size: var(--font-meta);
-    font-weight: 600;
-    letter-spacing: 0.04em;
+    font-size: var(--font-compact);
+    font-weight: 700;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--text-muted);
+    color: var(--text-subtle);
   }
 
   .home-panel-link {
