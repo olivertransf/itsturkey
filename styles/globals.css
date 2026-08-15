@@ -195,9 +195,9 @@
   --pink-900: #831843;
 
   --palette-accent: #2f7fff;
-  --palette-surface: #142536;
-  --palette-surface-deep: #101d2e;
-  --palette-bg-raised: #0d1a2c;
+  --palette-surface: #1c1e22;
+  --palette-surface-deep: #141618;
+  --palette-bg-raised: #101214;
   --palette-bg-root: #0a1730;
   --bg-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Cpath d='M36 0H0M0 0V36' stroke='rgba(47,127,255,0.14)' stroke-width='1' fill='none'/%3E%3C/svg%3E");
 
