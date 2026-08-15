@@ -12,7 +12,8 @@ type Props = {
 
 const Layout: FC<Props> = ({ children }) => {
   const [banMessage, setBanMessage] = useState('')
-  const { asPath } = useRouter()
+  const { asPath, pathname } = useRouter()
+  const hideNavbar = pathname === '/'
 
   useEffect(() => {
     document.getElementById('main')?.scrollTo({ top: 0 })
@@ -44,7 +45,7 @@ const Layout: FC<Props> = ({ children }) => {
   return (
     <StyledLayout>
       <div className="app-layout">
-        <Navbar />
+        {hideNavbar ? null : <Navbar />}
         <div className="appBody">
           <main id="main">{children}</main>
         </div>

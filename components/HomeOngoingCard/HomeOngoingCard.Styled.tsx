@@ -9,12 +9,25 @@ const StyledHomeOngoingCard = styled.section`
   border: var(--border-default);
   background: var(--bg-card);
 
-  .ongoing-link {
+  .ongoing-head {
     display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding: 10px 16px;
-    border-top: 1px solid var(--divider-line);
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--divider-line);
+  }
+
+  .ongoing-title {
+    margin: 0;
+    font-size: var(--font-meta);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .ongoing-link {
     font-size: var(--font-compact);
     font-weight: 600;
     color: var(--text-muted);
