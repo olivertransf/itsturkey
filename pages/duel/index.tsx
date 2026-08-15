@@ -162,7 +162,7 @@ const DuelLobbyPage: NextPage = () => {
 
   return (
     <StyledMapPage>
-      <WidthController>
+      <WidthController customWidth="none" center>
         <Meta title={`${SITE_NAME} — Create duel`} />
 
         <section className="mapPlayCard">

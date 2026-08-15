@@ -3,6 +3,7 @@ import styled from 'styled-components'
 type StyledProps = {
   customWidth?: string
   mobilePadding?: string
+  $center?: boolean
 }
 
 const StyledWidthController = styled.div<StyledProps>`
@@ -12,6 +13,15 @@ const StyledWidthController = styled.div<StyledProps>`
   padding: var(--space-page-y) var(--page-gutter);
   margin: 0 auto;
   min-height: 100%;
+  ${({ $center }) =>
+    $center
+      ? `
+    display: flex;
+    flex-direction: column;
+    justify-content: safe center;
+    align-items: stretch;
+  `
+      : ''}
 
   @media (max-width: 1024px) {
     padding: ${({ mobilePadding }) => {

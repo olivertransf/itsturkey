@@ -173,7 +173,7 @@ const MapsPage: FC = () => {
 
   return (
     <StyledMapsPage>
-      <WidthController>
+      <WidthController customWidth="none" center>
         <Meta title="Browse Maps" />
         <section className="maps-shell">
           <header className="maps-shell-head">

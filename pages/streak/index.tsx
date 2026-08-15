@@ -157,7 +157,7 @@ const StreakLobbyPage: NextPage = () => {
 
   return (
     <StyledMapPage>
-      <WidthController>
+      <WidthController customWidth="none" center>
         <Meta title={`${SITE_NAME} — Country streak`} />
 
         <section className="mapPlayCard">

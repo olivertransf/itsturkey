@@ -158,7 +158,7 @@ const MultiLobbyPage: NextPage = () => {
 
   return (
     <StyledMapPage>
-      <WidthController>
+      <WidthController customWidth="none" center>
         <Meta title={`${SITE_NAME} — MultiGuessr`} />
 
         <section className="mapPlayCard">
