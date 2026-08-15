@@ -25,8 +25,6 @@ import {
 } from '@utils/constants/visualRestrictions'
 import { StyledStreetView } from './'
 import { DailyQuotaModal } from '@components/modals/DailyQuotaModal'
-import { PlonkitGuideLauncher } from '@components/PlonkitCountryGuide'
-import { resolvePlonkitGuideCountryIso } from '@utils/helpers/resolvePlonkitGuideCountryIso'
 
 const triggerPanoramaResize = (pano: google.maps.StreetViewPanorama | null) => {
   if (!pano) return
@@ -107,27 +105,6 @@ const Streetview: FC<Props> = ({
   const [googleMapsConfig, setGoogleMapsConfig] = useState<GoogleMapsConfigType>()
   const [showQuotaModal, setShowQuotaModal] = useState(false)
   const location = gameData.rounds[gameData.round - 1]
-
-  const plonkCountryIsoGame = useMemo(
-    () => resolvePlonkitGuideCountryIso(gameData.mapId, location),
-    [gameData.mapId, gameData.round, location]
-  )
-
-  const countryGuideLeadingControl =
-    view === 'Game' && plonkCountryIsoGame && !isDuel ? (
-      <PlonkitGuideLauncher
-        variant="streetControl"
-        countryIso={plonkCountryIsoGame}
-        mapLabel={gameData.mapDetails?.name}
-      />
-    ) : null
-
-  const primaryLeadingControls = (
-    <>
-      {primaryControlsLeading}
-      {countryGuideLeadingControl}
-    </>
-  )
   const game = useAppSelector((state) => state.game)
   const user = useAppSelector((state) => state.user)
 
@@ -749,7 +726,7 @@ const Streetview: FC<Props> = ({
               handleUndoLastMove={
                 !isDuel && !isSpectator && gameData.gameSettings.canMove ? handleUndoLastMove : undefined
               }
-              leadingPrimaryControls={primaryLeadingControls}
+              leadingPrimaryControls={primaryControlsLeading}
             />
           </div>
           {isSpectator ? (

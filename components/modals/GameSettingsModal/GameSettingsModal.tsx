@@ -1,9 +1,7 @@
-import { FC, useMemo } from 'react'
+import { FC } from 'react'
 import { GameStartPanelContent, useGameStartFlow } from '@components/GameStartForm'
 import type { PlayMode } from '@components/GameStartForm'
-import { PlonkitGuideLauncher } from '@components/PlonkitCountryGuide'
 import { GameType, MapType } from '@types'
-import { parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
 import { MainModal } from '../MainModal'
 
 type Props = {
@@ -33,24 +31,6 @@ const GameSettingsModal: FC<Props> = ({
 
   const { primaryAction, cancelAction, footerMeta, isSubmitting, ...panelState } = flow
 
-  const equitableCountryIso = useMemo(
-    () => parseEquitableCountryMapKey(String(mapDetails._id)),
-    [mapDetails._id]
-  )
-
-  const showCountryTips = Boolean(equitableCountryIso && gameMode !== 'streak')
-
-  const countryTipsHeader =
-    showCountryTips && equitableCountryIso ? (
-      <PlonkitGuideLauncher
-        variant="compact"
-        countryIso={equitableCountryIso}
-        mapLabel={mapDetails.name}
-        compactShowLabel={false}
-        compactShrinkWrap
-      />
-    ) : null
-
   return (
     <MainModal
       title={footerMeta.title}
@@ -61,9 +41,8 @@ const GameSettingsModal: FC<Props> = ({
       onCancel={cancelAction}
       onAction={() => void primaryAction()}
       isSubmitting={isSubmitting}
-      headerAccessory={countryTipsHeader}
     >
-      <GameStartPanelContent {...panelState} hideCountryTips={showCountryTips} />
+      <GameStartPanelContent {...panelState} />
     </MainModal>
   )
 }

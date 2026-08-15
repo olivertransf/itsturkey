@@ -1,18 +1,15 @@
-import { FC, useMemo } from 'react'
-import { PlonkitGuideLauncher } from '@components/PlonkitCountryGuide'
+import { FC } from 'react'
 import { MapPickerGrid } from '@components/MapPickerGrid'
 import { MapRowTile } from '@components/MapRowTile'
 import { Checkbox, Slider, ToggleSwitch } from '@components/system'
 import { StyledGameSettingsModal } from '@components/modals/GameSettingsModal'
 import { MAX_TOTAL_ROUNDS } from '@utils/constants/gameModes'
-import { parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
 import { formatTimeLimit } from '@utils/helpers'
 import type { GameStartFlowApi } from './useGameStartFlow'
 import VisualRestrictionsPanel from './VisualRestrictionsPanel'
 
 type Props = Omit<GameStartFlowApi, 'primaryAction' | 'cancelAction' | 'footerMeta' | 'isSubmitting'> & {
   hideMapSummary?: boolean
-  hideCountryTips?: boolean
   className?: string
 }
 
@@ -22,7 +19,6 @@ const GameStartPanelContent: FC<Props> = ({
   mapDetails,
   gameMode,
   hideMapSummary,
-  hideCountryTips,
   className,
   showDetailedChecked,
   canMove,
@@ -46,11 +42,6 @@ const GameStartPanelContent: FC<Props> = ({
   setVisualRestrictions,
 }) => {
   const defaultsLocked = !!showDetailedChecked
-
-  const equitableCountryIso = useMemo(
-    () => parseEquitableCountryMapKey(String(mapDetails._id)),
-    [mapDetails._id]
-  )
 
   const defaultSettingsLabel = 'Use default round time and movement'
 
@@ -166,10 +157,6 @@ const GameStartPanelContent: FC<Props> = ({
               <VisualRestrictionsPanel value={visualRestrictions} onChange={setVisualRestrictions} />
             </div>
           </section>
-
-          {!hideCountryTips && equitableCountryIso && gameMode !== 'streak' ? (
-            <PlonkitGuideLauncher variant="compact" countryIso={equitableCountryIso} mapLabel={mapDetails.name} />
-          ) : null}
         </>
       </div>
     </StyledGameSettingsModal>

@@ -1,14 +1,12 @@
-import { FC, useMemo } from 'react'
+import { FC } from 'react'
 import { LobbyGameSettings } from '@components/LobbyGameSettings'
 import VisualRestrictionsPanel from './VisualRestrictionsPanel'
 import { Button, Slider, ToggleSwitch } from '@components/system'
-import { PlonkitGuideLauncher } from '@components/PlonkitCountryGuide'
 import { StyledGameSettingsModal } from '@components/modals/GameSettingsModal'
 import { useGameStartFlow } from './useGameStartFlow'
 import { StyledMapPlayInline } from './MapPlayInline.Styled'
 import type { GameType, MapType } from '@types'
 import { MAX_TOTAL_ROUNDS } from '@utils/constants/gameModes'
-import { parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
 import { VISUAL_RESTRICTION_CATALOG, normalizeVisualRestrictions } from '@utils/constants/visualRestrictions'
 
 type Props = {
@@ -40,11 +38,6 @@ const MapPlayInline: FC<Props> = ({ mapDetails, gameMode }) => {
     setVisualRestrictions,
     handleCheck,
   } = flow
-
-  const equitableCountryIso = useMemo(
-    () => parseEquitableCountryMapKey(String(mapDetails._id)),
-    [mapDetails._id]
-  )
 
   const defaultsLocked = !!showDetailedChecked
   const anyFilterOn = VISUAL_RESTRICTION_CATALOG.some(
@@ -114,14 +107,6 @@ const MapPlayInline: FC<Props> = ({ mapDetails, gameMode }) => {
         </section>
 
         <div className="play-start">
-          {equitableCountryIso && gameMode !== 'streak' ? (
-            <PlonkitGuideLauncher
-              variant="compact"
-              countryIso={equitableCountryIso}
-              mapLabel={mapDetails.name}
-              compactAlign="start"
-            />
-          ) : null}
           <Button
             variant="primary"
             width="100%"
