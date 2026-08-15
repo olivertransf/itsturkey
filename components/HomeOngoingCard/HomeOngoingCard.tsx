@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { FC, useCallback, useEffect, useMemo, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { compareLastUsedDesc, mailman, pickLastUsedAt, showToast } from '@utils/helpers'
 import {
@@ -55,6 +55,7 @@ const HomeOngoingCard: FC = () => {
   const [games, setGames] = useState<UnfinishedGame[]>([])
   const [hasMore, setHasMore] = useState(false)
   const [hiddenIds, setHiddenIds] = useState<string[]>([])
+  const loadSeq = useRef(0)
   const isAuthed = status === 'authenticated' && Boolean(session?.user?.id)
 
   const refreshHidden = useCallback(() => {
@@ -62,8 +63,9 @@ const HomeOngoingCard: FC = () => {
   }, [])
 
   const load = useCallback(async () => {
+    const seq = ++loadSeq.current
     if (!isAuthed) {
-      setGames([])
+      if (seq === loadSeq.current) setGames([])
       return
     }
 
@@ -73,6 +75,7 @@ const HomeOngoingCard: FC = () => {
 
     while (page < MAX_PAGES && more) {
       const res = await mailman(`games/unfinished?page=${page}`)
+      if (seq !== loadSeq.current) return
       if (!res || res.error || !Array.isArray(res.data)) {
         more = false
         break
@@ -84,6 +87,7 @@ const HomeOngoingCard: FC = () => {
       page += 1
     }
 
+    if (seq !== loadSeq.current) return
     setGames(collected)
     setHasMore(more)
     refreshHidden()
@@ -108,7 +112,7 @@ const HomeOngoingCard: FC = () => {
 
   const hide = (id: string) => {
     hideOngoingGame(id)
-    const nextHidden = Array.from(new Set([...hiddenIds, String(id)]))
+    const nextHidden = readHiddenOngoingIds()
     setHiddenIds(nextHidden)
     showToast('success', 'Successfully hidden')
     const remaining = games.filter((game) => !nextHidden.includes(String(game._id)))
