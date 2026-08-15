@@ -54,7 +54,15 @@ const StyledHomePage = styled.div`
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-4);
-    align-items: start;
+    align-items: stretch;
+  }
+
+  .home-shell--with-friends .home-body {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
+
+    @media (max-width: 960px) {
+      grid-template-columns: 1fr;
+    }
   }
 
   .home-shell--with-friends .home-body {
@@ -133,9 +141,20 @@ const StyledHomePage = styled.div`
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
+    align-self: stretch;
+    min-height: 0;
+
+    > *:last-child {
+      flex: 1 1 auto;
+    }
 
     @media (max-width: 960px) {
       order: -1;
+      align-self: stretch;
+
+      > *:last-child {
+        flex: 0 1 auto;
+      }
     }
   }
 

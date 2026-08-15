@@ -116,16 +116,6 @@ const Home: NextPage = () => {
                   <p className="home-empty-quiet">No featured maps yet.</p>
                 )}
               </section>
-
-              <footer className="home-footer">
-                <p className="home-footer-note">
-                  Uses open-source code from{' '}
-                  <a href={GEOHUB_UPSTREAM_REPO_URL} target="_blank" rel="noreferrer">
-                    GeoHub
-                  </a>
-                  . APIs and hosting for this site are separate.
-                </p>
-              </footer>
             </div>
 
             {showFriendsRail ? (
@@ -136,6 +126,16 @@ const Home: NextPage = () => {
               </aside>
             ) : null}
           </div>
+
+          <footer className="home-footer">
+            <p className="home-footer-note">
+              Uses open-source code from{' '}
+              <a href={GEOHUB_UPSTREAM_REPO_URL} target="_blank" rel="noreferrer">
+                GeoHub
+              </a>
+              . APIs and hosting for this site are separate.
+            </p>
+          </footer>
         </div>
       </div>
     </StyledHomePage>

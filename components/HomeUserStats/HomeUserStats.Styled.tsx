@@ -8,6 +8,9 @@ const StyledHomeUserStats = styled.div`
   border-radius: var(--radius-xl);
   border: var(--border-default);
   background: var(--bg-card);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 
   .stats-head {
     display: flex;
@@ -43,6 +46,7 @@ const StyledHomeUserStats = styled.div`
     flex-direction: column;
     gap: var(--space-2);
     padding: var(--space-4);
+    flex: 1 1 auto;
   }
 
   .stats-skel {
@@ -62,6 +66,7 @@ const StyledHomeUserStats = styled.div`
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: var(--space-3);
+    flex: 1 1 auto;
   }
 
   .stats-hero li {
@@ -88,6 +93,7 @@ const StyledHomeUserStats = styled.div`
 
   .stats-meta {
     margin: 0;
+    margin-top: auto;
     padding: var(--space-3) var(--space-4) var(--space-4);
     border-top: 1px solid var(--divider-line);
     display: grid;
