@@ -1,6 +1,6 @@
+import Link from 'next/link'
 import { FC } from 'react'
-import { HomeMapTile } from '@components/HomeMapTile'
-import { getHomeMapAccentColor } from '@utils/helpers'
+import HomeSectionRowCard from '@components/HomeSectionRowCard'
 import { mapNameInitials } from '@utils/helpers/mapPreviewSrc'
 
 type Props = {
@@ -9,14 +9,21 @@ type Props = {
   description?: string
 }
 
-const HomeWorldCard: FC<Props> = ({ mapId, name }) => {
+const HomeWorldCard: FC<Props> = ({ mapId, name, description }) => {
   return (
-    <HomeMapTile
-      href={`/map/${encodeURIComponent(mapId)}`}
-      name={name}
-      accent={getHomeMapAccentColor(name)}
-      leading={mapNameInitials(name)}
-    />
+    <HomeSectionRowCard
+      title={name}
+      description={description}
+      titleLeading={
+        <span className="home-row-letter" aria-hidden>
+          {mapNameInitials(name)}
+        </span>
+      }
+    >
+      <Link href={`/map/${encodeURIComponent(mapId)}`} className="home-play-btn">
+        Play
+      </Link>
+    </HomeSectionRowCard>
   )
 }
 

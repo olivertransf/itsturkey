@@ -1,8 +1,8 @@
+import Link from 'next/link'
 import { FC } from 'react'
-import { HomeMapTile } from '@components/HomeMapTile'
+import HomeSectionRowCard from '@components/HomeSectionRowCard'
 import { MapType } from '@types'
 import { parseEquitableContinentMapKey } from '@utils/helpers/equitableContinentMapId'
-import { equitableContinentAccentColor } from '@utils/helpers/equitableContinentAccent'
 import { mapNameInitials } from '@utils/helpers/mapPreviewSrc'
 
 type Props = {
@@ -18,12 +18,24 @@ const EquitableContinentRowCard: FC<Props> = ({ map, isForDisplayOnly }) => {
   const href = `/map/${encodeURIComponent(String(map._id))}`
 
   return (
-    <HomeMapTile
-      href={isForDisplayOnly ? undefined : href}
-      name={title}
-      accent={equitableContinentAccentColor(slug)}
-      leading={mapNameInitials(title)}
-    />
+    <HomeSectionRowCard
+      title={title}
+      titleLeading={
+        <span className="home-row-letter" aria-hidden>
+          {mapNameInitials(title)}
+        </span>
+      }
+    >
+      {!isForDisplayOnly ? (
+        <Link href={href} className="home-play-btn">
+          Play
+        </Link>
+      ) : (
+        <span className="home-play-btn" aria-hidden>
+          Play
+        </span>
+      )}
+    </HomeSectionRowCard>
   )
 }
 

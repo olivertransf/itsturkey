@@ -54,25 +54,13 @@ const StyledHomePage = styled.div`
 
   .home-hero {
     display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
+    justify-content: center;
     padding: var(--space-2) 0 var(--space-1);
-  }
-
-  .home-hero-kicker {
-    margin: 0;
-    font-size: var(--font-meta);
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-muted);
   }
 
   .home-hero-title {
     margin: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-3);
+    text-align: center;
     font-size: clamp(2rem, 5vw, 3rem);
     font-weight: 800;
     letter-spacing: var(--tracking-display);
@@ -80,22 +68,54 @@ const StyledHomePage = styled.div`
     color: var(--text-primary);
   }
 
-  .home-play-maps {
+  .home-play-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
-    gap: var(--space-4);
-    align-items: start;
+    grid-template-columns: 1fr 1fr 1fr;
+
+    > *:nth-child(3n) {
+      border-right: 0;
+    }
+
+    @media (max-width: 800px) {
+      grid-template-columns: 1fr;
+
+      > * {
+        border-right: 0;
+      }
+    }
+  }
+
+  .home-maps-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
 
     @media (max-width: 800px) {
       grid-template-columns: 1fr;
     }
   }
 
-  .home-tile-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: var(--space-3);
-    padding: var(--space-3);
+  .home-maps-grid .home-row-card {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    border-right: 1px solid var(--divider-line);
+    border-bottom: 1px solid var(--divider-line);
+
+    &:hover {
+      background: var(--bg-elevated);
+    }
+  }
+
+  .home-maps-grid > *:nth-child(2n) .home-row-card {
+    border-right: 0;
+  }
+
+  @media (max-width: 800px) {
+    .home-maps-grid .home-row-card,
+    .home-maps-grid > *:nth-child(2n) .home-row-card {
+      border-right: 0;
+    }
   }
 
   .home-friends-rail {

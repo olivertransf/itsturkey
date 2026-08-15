@@ -52,11 +52,37 @@ const StyledMapsPage = styled.div`
     background-color: var(--bg-elevated);
   }
 
-  .maps-tile-grid {
+  .maps-row-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: var(--space-3);
-    padding: var(--space-3);
+    grid-template-columns: 1fr 1fr;
+
+    @media (max-width: 800px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .maps-row-grid .home-row-card {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    border-right: 1px solid var(--divider-line);
+    border-bottom: 1px solid var(--divider-line);
+
+    &:hover {
+      background: var(--bg-elevated);
+    }
+  }
+
+  .maps-row-grid > *:nth-child(2n) .home-row-card {
+    border-right: 0;
+  }
+
+  @media (max-width: 800px) {
+    .maps-row-grid .home-row-card,
+    .maps-row-grid > *:nth-child(2n) .home-row-card {
+      border-right: 0;
+    }
   }
 
   .maps-empty {

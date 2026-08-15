@@ -207,7 +207,7 @@ const MapsPage: FC = () => {
               homeMaps.length === 0 ? (
                 <p className="maps-empty">No world maps configured.</p>
               ) : (
-                <div className="maps-tile-grid">
+                <div className="maps-row-grid">
                   {homeMaps.map((map) => (
                     <HomeWorldCard key={String(map._id)} mapId={String(map._id)} name={map.name} />
                   ))}
@@ -223,7 +223,7 @@ const MapsPage: FC = () => {
               ) : equitableByCountry.length === 0 ? (
                 <p className="maps-empty">No country maps yet.</p>
               ) : (
-                <div className="maps-tile-grid">
+                <div className="maps-row-grid">
                   {equitableByCountry.map((map) => (
                     <EquitableCountryRowCard key={String(map._id)} map={map} />
                   ))}
@@ -239,7 +239,7 @@ const MapsPage: FC = () => {
               ) : equitableByContinent.length === 0 ? (
                 <p className="maps-empty">No continent maps yet.</p>
               ) : (
-                <div className="maps-tile-grid">
+                <div className="maps-row-grid">
                   {equitableByContinent.map((map) => (
                     <EquitableContinentRowCard key={String(map._id)} map={map} />
                   ))}
@@ -253,7 +253,7 @@ const MapsPage: FC = () => {
               ) : likedMaps.length === 0 ? (
                 <p className="maps-empty">Like a map from its page to see it here.</p>
               ) : (
-                <div className="maps-tile-grid">
+                <div className="maps-row-grid">
                   {likedMaps.map((map) => (
                     <HomeWorldCard key={String(map._id)} mapId={String(map._id)} name={map.name} />
                   ))}
@@ -267,7 +267,7 @@ const MapsPage: FC = () => {
               ) : recentMaps.length === 0 ? (
                 <p className="maps-empty">Open a map page to build your recent list.</p>
               ) : (
-                <div className="maps-tile-grid">
+                <div className="maps-row-grid">
                   {recentMaps.map((map) => (
                     <HomeWorldCard key={String(map._id)} mapId={String(map._id)} name={map.name} />
                   ))}

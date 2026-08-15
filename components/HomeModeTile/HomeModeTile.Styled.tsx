@@ -1,35 +1,30 @@
 import styled from 'styled-components'
 
 const StyledHomeModeTile = styled.article`
-  --tile-accent: #2f7fff;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-3);
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-4);
   min-width: 0;
-  min-height: 124px;
-  padding: var(--space-3);
-  box-sizing: border-box;
-  border-radius: var(--radius-lg);
-  border: 1px solid color-mix(in srgb, var(--tile-accent) 32%, var(--border-subtle));
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--tile-accent) 18%, var(--bg-elevated)) 0%,
-    var(--bg-elevated) 70%
-  );
+  min-height: 56px;
+  padding: 14px 16px;
+  background: transparent;
+  border: 0;
+  border-right: 1px solid var(--divider-line);
+  border-bottom: 1px solid var(--divider-line);
 
   .mode-copy {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
+    flex: 1;
     min-width: 0;
   }
 
   .mode-title {
     margin: 0;
     font-size: var(--font-body);
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: -0.02em;
     color: var(--text-primary);
     line-height: 1.25;
@@ -40,12 +35,16 @@ const StyledHomeModeTile = styled.article`
     font-size: var(--font-meta);
     line-height: 1.35;
     color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .mode-actions {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: var(--space-2);
+    flex-shrink: 0;
   }
 
   .mode-play,
