@@ -18,6 +18,7 @@ import { formatOngoingScore, mailman, pickLastUsedAt, showToast } from '@utils/h
 import {
   hideOngoingGame,
   isOngoingGameHidden,
+  normalizeOngoingGameId,
   readHiddenOngoingIds,
   unhideAllOngoingGames,
   unhideOngoingGame,
@@ -160,7 +161,7 @@ const OngoingGamesPage: NextPage = () => {
                 scrollableTarget={isBreakpoint ? undefined : 'main'}
               >
                 {games.map((game, idx) => {
-                  const gameId = String(game._id)
+                  const gameId = normalizeOngoingGameId(game._id)
                   const hidden = hiddenIds.includes(gameId)
 
                   return (

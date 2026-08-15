@@ -5,6 +5,7 @@ import { compareLastUsedDesc, mailman, pickLastUsedAt, showToast } from '@utils/
 import {
   hideOngoingGame,
   isOngoingGameHidden,
+  normalizeOngoingGameId,
   readHiddenOngoingIds,
   unhideAllOngoingGames,
 } from '@utils/helpers/hiddenOngoingGames'
@@ -13,7 +14,7 @@ import { COUNTRY_STREAK_DETAILS, DAILY_CHALLENGE_DETAILS } from '@utils/constant
 import StyledHomeOngoingCard from './HomeOngoingCard.Styled'
 
 type UnfinishedGame = {
-  _id: string
+  _id: unknown
   mode?: string
   round?: number
   totalRounds?: number
@@ -30,6 +31,8 @@ type UnfinishedGame = {
 
 const VISIBLE_LIMIT = 2
 const MAX_PAGES = 5
+
+const gameId = (game: UnfinishedGame) => normalizeOngoingGameId(game._id)
 
 const mapLabel = (game: UnfinishedGame) => {
   if (game.mode === 'streak') return COUNTRY_STREAK_DETAILS.name
@@ -54,12 +57,14 @@ const HomeOngoingCard: FC = () => {
   const { status, data: session } = useSession()
   const [games, setGames] = useState<UnfinishedGame[]>([])
   const [hasMore, setHasMore] = useState(false)
-  const [hiddenIds, setHiddenIds] = useState<string[]>([])
+  const [hiddenTick, setHiddenTick] = useState(0)
   const loadSeq = useRef(0)
   const isAuthed = status === 'authenticated' && Boolean(session?.user?.id)
 
-  const refreshHidden = useCallback(() => {
-    setHiddenIds(readHiddenOngoingIds())
+  const hiddenIds = useMemo(() => readHiddenOngoingIds(), [hiddenTick])
+
+  const bumpHidden = useCallback(() => {
+    setHiddenTick((n) => n + 1)
   }, [])
 
   const load = useCallback(async () => {
@@ -82,16 +87,17 @@ const HomeOngoingCard: FC = () => {
       }
       collected.push(...(res.data as UnfinishedGame[]))
       more = Boolean(res.hasMore)
-      const visibleCount = collected.filter((game) => !isOngoingGameHidden(String(game._id))).length
+      const visibleCount = collected.filter((game) => !isOngoingGameHidden(gameId(game))).length
       if (visibleCount >= VISIBLE_LIMIT) break
       page += 1
     }
 
     if (seq !== loadSeq.current) return
-    setGames(collected)
-    setHasMore(more)
-    refreshHidden()
-  }, [isAuthed, refreshHidden])
+    const nextVisible = collected.filter((game) => !isOngoingGameHidden(gameId(game)))
+    setGames(nextVisible)
+    setHasMore(more && nextVisible.length > 0)
+    bumpHidden()
+  }, [isAuthed, bumpHidden])
 
   useEffect(() => {
     void load()
@@ -100,34 +106,42 @@ const HomeOngoingCard: FC = () => {
   const visible = useMemo(
     () =>
       games
-        .filter((game) => !hiddenIds.includes(String(game._id)))
+        .filter((game) => {
+          const id = gameId(game)
+          return id && !hiddenIds.includes(id)
+        })
         .sort(compareLastUsedDesc)
         .slice(0, VISIBLE_LIMIT),
     [games, hiddenIds]
   )
-  const hiddenCount = useMemo(
-    () => games.filter((game) => hiddenIds.includes(String(game._id))).length,
-    [games, hiddenIds]
-  )
 
-  const hide = (id: string) => {
-    hideOngoingGame(id)
+  const hide = (id: unknown) => {
+    const normalized = normalizeOngoingGameId(id)
+    if (!normalized) return
+    hideOngoingGame(normalized)
     const nextHidden = readHiddenOngoingIds()
-    setHiddenIds(nextHidden)
+    setGames((prev) => {
+      const next = prev.filter((game) => {
+        const id = gameId(game)
+        return Boolean(id) && id !== normalized && !nextHidden.includes(id)
+      })
+      if (next.length < VISIBLE_LIMIT) {
+        void load()
+      }
+      return next
+    })
+    bumpHidden()
     showToast('success', 'Successfully hidden')
-    const remaining = games.filter((game) => !nextHidden.includes(String(game._id)))
-    if (remaining.length === 0 && hasMore) {
-      void load()
-    }
   }
 
   const showHidden = () => {
     unhideAllOngoingGames()
-    refreshHidden()
+    bumpHidden()
+    void load()
   }
 
   if (!isAuthed) return null
-  if (visible.length === 0 && hiddenCount === 0 && !hasMore) return null
+  if (visible.length === 0 && hiddenIds.length === 0 && !hasMore) return null
 
   return (
     <StyledHomeOngoingCard>
@@ -140,25 +154,28 @@ const HomeOngoingCard: FC = () => {
 
       {visible.length > 0 ? (
         <ul className="ongoing-list">
-          {visible.map((game) => (
-            <li key={String(game._id)} className="ongoing-item">
-              <Link href={`/game/${game._id}`} className="ongoing-row">
-                <div className="ongoing-copy">
-                  <span className="ongoing-name">{mapLabel(game)}</span>
-                  <span className="ongoing-meta">{metaLabel(game)}</span>
-                </div>
-                <span className="ongoing-resume">Resume</span>
-              </Link>
-              <button type="button" className="ongoing-hide" onClick={() => hide(String(game._id))}>
-                Hide
-              </button>
-            </li>
-          ))}
+          {visible.map((game) => {
+            const id = gameId(game)
+            return (
+              <li key={id || mapLabel(game)} className="ongoing-item">
+                <Link href={`/game/${id}`} className="ongoing-row">
+                  <div className="ongoing-copy">
+                    <span className="ongoing-name">{mapLabel(game)}</span>
+                    <span className="ongoing-meta">{metaLabel(game)}</span>
+                  </div>
+                  <span className="ongoing-resume">Resume</span>
+                </Link>
+                <button type="button" className="ongoing-hide" onClick={() => hide(id)}>
+                  Hide
+                </button>
+              </li>
+            )
+          })}
         </ul>
       ) : (
         <div className="ongoing-empty">
-          <p>{hiddenCount > 0 ? `${hiddenCount} hidden` : 'Nothing to show'}</p>
-          {hiddenCount > 0 ? (
+          <p>{hiddenIds.length > 0 ? `${hiddenIds.length} hidden` : 'Nothing to show'}</p>
+          {hiddenIds.length > 0 ? (
             <button type="button" className="ongoing-restore" onClick={showHidden}>
               Show again
             </button>

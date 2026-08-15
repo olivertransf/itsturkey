@@ -23,6 +23,7 @@ export { default as formatOngoingScore } from './formatOngoingScore'
 export {
   hideOngoingGame,
   isOngoingGameHidden,
+  normalizeOngoingGameId,
   readHiddenOngoingIds,
   unhideAllOngoingGames,
   unhideOngoingGame,
