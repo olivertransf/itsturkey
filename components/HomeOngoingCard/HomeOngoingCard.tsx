@@ -1,9 +1,13 @@
 import Link from 'next/link'
-import { useRouter } from 'next/router'
-import { FC, useCallback, useEffect, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { Button } from '@components/system'
-import { mailman, showToast } from '@utils/helpers'
+import { mailman } from '@utils/helpers'
+import {
+  hideOngoingGame,
+  isOngoingGameHidden,
+  readHiddenOngoingIds,
+  unhideAllOngoingGames,
+} from '@utils/helpers/hiddenOngoingGames'
 import { COUNTRY_STREAK_DETAILS, DAILY_CHALLENGE_DETAILS } from '@utils/constants/random'
 import StyledHomeOngoingCard from './HomeOngoingCard.Styled'
 
@@ -18,9 +22,8 @@ type UnfinishedGame = {
   mapDetails?: { name?: string }[]
 }
 
-type Props = {
-  onPrimaryChange?: (game: UnfinishedGame | null) => void
-}
+const VISIBLE_LIMIT = 5
+const MAX_PAGES = 5
 
 const mapLabel = (game: UnfinishedGame) => {
   if (game.mode === 'streak') return COUNTRY_STREAK_DETAILS.name
@@ -29,81 +32,119 @@ const mapLabel = (game: UnfinishedGame) => {
 }
 
 const roundLabel = (game: UnfinishedGame) => {
-  if (game.mode === 'streak') return 'Country streak in progress'
+  if (game.mode === 'streak') return 'In progress'
   if (game.unlimited) return `Round ${game.round ?? 1}`
   const total = game.totalRounds
   if (typeof total === 'number' && total > 0) return `Round ${game.round ?? 1} of ${total}`
   return `Round ${game.round ?? 1}`
 }
 
-const HomeOngoingCard: FC<Props> = ({ onPrimaryChange }) => {
-  const router = useRouter()
+const HomeOngoingCard: FC = () => {
   const { status, data: session } = useSession()
-  const [game, setGame] = useState<UnfinishedGame | null>(null)
+  const [games, setGames] = useState<UnfinishedGame[]>([])
   const [hasMore, setHasMore] = useState(false)
-  const [countHint, setCountHint] = useState(0)
-  const [discarding, setDiscarding] = useState(false)
+  const [hiddenIds, setHiddenIds] = useState<string[]>([])
   const isAuthed = status === 'authenticated' && Boolean(session?.user?.id)
+
+  const refreshHidden = useCallback(() => {
+    setHiddenIds(readHiddenOngoingIds())
+  }, [])
 
   const load = useCallback(async () => {
     if (!isAuthed) {
-      setGame(null)
-      onPrimaryChange?.(null)
+      setGames([])
       return
     }
-    const res = await mailman('games/unfinished?page=0')
-    if (!res || res.error || !Array.isArray(res.data)) {
-      setGame(null)
-      onPrimaryChange?.(null)
-      return
+
+    const collected: UnfinishedGame[] = []
+    let page = 0
+    let more = true
+
+    while (page < MAX_PAGES && more) {
+      const res = await mailman(`games/unfinished?page=${page}`)
+      if (!res || res.error || !Array.isArray(res.data)) {
+        more = false
+        break
+      }
+      collected.push(...(res.data as UnfinishedGame[]))
+      more = Boolean(res.hasMore)
+      const visibleCount = collected.filter((game) => !isOngoingGameHidden(String(game._id))).length
+      if (visibleCount >= VISIBLE_LIMIT) break
+      page += 1
     }
-    const first = (res.data[0] as UnfinishedGame) ?? null
-    setGame(first)
-    setHasMore(Boolean(res.hasMore) || res.data.length > 1)
-    setCountHint(res.data.length)
-    onPrimaryChange?.(first)
-  }, [isAuthed, onPrimaryChange])
+
+    setGames(collected)
+    setHasMore(more)
+    refreshHidden()
+  }, [isAuthed, refreshHidden])
 
   useEffect(() => {
     void load()
   }, [load])
 
-  const discard = async () => {
-    if (!game?._id) return
-    if (!window.confirm('Discard this unfinished game?')) return
-    setDiscarding(true)
-    const res = await mailman(`games/${game._id}`, 'DELETE')
-    setDiscarding(false)
-    if (res?.error) {
-      showToast('error', res.error.message)
-      return
+  const visible = useMemo(
+    () => games.filter((game) => !hiddenIds.includes(String(game._id))).slice(0, VISIBLE_LIMIT),
+    [games, hiddenIds]
+  )
+  const hiddenCount = useMemo(
+    () => games.filter((game) => hiddenIds.includes(String(game._id))).length,
+    [games, hiddenIds]
+  )
+
+  const hide = (id: string) => {
+    hideOngoingGame(id)
+    const nextHidden = Array.from(new Set([...hiddenIds, String(id)]))
+    setHiddenIds(nextHidden)
+    const remaining = games.filter((game) => !nextHidden.includes(String(game._id)))
+    if (remaining.length === 0 && hasMore) {
+      void load()
     }
-    showToast('success', 'Game discarded')
-    await load()
   }
 
-  if (!isAuthed || !game) return null
+  const showHidden = () => {
+    unhideAllOngoingGames()
+    refreshHidden()
+  }
+
+  if (!isAuthed) return null
+  if (visible.length === 0 && hiddenCount === 0 && !hasMore) return null
 
   return (
     <StyledHomeOngoingCard>
-      <div className="ongoing-copy">
-        <p className="ongoing-kicker">Continue</p>
-        <h3 className="ongoing-title">{mapLabel(game)}</h3>
-        <p className="ongoing-meta">{roundLabel(game)}</p>
-      </div>
-      <div className="ongoing-actions">
-        <Button variant="primary" onClick={() => void router.push(`/game/${game._id}`)}>
-          Resume
-        </Button>
-        <Button variant="solidGray" disabled={discarding} onClick={() => void discard()}>
-          Discard
-        </Button>
-        {hasMore ? (
-          <Link href="/ongoing" className="ongoing-all">
-            All ongoing{countHint > 1 ? ` (${countHint}+)` : ''}
-          </Link>
-        ) : null}
-      </div>
+      <header className="ongoing-head">
+        <h2 className="ongoing-title">Continue</h2>
+        <Link href="/ongoing" className="ongoing-link">
+          All
+        </Link>
+      </header>
+
+      {visible.length > 0 ? (
+        <ul className="ongoing-list">
+          {visible.map((game) => (
+            <li key={String(game._id)} className="ongoing-item">
+              <Link href={`/game/${game._id}`} className="ongoing-row">
+                <div className="ongoing-copy">
+                  <span className="ongoing-name">{mapLabel(game)}</span>
+                  <span className="ongoing-meta">{roundLabel(game)}</span>
+                </div>
+                <span className="ongoing-resume">Resume</span>
+              </Link>
+              <button type="button" className="ongoing-hide" onClick={() => hide(String(game._id))}>
+                Hide
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className="ongoing-empty">
+          <p>{hiddenCount > 0 ? `${hiddenCount} hidden` : 'Nothing to show'}</p>
+          {hiddenCount > 0 ? (
+            <button type="button" className="ongoing-restore" onClick={showHidden}>
+              Show again
+            </button>
+          ) : null}
+        </div>
+      )}
     </StyledHomeOngoingCard>
   )
 }

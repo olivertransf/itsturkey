@@ -81,53 +81,9 @@ const StyledHomeUserStats = styled.div`
   }
 
   .stats-label {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
     font-size: var(--font-compact);
     line-height: 1.3;
     color: var(--text-muted);
-  }
-
-  .stats-delta {
-    font-variant-numeric: tabular-nums;
-    font-weight: 600;
-
-    &.is-up {
-      color: var(--success);
-    }
-
-    &.is-down {
-      color: var(--danger);
-    }
-  }
-
-  .stats-meter {
-    padding: 0 var(--space-4) var(--space-4);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-  }
-
-  .stats-meter-head {
-    display: flex;
-    justify-content: space-between;
-    font-size: var(--font-compact);
-    font-weight: 600;
-    color: var(--text-muted);
-    font-variant-numeric: tabular-nums;
-  }
-
-  .stats-meter-track {
-    height: 4px;
-    border-radius: var(--radius-pill);
-    background: var(--control-fill);
-    overflow: hidden;
-  }
-
-  .stats-meter-fill {
-    height: 100%;
-    background: var(--accent-primary);
   }
 
   .stats-meta {

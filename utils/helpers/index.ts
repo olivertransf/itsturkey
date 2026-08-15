@@ -20,6 +20,13 @@ export { default as formatDistance } from './formatDistance'
 export { default as formatApproxLocations } from './formatApproxLocations'
 export { default as formatLargeNumber } from './formatLargeNumber'
 export { default as formatOngoingScore } from './formatOngoingScore'
+export {
+  hideOngoingGame,
+  isOngoingGameHidden,
+  readHiddenOngoingIds,
+  unhideAllOngoingGames,
+  unhideOngoingGame,
+} from './hiddenOngoingGames'
 export { default as formatPolygon } from './formatPolygon'
 export { default as formatRoundTime } from './formatRoundTime'
 export { default as formatSettingsLabel } from './formatSettingsLabel'

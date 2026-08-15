@@ -34,7 +34,6 @@ const HomeUserStats: FC = () => {
     const best = pick(stats, 'Best score (pts)')
     const avg = pick(stats, 'Average score (pts)')
     const last5 = pick(stats, 'Last 5 average (pts)')
-    const fiveKRate = pick(stats, '5k rate (%)')
     const games = pick(stats, 'Games finished')
     const missKm = pick(stats, 'Average miss (km)')
     const streak = pick(stats, 'Best streak (countries)')
@@ -42,12 +41,10 @@ const HomeUserStats: FC = () => {
     const duels = pick(stats, 'Duels finished')
     const duelRate = pick(stats, 'Duel win rate (%)')
     const daily = pick(stats, 'Daily challenge wins')
-    const formDelta = last5 - avg
     return {
       best,
       avg,
       last5,
-      fiveKRate,
       games,
       missKm,
       streak,
@@ -55,7 +52,6 @@ const HomeUserStats: FC = () => {
       duels,
       duelRate,
       daily,
-      formDelta,
     }
   }, [stats])
 
@@ -91,27 +87,9 @@ const HomeUserStats: FC = () => {
             </li>
             <li>
               <span className="stats-value">{formatLargeNumber(view.last5)}</span>
-              <span className="stats-label">
-                Last 5
-                {view.games >= 2 && view.formDelta !== 0 ? (
-                  <span className={view.formDelta >= 0 ? 'stats-delta is-up' : 'stats-delta is-down'}>
-                    {view.formDelta >= 0 ? '+' : ''}
-                    {formatLargeNumber(view.formDelta)}
-                  </span>
-                ) : null}
-              </span>
+              <span className="stats-label">Last 5</span>
             </li>
           </ul>
-
-          <div className="stats-meter">
-            <div className="stats-meter-head">
-              <span>5k rate</span>
-              <span>{view.fiveKRate}%</span>
-            </div>
-            <div className="stats-meter-track" aria-hidden>
-              <div className="stats-meter-fill" style={{ width: `${Math.min(100, view.fiveKRate)}%` }} />
-            </div>
-          </div>
 
           <dl className="stats-meta">
             <div>

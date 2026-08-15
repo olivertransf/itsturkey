@@ -31,6 +31,24 @@ const StyledOngoingGamesPage = styled.div`
         height: 20px;
       }
     }
+
+    .ongoing-show-hidden {
+      flex-shrink: 0;
+      height: var(--control-height-sm);
+      padding: 0 var(--space-3);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      background: transparent;
+      color: var(--text-muted);
+      font-size: var(--font-meta);
+      font-weight: 600;
+      cursor: pointer;
+
+      &:hover {
+        color: var(--text-primary);
+        border-color: var(--border-strong);
+      }
+    }
   }
 
   .ongoing-table {
@@ -50,6 +68,10 @@ const StyledOngoingGamesPage = styled.div`
 
     &.variant {
       background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    &.is-hidden {
+      opacity: 0.45;
     }
 
     .game-detail {
@@ -168,7 +190,8 @@ const StyledOngoingGamesPage = styled.div`
         }
 
         .play-button,
-        .delete-button {
+        .delete-button,
+        .hide-button {
           display: flex;
           align-items: center;
           justify-content: center;
@@ -184,6 +207,15 @@ const StyledOngoingGamesPage = styled.div`
             background-color: rgb(255, 255, 255, 0.1);
           }
 
+          &.hide-button {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border-subtle);
+            font-size: var(--font-meta);
+            font-weight: 600;
+            padding: 8px 12px;
+          }
+
           svg {
             height: 20px;
             color: #fff;
@@ -194,6 +226,12 @@ const StyledOngoingGamesPage = styled.div`
 
             &.delete-button {
               background-color: #991b1b;
+            }
+
+            &.hide-button {
+              background: transparent;
+              color: var(--text-primary);
+              border-color: var(--border-strong);
             }
           }
         }

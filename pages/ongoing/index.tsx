@@ -15,6 +15,13 @@ import { GameType, MapType } from '@types'
 import { COUNTRY_STREAK_DETAILS, DAILY_CHALLENGE_DETAILS } from '@utils/constants/random'
 import { formatMonthDayYear } from '@utils/dateHelpers'
 import { formatOngoingScore, mailman, showToast } from '@utils/helpers'
+import {
+  hideOngoingGame,
+  isOngoingGameHidden,
+  readHiddenOngoingIds,
+  unhideAllOngoingGames,
+  unhideOngoingGame,
+} from '@utils/helpers/hiddenOngoingGames'
 import { useBreakpoint } from '@utils/hooks'
 
 type OngoingGame = GameType & {
@@ -29,16 +36,35 @@ const OngoingGamesPage: NextPage = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [deletingGameId, setDeletingGameId] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
+  const [hiddenIds, setHiddenIds] = useState<string[]>([])
   const user = useAppSelector((state) => state.user)
   const { isBreakpoint } = useBreakpoint()
 
+  const refreshHidden = () => setHiddenIds(readHiddenOngoingIds())
+
   useEffect(() => {
+    refreshHidden()
+
     if (!user.id) {
       return setLoading(false)
     }
 
     fetchGames()
   }, [])
+
+  const toggleHidden = (gameId: string) => {
+    if (isOngoingGameHidden(gameId)) {
+      unhideOngoingGame(gameId)
+    } else {
+      hideOngoingGame(gameId)
+    }
+    refreshHidden()
+  }
+
+  const showAllHidden = () => {
+    unhideAllOngoingGames()
+    refreshHidden()
+  }
 
   const fetchGames = async () => {
     const res = await mailman(`games/unfinished?page=${gamesPage}`)
@@ -97,6 +123,11 @@ const OngoingGamesPage: NextPage = () => {
             <ExclamationCircleIcon />
             <span>Ongoing games are only saved for 30 days after they are created</span>
           </div>
+          {hiddenIds.length > 0 ? (
+            <button type="button" className="ongoing-show-hidden" onClick={showAllHidden}>
+              Show {hiddenIds.length} hidden
+            </button>
+          ) : null}
         </div>
 
         {!loading && (!user.id || games.length === 0) ? (
@@ -126,8 +157,15 @@ const OngoingGamesPage: NextPage = () => {
                 key={isBreakpoint ? 1 : 0}
                 scrollableTarget={isBreakpoint ? undefined : 'main'}
               >
-                {games.map((game, idx) => (
-                  <div key={idx} className={`ongoing-item ${idx % 2 === 0 ? 'variant' : ''}`}>
+                {games.map((game, idx) => {
+                  const gameId = String(game._id)
+                  const hidden = hiddenIds.includes(gameId)
+
+                  return (
+                  <div
+                    key={idx}
+                    className={`ongoing-item ${idx % 2 === 0 ? 'variant' : ''}${hidden ? ' is-hidden' : ''}`}
+                  >
                     <div className="flex-left">
                       <div className="map-details">
                         <Avatar
@@ -169,7 +207,10 @@ const OngoingGamesPage: NextPage = () => {
                       )}
 
                       <div className="ongoing-buttons">
-                        <button className="delete-button" onClick={() => openDeleteModal(game._id as string)}>
+                        <button type="button" className="hide-button" onClick={() => toggleHidden(gameId)}>
+                          {hidden ? 'Show' : 'Hide'}
+                        </button>
+                        <button className="delete-button" onClick={() => openDeleteModal(gameId)}>
                           <TrashIcon />
                         </button>
                         <a className="play-button" href={`/game/${game._id}`}>
@@ -189,7 +230,8 @@ const OngoingGamesPage: NextPage = () => {
                       </div>
                     </div>
                   </div>
-                ))}
+                  )
+                })}
               </InfiniteScroll>
             )}
           </div>
