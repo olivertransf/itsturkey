@@ -227,8 +227,9 @@ const ProfilePage: NextPage = () => {
       {loading || !userStats ? (
         <SkeletonProfile />
       ) : (
-        <div>
+        <div className="profile-stack">
           <div className="profile-details">
+            <section className="profile-card">
             <div className="profile-heading">
               <div className="avatar-wrapper">
                 {isEditing ? (
@@ -339,6 +340,7 @@ const ProfilePage: NextPage = () => {
                 </span>
               )}
             </div>
+            </section>
 
             <div className="profile-tabs">
               <Tabs>
@@ -365,29 +367,31 @@ const ProfilePage: NextPage = () => {
             </div>
 
             {selectedTab === 'stats' && userStats && (
-              <>
-                <div className="user-stats">
-                  {STAT_GROUPS.map((group) => (
-                    <section key={group.title} className="stat-group">
-                      <h3 className="stat-group-title">{group.title}</h3>
-                      <ul className="stat-group-list">
-                        {group.labels.map((label) => {
-                          const row = userStats.find((s) => s.label === label)
-                          return (
-                            <li key={label} className="stat-item">
-                              <span className="stat-value">{formatLargeNumber(row?.data ?? 0)}</span>
-                              <span className="stat-label">{label}</span>
-                            </li>
-                          )
-                        })}
-                      </ul>
-                    </section>
-                  ))}
-                </div>
+              <div className="user-stats">
+                {STAT_GROUPS.map((group) => (
+                  <section key={group.title} className="profile-card">
+                    <header className="profile-card-head">
+                      <h3 className="profile-card-title">{group.title}</h3>
+                    </header>
+                    <ul className="stat-group-list">
+                      {group.labels.map((label) => {
+                        const row = userStats.find((s) => s.label === label)
+                        return (
+                          <li key={label} className="stat-item">
+                            <span className="stat-value">{formatLargeNumber(row?.data ?? 0)}</span>
+                            <span className="stat-label">{label}</span>
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  </section>
+                ))}
 
-                {personalBests.length > 0 && (
-                  <div className="personal-bests">
-                    <h3 className="personal-bests-title">Personal bests (standard)</h3>
+                {personalBests.length > 0 ? (
+                  <section className="profile-card">
+                    <header className="profile-card-head">
+                      <h3 className="profile-card-title">Personal bests</h3>
+                    </header>
                     <ul className="personal-bests-list">
                       {personalBests.map((row) => (
                         <li key={row.leaderboardKey} className="personal-best-row">
@@ -401,40 +405,49 @@ const ProfilePage: NextPage = () => {
                         </li>
                       ))}
                     </ul>
-                  </div>
-                )}
-              </>
+                  </section>
+                ) : null}
+              </div>
             )}
 
             {selectedTab === 'games' && (
-              <>
-                {userGames ? (
-                  userGames.length ? (
-                    <GameHistoryList
-                      games={userGames}
-                      hasMore={userGamesPagination.hasMore}
-                      loadMore={getUserGames}
-                    />
+              <section className="profile-card">
+                <header className="profile-card-head">
+                  <h3 className="profile-card-title">Games</h3>
+                </header>
+                <div className="profile-card-body">
+                  {userGames ? (
+                    userGames.length ? (
+                      <GameHistoryList
+                        games={userGames}
+                        hasMore={userGamesPagination.hasMore}
+                        loadMore={getUserGames}
+                      />
+                    ) : (
+                      <span className="no-results-message">No finished games yet.</span>
+                    )
                   ) : (
-                    <span className="no-results-message">No finished games yet.</span>
-                  )
-                ) : (
-                  <SkeletonLeaderboard removeHeader />
-                )}
-              </>
+                    <SkeletonLeaderboard removeHeader />
+                  )}
+                </div>
+              </section>
             )}
 
             {selectedTab === 'settings' && isThisUsersProfile() && (
-              <StyledSettingsPage className="profile-settings-embed">
-                <UserSettingsPanel embedded />
-              </StyledSettingsPage>
+              <section className="profile-card">
+                <header className="profile-card-head">
+                  <h3 className="profile-card-title">Settings</h3>
+                </header>
+                <div className="profile-card-body">
+                  <StyledSettingsPage className="profile-settings-embed">
+                    <UserSettingsPanel embedded />
+                  </StyledSettingsPage>
+                </div>
+              </section>
             )}
 
             {selectedTab === 'friends' && isThisUsersProfile() && session && (
-              <div className="friends-panel">
-                <p className="friends-hint">Add or remove friends in Settings. Watch and Invite stay here.</p>
-                <HomeFriendsCard />
-              </div>
+              <HomeFriendsCard />
             )}
           </div>
         </div>
