@@ -1,9 +1,55 @@
 import styled from 'styled-components'
 
 const StyledHomePage = styled.div`
+  position: relative;
   min-height: 100%;
   background-color: var(--bg-primary);
   background-image: var(--bg-pattern);
+
+  .home-topbar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: var(--space-4) var(--page-gutter);
+  }
+
+  .home-auth-login,
+  .home-auth-signup {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    padding: 0 14px;
+    border-radius: var(--radius-md);
+    font-size: var(--font-body);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .home-auth-login {
+    color: var(--text-primary);
+    background: var(--bg-elevated);
+    border: var(--border-default);
+
+    &:hover {
+      border-color: var(--border-strong);
+      background: var(--control-fill);
+    }
+  }
+
+  .home-auth-signup {
+    color: #fff;
+    background: #2f7fff;
+
+    &:hover {
+      background: #2568d4;
+    }
+  }
 
   .home-hero {
     display: flex;

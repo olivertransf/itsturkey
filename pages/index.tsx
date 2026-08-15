@@ -24,13 +24,25 @@ const getHomeMaps = (): Pick<MapType, '_id' | 'name' | 'description' | 'previewI
     }))
 
 const Home: NextPage = () => {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const homeMaps = getHomeMaps()
   const showFriendsRail = Boolean(session?.user?.id)
+  const showGuestAuth = status === 'unauthenticated'
 
   return (
     <StyledHomePage>
       <Meta title={SITE_NAME} />
+
+      {showGuestAuth ? (
+        <div className="home-topbar">
+          <Link href="/login" className="home-auth-login">
+            Log In
+          </Link>
+          <Link href="/register" className="home-auth-signup">
+            Sign Up
+          </Link>
+        </div>
+      ) : null}
 
       <header className="home-hero">
         <h1 className="home-hero-title">itsturkey</h1>
