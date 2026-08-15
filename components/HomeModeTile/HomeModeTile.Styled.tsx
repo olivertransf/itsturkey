@@ -6,8 +6,8 @@ const StyledHomeModeTile = styled.article`
   align-items: center;
   gap: var(--space-4);
   min-width: 0;
-  min-height: 56px;
-  padding: 14px 16px;
+  min-height: 96px;
+  padding: 22px 16px;
   background: transparent;
   border: 0;
   border-right: 1px solid var(--divider-line);

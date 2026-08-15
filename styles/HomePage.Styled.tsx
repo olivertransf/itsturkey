@@ -79,6 +79,8 @@ const StyledHomePage = styled.div`
   }
 
   .home-maps-grid .home-row-card {
+    min-height: 96px;
+    padding: 22px 16px;
     border: 0;
     border-radius: 0;
     background: transparent;
