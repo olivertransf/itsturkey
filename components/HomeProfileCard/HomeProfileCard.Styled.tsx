@@ -44,6 +44,12 @@ const StyledHomeProfileCard = styled.div`
     gap: var(--space-3);
     padding: var(--pad-row-card);
     min-width: 0;
+    text-decoration: none;
+    color: inherit;
+
+    &:hover {
+      background: var(--bg-elevated);
+    }
   }
 
   .profile-card-copy {

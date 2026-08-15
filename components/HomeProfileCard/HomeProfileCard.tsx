@@ -26,12 +26,12 @@ const HomeProfileCard: FC = () => {
           View
         </Link>
       </div>
-      <div className="profile-card-body">
+      <Link href={href} className="profile-card-body">
         <Avatar type="user" src={avatar.emoji} backgroundColor={avatar.color} size={44} />
         <div className="profile-card-copy">
           <span className="profile-card-name">{name}</span>
         </div>
-      </div>
+      </Link>
     </StyledHomeProfileCard>
   )
 }
