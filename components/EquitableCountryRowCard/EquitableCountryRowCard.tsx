@@ -43,5 +43,3 @@ const EquitableCountryRowCard: FC<Props> = ({ map, isForDisplayOnly }) => {
 }
 
 export default EquitableCountryRowCard
-
-export default EquitableCountryRowCard
