@@ -36,7 +36,7 @@ const StyledProfilePage = styled.div`
 
   @media (min-width: 800px) {
     .profile-body {
-      grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+      grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
       align-items: start;
       gap: var(--space-5);
     }
@@ -64,9 +64,12 @@ const StyledProfilePage = styled.div`
 
   .profile-identity {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: var(--space-4);
+    text-align: center;
+    gap: var(--space-3);
     min-width: 0;
+    padding: var(--space-2) 0;
   }
 
   .profile-main {
@@ -108,18 +111,21 @@ const StyledProfilePage = styled.div`
 
   .profile-copy {
     min-width: 0;
-    flex: 1;
+    width: 100%;
     display: flex;
     flex-direction: column;
-    gap: var(--space-1);
+    align-items: center;
+    gap: var(--space-2);
   }
 
   .profile-name {
     margin: 0;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
     gap: var(--space-2);
-    min-width: 0;
+    max-width: 100%;
     font-size: var(--font-title);
     font-weight: 700;
     letter-spacing: var(--tracking-title);
@@ -127,14 +133,13 @@ const StyledProfilePage = styled.div`
     color: var(--text-primary);
 
     span {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      overflow-wrap: anywhere;
     }
   }
 
   .profile-bio {
     margin: 0;
+    max-width: 22ch;
     font-size: var(--font-meta);
     line-height: 1.45;
     color: var(--text-muted);
@@ -156,6 +161,7 @@ const StyledProfilePage = styled.div`
     padding: 0 var(--space-3);
     font-size: var(--font-body);
     font-weight: 700;
+    text-align: center;
   }
 
   .profile-bio-input {
@@ -165,6 +171,7 @@ const StyledProfilePage = styled.div`
     color: var(--text-muted);
     resize: vertical;
     min-height: 72px;
+    text-align: center;
   }
 
   .profile-tabs {

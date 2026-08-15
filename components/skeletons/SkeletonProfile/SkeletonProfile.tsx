@@ -6,10 +6,10 @@ const SkeletonProfile: FC = () => {
   return (
     <StyledSkeletonProfile>
       <div className="skel-identity">
-        <Skeleton variant="circular" height={80} width={80} />
+        <Skeleton variant="circular" height={112} width={112} />
         <div className="skel-copy">
-          <Skeleton height={22} width={140} noBorder />
-          <Skeleton height={14} width={180} noBorder />
+          <Skeleton height={22} width={120} noBorder />
+          <Skeleton height={14} width={160} noBorder />
         </div>
       </div>
       <div className="skel-main">

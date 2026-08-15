@@ -6,19 +6,22 @@ const StyledSkeletonProfile = styled.div`
   width: 100%;
 
   @media (min-width: 800px) {
-    grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+    grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
     align-items: start;
   }
 
   .skel-identity {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: var(--space-4);
+    gap: var(--space-3);
+    padding: var(--space-2) 0;
   }
 
   .skel-copy {
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: var(--space-2);
   }
 
