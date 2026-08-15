@@ -58,6 +58,12 @@ export const StyledPlaySetup = styled.div`
     overflow: hidden;
   }
 
+  .play-card-filters .play-heading-row,
+  .play-card-filters > section > *:not(.play-filter-grid-scroll) {
+    padding-right: 10px;
+    box-sizing: border-box;
+  }
+
   .play-heading-row {
     display: flex;
     align-items: baseline;

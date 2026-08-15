@@ -47,10 +47,11 @@ const GridScroll = styled.div<{ $scroll?: boolean }>`
     flex-direction: column;
     gap: var(--space-3);
     flex: 1;
+    min-width: 0;
+    width: 100%;
     min-height: 0;
     overflow-y: scroll;
     scrollbar-gutter: stable;
-    padding-right: var(--space-1);
   `
       : ''}
 `
@@ -116,7 +117,11 @@ const IntensityRow = styled.div`
 
 const Grid = styled.div<{ $maxHeight?: number; $twoCol?: boolean }>`
   display: grid;
-  grid-template-columns: ${({ $twoCol }) => ($twoCol ? '1fr 1fr' : 'repeat(auto-fill, minmax(132px, 1fr))')};
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  grid-template-columns: ${({ $twoCol }) =>
+    $twoCol ? 'repeat(2, minmax(0, 1fr))' : 'repeat(auto-fill, minmax(132px, 1fr))'};
   gap: ${({ $twoCol }) => ($twoCol ? 'var(--space-2)' : 'var(--space-3)')};
   ${({ $maxHeight }) =>
     $maxHeight
@@ -132,6 +137,9 @@ const Chip = styled.button<{ $on: boolean; $disabled?: boolean; $thin?: boolean 
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   gap: ${({ $thin }) => ($thin ? '2px' : '4px')};
   text-align: left;
   padding: ${({ $thin }) => ($thin ? '6px 8px' : '10px 11px')};
