@@ -63,6 +63,10 @@ const Home: NextPage = () => {
     <StyledHomePage>
       <Meta title={SITE_NAME} />
 
+      <header className="home-hero">
+        <h1 className="home-hero-title">itsturkey</h1>
+      </header>
+
       <div className="main-content">
         <div className={`home-shell${showFriendsRail ? ' home-shell--with-friends' : ''}`}>
           <div className="home-body">

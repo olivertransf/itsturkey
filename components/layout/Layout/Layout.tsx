@@ -45,9 +45,6 @@ const Layout: FC<Props> = ({ children }) => {
       <div className="app-layout">
         <div className="appBody">
           <main id="main">
-            <header className="app-hero">
-              <h1 className="app-hero-title">itsturkey</h1>
-            </header>
             {children}
           </main>
         </div>

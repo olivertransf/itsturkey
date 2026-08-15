@@ -47,27 +47,8 @@ const StyledLayout = styled.div`
     position: relative;
     overflow: hidden auto;
     background-color: var(--bg-primary);
+    background-image: var(--bg-pattern);
     -webkit-overflow-scrolling: touch;
-  }
-
-  .app-hero {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    min-height: clamp(8rem, 22vh, 14rem);
-    padding: clamp(3rem, 10vh, 6rem) var(--page-gutter) clamp(2rem, 6vh, 4rem);
-    box-sizing: border-box;
-  }
-
-  .app-hero-title {
-    margin: 0;
-    text-align: center;
-    font-size: clamp(2.25rem, 6vw, 3.5rem);
-    font-weight: 800;
-    letter-spacing: var(--tracking-display);
-    line-height: 1;
-    color: var(--text-primary);
   }
 
   .mainContent {

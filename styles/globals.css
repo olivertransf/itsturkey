@@ -195,10 +195,11 @@
   --pink-900: #831843;
 
   --palette-accent: #2f7fff;
-  --palette-surface: #222833;
-  --palette-surface-deep: #171c24;
-  --palette-bg-raised: #10141b;
-  --palette-bg-root: #07090d;
+  --palette-surface: #1d314d;
+  --palette-surface-deep: #15263f;
+  --palette-bg-raised: #10203a;
+  --palette-bg-root: #0a1730;
+  --bg-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Cpath d='M36 0H0M0 0V36' stroke='rgba(47,127,255,0.14)' stroke-width='1' fill='none'/%3E%3C/svg%3E");
 
   --accent-primary: var(--palette-accent);
   --accent-primary-hover: #2566e6;
@@ -312,6 +313,7 @@ body {
   font-family: var(--font-family1);
   font-weight: 500;
   background-color: var(--bg-primary);
+  background-image: var(--bg-pattern);
   color: var(--text-primary);
   overflow: hidden;
   height: 100%;
