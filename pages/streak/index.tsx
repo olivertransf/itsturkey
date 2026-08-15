@@ -175,7 +175,7 @@ const StreakLobbyPage: NextPage = () => {
                   value={mapField}
                   onChange={setMapField}
                   loading={false}
-                  maxHeight={220}
+                  visibleCount={4}
                   showDescriptions={false}
                   scrollClassName="play-filter-grid-scroll"
                 />

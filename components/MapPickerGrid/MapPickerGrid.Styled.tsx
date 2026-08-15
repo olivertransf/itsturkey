@@ -10,7 +10,7 @@ export const PickerRoot = styled.div`
 
 export const ScrollRegion = styled.div<{ $maxHeight: number }>`
   max-height: ${(p) => p.$maxHeight}px;
-  overflow-y: auto;
+  overflow-y: scroll;
   overflow-x: hidden;
   padding: 0;
   margin: 0;

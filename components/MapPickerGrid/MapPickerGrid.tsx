@@ -22,12 +22,22 @@ import {
   TextCol,
 } from './MapPickerGrid.Styled'
 
+const COMPACT_ROW_PX = 36
+const COMFORT_ROW_PX = 44
+const ROW_GAP_PX = 4
+
+export const mapPickerListHeight = (visibleRows: number, compact: boolean) => {
+  const row = compact ? COMPACT_ROW_PX : COMFORT_ROW_PX
+  return visibleRows * row + Math.max(0, visibleRows - 1) * ROW_GAP_PX
+}
+
 type Props = {
   options: MapPickerRow[]
   value: string
   onChange: (id: string) => void
   loading?: boolean
   maxHeight?: number
+  visibleCount?: number
   emptyMessage?: string
   /** When false, only map titles show (denser rows). Default true. */
   showDescriptions?: boolean
@@ -42,6 +52,7 @@ const MapPickerGrid: FC<Props> = ({
   onChange,
   loading,
   maxHeight = 260,
+  visibleCount,
   emptyMessage = 'No maps available.',
   showDescriptions = true,
   showSearch = true,
@@ -82,7 +93,14 @@ const MapPickerGrid: FC<Props> = ({
           </div>
         </SearchWrap>
       ) : null}
-      <ScrollRegion $maxHeight={maxHeight} className={scrollClassName} role="group" aria-label="Choose map">
+      <ScrollRegion
+        $maxHeight={
+          visibleCount != null ? mapPickerListHeight(visibleCount, !showDescriptions) : maxHeight
+        }
+        className={scrollClassName}
+        role="group"
+        aria-label="Choose map"
+      >
         <ColumnList>
           {filteredOptions.length === 0 ? (
             <LoadingHint>No maps match your search.</LoadingHint>

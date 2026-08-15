@@ -180,7 +180,7 @@ const DuelLobbyPage: NextPage = () => {
                   value={mapField}
                   onChange={setMapField}
                   loading={mapsLoading}
-                  maxHeight={220}
+                  visibleCount={4}
                   showDescriptions={false}
                   scrollClassName="play-filter-grid-scroll"
                 />

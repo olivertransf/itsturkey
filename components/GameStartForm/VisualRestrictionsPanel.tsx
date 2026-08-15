@@ -114,10 +114,10 @@ const IntensityRow = styled.div`
   }
 `
 
-const Grid = styled.div<{ $maxHeight?: number }>`
+const Grid = styled.div<{ $maxHeight?: number; $twoCol?: boolean }>`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
-  gap: var(--space-3);
+  grid-template-columns: ${({ $twoCol }) => ($twoCol ? '1fr 1fr' : 'repeat(auto-fill, minmax(132px, 1fr))')};
+  gap: ${({ $twoCol }) => ($twoCol ? 'var(--space-2)' : 'var(--space-3)')};
   ${({ $maxHeight }) =>
     $maxHeight
       ? `
@@ -128,14 +128,14 @@ const Grid = styled.div<{ $maxHeight?: number }>`
       : ''}
 `
 
-const Chip = styled.button<{ $on: boolean; $disabled?: boolean }>`
+const Chip = styled.button<{ $on: boolean; $disabled?: boolean; $thin?: boolean }>`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
+  gap: ${({ $thin }) => ($thin ? '2px' : '4px')};
   text-align: left;
-  padding: 10px 11px;
-  border-radius: 12px;
+  padding: ${({ $thin }) => ($thin ? '6px 8px' : '10px 11px')};
+  border-radius: ${({ $thin }) => ($thin ? 'var(--radius-sm)' : '12px')};
   border: 1px solid
     ${({ $on }) => ($on ? 'rgba(47, 127, 255, 0.55)' : 'var(--border-subtle)')};
   background: ${({ $on }) =>
@@ -143,19 +143,28 @@ const Chip = styled.button<{ $on: boolean; $disabled?: boolean }>`
   color: var(--text-primary);
   cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
   opacity: ${({ $disabled }) => ($disabled ? 0.45 : 1)};
-  min-height: 64px;
+  min-height: ${({ $thin }) => ($thin ? '40px' : '64px')};
 
   .chip-label {
-    font-size: 13px;
+    font-size: ${({ $thin }) => ($thin ? '12px' : '13px')};
     font-weight: 700;
     letter-spacing: -0.01em;
   }
 
   .chip-blurb {
-    font-size: 11px;
+    font-size: ${({ $thin }) => ($thin ? '10px' : '11px')};
     font-weight: 500;
     color: var(--text-muted);
     line-height: 1.3;
+    ${({ $thin }) =>
+      $thin
+        ? `
+      width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    `
+        : ''}
   }
 `
 
@@ -246,7 +255,7 @@ const VisualRestrictionsPanel: FC<Props> = ({ value, onChange, disabled, listMax
       </IntensityRow>
 
       <GridScroll $scroll={embedded} className={embedded ? 'play-filter-grid-scroll' : undefined}>
-        <Grid $maxHeight={embedded ? undefined : listMaxHeight}>
+        <Grid $maxHeight={embedded ? undefined : listMaxHeight} $twoCol={embedded}>
           {VISUAL_RESTRICTION_CATALOG.map(({ key, label, blurb }) => {
             const on = Boolean(normalized[key])
             return (
@@ -254,6 +263,7 @@ const VisualRestrictionsPanel: FC<Props> = ({ value, onChange, disabled, listMax
                 key={key}
                 type="button"
                 $on={on}
+                $thin={embedded}
                 $disabled={disabled}
                 aria-pressed={on}
                 disabled={disabled}

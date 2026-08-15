@@ -13,18 +13,24 @@ export const StyledPlaySetup = styled.div`
 
   @media (min-width: 900px) {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: stretch;
+
+    .play-col-main {
+      min-height: 100%;
+    }
 
     .play-col-filters {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      width: calc((100% - var(--play-gap)) / 2);
+      height: 0;
+      min-height: 100%;
       overflow: hidden;
     }
 
     .play-card-filters {
       height: 100%;
+    }
+
+    .play-start {
+      margin-top: auto;
     }
   }
 
