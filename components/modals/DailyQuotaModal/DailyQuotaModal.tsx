@@ -53,8 +53,8 @@ const DailyQuotaModal: FC<Props> = ({ isOpen, closeModal }) => {
             Adding your own key lets you continue to play for free, without costing us money!
           </p>
           <div className="support-links">
-            <Link href="/user/settings">
-              <a className="support-link">Add Key</a>
+            <Link href="/user/settings" className="support-link">
+              Add Key
             </Link>
             {process.env.NEXT_PUBLIC_DONATE_URL ? (
               <a className="support-link donate" href={process.env.NEXT_PUBLIC_DONATE_URL} target="_blank" rel="noreferrer">

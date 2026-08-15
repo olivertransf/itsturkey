@@ -92,8 +92,8 @@ const LoginPage: PageType = () => {
             />
           </div>
 
-          <Link href="/forgot">
-            <a className="forgot-message">Forgot password?</a>
+          <Link href="/forgot" className="forgot-message">
+            Forgot password?
           </Link>
 
           <Button className="submit-button" width="100%" isLoading={showBtnSpinner}>
@@ -112,7 +112,7 @@ const LoginPage: PageType = () => {
                 : '/register'
             }
           >
-            <a>Sign up</a>
+            Sign up
           </Link>
         </span>
       </section>

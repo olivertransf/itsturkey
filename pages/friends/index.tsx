@@ -229,8 +229,8 @@ const FriendsPage: NextPage = () => {
                 return (
                   <li key={friend.id} className="friend-row">
                     <div className="friend-info">
-                      <Link href={`/user/${encodeURIComponent(friend.id)}`}>
-                        <a className="friend-name">{friend.name}</a>
+                      <Link href={`/user/${encodeURIComponent(friend.id)}`} className="friend-name">
+                        {friend.name}
                       </Link>
                       <div className="friend-meta">
                         <span

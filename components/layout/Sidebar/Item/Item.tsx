@@ -15,11 +15,9 @@ const Item: FC<Props> = ({ text, icon, route }) => {
 
   return (
     <StyledItem isActive={isActive}>
-      <Link href={route}>
-        <a className="item">
-          {icon}
-          <span className="itemText">{text}</span>
-        </a>
+      <Link href={route} className="item">
+        {icon}
+        <span className="itemText">{text}</span>
       </Link>
     </StyledItem>
   )

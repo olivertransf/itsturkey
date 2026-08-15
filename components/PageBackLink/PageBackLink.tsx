@@ -13,11 +13,9 @@ type Props = {
 const PageBackLink: FC<Props> = ({ href = '/', label = 'Back to home', compact }) => {
   return (
     <StyledPageBackLink $compact={compact}>
-      <Link href={href}>
-        <a className="page-back-link">
-          <ArrowLeftIcon aria-hidden />
-          {label}
-        </a>
+      <Link href={href} className="page-back-link">
+        <ArrowLeftIcon aria-hidden />
+        {label}
       </Link>
     </StyledPageBackLink>
   )

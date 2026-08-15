@@ -145,7 +145,7 @@ const RegisterPage: PageType = () => {
                 : '/login'
             }
           >
-            <a>Sign in</a>
+            Sign in
           </Link>
         </span>
       </section>

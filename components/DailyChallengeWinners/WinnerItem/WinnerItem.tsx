@@ -20,10 +20,8 @@ const WinnerItem: FC<Props> = ({ winner }) => {
         <div className="user-info">
           <Avatar type="user" src={winner.userAvatar.emoji} backgroundColor={winner.userAvatar.color} />
 
-          <Link href={`/user/${winner.userId}`}>
-            <a className="username-wrapper">
-              <span className="username">{winner.userName}</span>
-            </a>
+          <Link href={`/user/${winner.userId}`} className="username-wrapper">
+            <span className="username">{winner.userName}</span>
           </Link>
         </div>
       </div>
@@ -34,10 +32,8 @@ const WinnerItem: FC<Props> = ({ winner }) => {
         <FlexGroup gap={5}>
           <div className="challenge-day">{formatMonthDay(challengeDay)}</div>
 
-          <Link href={`/challenge/${winner._id}`}>
-            <a className="results-link">
-              <ChartBarIcon />
-            </a>
+          <Link href={`/challenge/${winner._id}`} className="results-link">
+            <ChartBarIcon />
           </Link>
         </FlexGroup>
       </div>

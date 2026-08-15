@@ -82,11 +82,9 @@ const Sidebar: FC = () => {
           <div className="quickLinksSection">
             <div className="recentMapsWrapper">
               {maps?.map((map, idx) => (
-                <Link key={idx} href={`/map/${map._id}`}>
-                  <a className="recentMap">
-                    <Avatar type="map" src={map.previewImg} size={28} />
-                    <span className="recentMapName">{map.name}</span>
-                  </a>
+                <Link key={idx} href={`/map/${map._id}`} className="recentMap">
+                  <Avatar type="map" src={map.previewImg} size={28} />
+                  <span className="recentMapName">{map.name}</span>
                 </Link>
               ))}
             </div>
