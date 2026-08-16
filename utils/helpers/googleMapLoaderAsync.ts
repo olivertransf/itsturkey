@@ -24,18 +24,49 @@ type MapsNs = typeof google.maps & {
 
 const CONSTRUCTOR_KEYS = ['LatLng', 'LatLngBounds', 'Map', 'Polyline', 'OverlayView', 'StreetViewPanorama', 'StreetViewService'] as const
 
-const mapsApiReady = (maps: typeof google.maps | undefined): maps is typeof google.maps =>
-  typeof maps?.LatLng === 'function' && typeof maps?.Map === 'function'
+const eventNamespaceReady = (event: unknown): boolean => {
+  if (!event || typeof event !== 'object') return false
+  const ns = event as { addListener?: unknown; trigger?: unknown }
+  return typeof ns.addListener === 'function' && typeof ns.trigger === 'function'
+}
 
-const assignMissingConstructors = (target: MapsNs, source: object | undefined) => {
+export const mapsApiReady = (maps: typeof google.maps | undefined): maps is typeof google.maps =>
+  typeof maps?.LatLng === 'function' &&
+  typeof maps?.Map === 'function' &&
+  typeof maps?.OverlayView === 'function' &&
+  eventNamespaceReady(maps.event)
+
+export const triggerMapsEvent = (instance: object | null | undefined, name: string) => {
+  if (!instance || typeof window === 'undefined') return
+  const trigger = window.google?.maps?.event?.trigger
+  if (typeof trigger !== 'function') return
+  trigger(instance, name)
+}
+
+export const assignMissingMapsExports = (target: object, source: object | undefined) => {
   if (!source) return
   const rec = source as Record<string, unknown>
-  const dest = target as unknown as Record<string, unknown>
-  for (const key of CONSTRUCTOR_KEYS) {
-    if (typeof dest[key] !== 'function' && typeof rec[key] === 'function') {
-      dest[key] = rec[key]
+  const dest = target as Record<string, unknown>
+
+  const assignKey = (key: string) => {
+    if (key === 'importLibrary') return
+    const incoming = rec[key]
+    if (incoming == null) return
+    const current = dest[key]
+    if (typeof incoming === 'function') {
+      if (typeof current !== 'function') dest[key] = incoming
+      return
     }
+    if (typeof incoming !== 'object') return
+    if (key === 'event' || eventNamespaceReady(incoming)) {
+      if (!eventNamespaceReady(current)) dest[key] = incoming
+      return
+    }
+    if (current == null) dest[key] = incoming
   }
+
+  for (const key of CONSTRUCTOR_KEYS) assignKey(key)
+  for (const key of Object.keys(rec)) assignKey(key)
 }
 
 const hydrateMapsNamespace = async (): Promise<typeof google.maps> => {
@@ -50,13 +81,13 @@ const hydrateMapsNamespace = async (): Promise<typeof google.maps> => {
       maps.importLibrary('maps'),
       maps.importLibrary('streetView'),
     ])
-    assignMissingConstructors(maps, core)
-    assignMissingConstructors(maps, mapsLib)
-    assignMissingConstructors(maps, streetView)
+    assignMissingMapsExports(maps, core)
+    assignMissingMapsExports(maps, mapsLib)
+    assignMissingMapsExports(maps, streetView)
   }
 
   if (!mapsApiReady(maps)) {
-    throw new Error('Google Maps LatLng/Map constructors are not available')
+    throw new Error('Google Maps LatLng/Map/OverlayView/event are not available')
   }
 
   return maps

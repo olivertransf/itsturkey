@@ -14,7 +14,7 @@ import { WatchersIndicator } from '@components/WatchersIndicator'
 import type { WatcherChip } from '@components/WatchersIndicator'
 import { DailyQuotaModal } from '@components/modals/DailyQuotaModal'
 import { Spinner } from '@components/system'
-import { mailman, getMapsKey, googleMapLoaderAsync, showToast } from '@utils/helpers'
+import { mailman, getMapsKey, googleMapLoaderAsync, showToast, triggerMapsEvent } from '@utils/helpers'
 import type { StreetViewLiveView } from '@utils/helpers/streetViewLiveView'
 import type { GuessMapLive } from '@utils/helpers/guessMapLive'
 import { attachStreetViewPanZoomLock } from '@utils/helpers/lockStreetViewPanZoom'
@@ -30,7 +30,7 @@ const triggerPanoramaResize = (pano: google.maps.StreetViewPanorama | null) => {
   if (!pano) return
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      google.maps.event.trigger(pano, 'resize')
+      triggerMapsEvent(pano, 'resize')
     })
   })
 }
@@ -158,11 +158,11 @@ const Streetview: FC<Props> = ({
     if (!pano || !el || typeof ResizeObserver === 'undefined') return
 
     const ro = new ResizeObserver(() => {
-      google.maps.event.trigger(pano, 'resize')
+      triggerMapsEvent(pano, 'resize')
     })
     ro.observe(el)
 
-    const onWinResize = () => google.maps.event.trigger(pano, 'resize')
+    const onWinResize = () => triggerMapsEvent(pano, 'resize')
     window.addEventListener('resize', onWinResize)
 
     return () => {
@@ -291,7 +291,7 @@ const Streetview: FC<Props> = ({
     if (view !== 'Game' || !serviceRef.current) return
 
     loadNewPano()
-  }, [view])
+  }, [view, gameData.round])
 
   const checkForQuotaExceeded = () => {
     if (user.quotaModalDismissed || user.mapsAPIKey) {
@@ -422,7 +422,8 @@ const Streetview: FC<Props> = ({
 
     await new Promise<void>((resolve) => {
       svService.getPanorama(request, (data, status) => {
-        if (status !== google.maps.StreetViewStatus.OK || !data?.location?.pano) {
+        const okStatus = google.maps.StreetViewStatus?.OK ?? 'OK'
+        if (status !== okStatus || !data?.location?.pano) {
           showToast('error', 'Could not load streetview for this location')
           setLoading(false)
           resolve()

@@ -1,4 +1,5 @@
-import { getGuessMapOptions, isPanZoomEnabled } from '@utils/constants/googleMapOptions'
+import type Game from '@backend/models/game'
+import { getGuessMapOptions, getStreetviewOptions, isPanZoomEnabled } from '@utils/constants/googleMapOptions'
 
 describe('isPanZoomEnabled', () => {
   test('is true when either pan or zoom is allowed', () => {
@@ -23,5 +24,21 @@ describe('getGuessMapOptions', () => {
       scrollwheel: true,
       disableDoubleClickZoom: false,
     })
+  })
+})
+
+describe('getStreetviewOptions', () => {
+  test('does not throw when ControlPosition is missing from google.maps', () => {
+    const prev = (global as { google?: unknown }).google
+    ;(global as { google?: unknown }).google = { maps: {} }
+
+    const game = {
+      gameSettings: { canPan: true, canZoom: true, canMove: true },
+    } as Game
+
+    expect(() => getStreetviewOptions(game)).not.toThrow()
+    expect(getStreetviewOptions(game).panControlOptions.position).toBe(6)
+
+    ;(global as { google?: unknown }).google = prev
   })
 })

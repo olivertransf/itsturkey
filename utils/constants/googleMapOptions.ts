@@ -81,7 +81,7 @@ export const getStreetviewOptions = (gameData: Game) => {
     addressControl: false,
     panControl: canPan,
     panControlOptions: {
-      position: google.maps.ControlPosition.LEFT_BOTTOM,
+      position: google.maps.ControlPosition?.LEFT_BOTTOM ?? 6,
     },
     motionTracking: false,
     motionTrackingControl: false,

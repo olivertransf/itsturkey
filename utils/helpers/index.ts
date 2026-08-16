@@ -45,7 +45,7 @@ export {
   normalizeGoogleMapsApiKey,
 } from './checkGoogleMapsApiKey'
 export type { MapsKeyCheckResult } from './checkGoogleMapsApiKey'
-export { default as googleMapLoaderAsync } from './googleMapLoaderAsync'
+export { default as googleMapLoaderAsync, triggerMapsEvent } from './googleMapLoaderAsync'
 export { default as getRandomAvatar } from './getRandomAvatar'
 export { openStreetViewLocation } from './openStreetViewLocation'
 export { default as mailman } from './mailman'

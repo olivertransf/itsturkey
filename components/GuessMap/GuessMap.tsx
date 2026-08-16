@@ -8,7 +8,7 @@ import { useAppSelector } from '@redux/hook'
 import { GoogleMapsConfigType, LocationType } from '@types'
 import { getGuessMapOptions } from '@utils/constants/googleMapOptions'
 import useGuessMap from '@utils/hooks/useGuessMap'
-import { getMapsKey, googleMapLoaderAsync } from '@utils/helpers'
+import { getMapsKey, googleMapLoaderAsync, triggerMapsEvent } from '@utils/helpers'
 import { parseEquitableContinentMapKey } from '@utils/helpers/equitableContinentMapId'
 import { parseEquitableCountryMapKey } from '@utils/helpers/equitableCountryMapId'
 import { getGuessMapIdleSize, GUESS_MAP_HOVER_UNIFORM_SCALE, GUESS_MAP_VMIN_MULTIPLIER } from '@utils/helpers/getGuessMapSize'
@@ -85,18 +85,18 @@ const GuessMap: FC<Props> = ({
   onGuessMapLiveChangeRef.current = onGuessMapLiveChange
 
   useEffect(() => {
-    handleSetupMap()
-  }, [googleMapsConfig])
+    if (!googleMapsConfig?.map || isSpectator) return
+    const listener = googleMapsConfig.map.addListener('click', (e: google.maps.MapMouseEvent) => placePin(e))
+    return () => listener.remove()
+  }, [googleMapsConfig, isSpectator])
 
   useEffect(() => {
     handleResetMapState()
   }, [resetMap, googleMapsConfig, gameData])
 
   useEffect(() => {
-    if (!googleMapsConfig?.map || !googleMapsConfig.mapsApi) return
-
-    const { map, mapsApi } = googleMapsConfig
-    mapsApi.event.trigger(map, 'resize')
+    if (!googleMapsConfig?.map) return
+    triggerMapsEvent(googleMapsConfig.map, 'resize')
   }, [googleMapsConfig, mapWidth, mapHeight, mapExpanded, mobileMapOpen])
 
   useEffect(() => {
@@ -213,14 +213,6 @@ const GuessMap: FC<Props> = ({
     setMapWidth,
     setMapHeight,
   ])
-
-  const handleSetupMap = () => {
-    if (!googleMapsConfig?.map || isSpectator) return
-
-    const { map } = googleMapsConfig
-
-    map.addListener('click', (e: google.maps.MapMouseEvent) => placePin(e))
-  }
 
   const handleResetMapState = () => {
     if (isSpectator) return

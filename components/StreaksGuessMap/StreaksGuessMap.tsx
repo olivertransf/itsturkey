@@ -11,7 +11,7 @@ import countries from '@utils/constants/countries'
 import Game from '@backend/models/game'
 import { getGuessMapOptions } from '@utils/constants/googleMapOptions'
 import { POLYGON_STYLES } from '@utils/constants/polygonStyles'
-import { formatPolygon, getMapsKey, googleMapLoaderAsync } from '@utils/helpers'
+import { formatPolygon, getMapsKey, googleMapLoaderAsync, triggerMapsEvent } from '@utils/helpers'
 import useGuessMap from '@utils/hooks/useGuessMap'
 import type { GuessMapLive } from '@utils/helpers/guessMapLive'
 import { getGuessMapIdleSize, GUESS_MAP_HOVER_UNIFORM_SCALE, GUESS_MAP_VMIN_MULTIPLIER } from '@utils/helpers/getGuessMapSize'
@@ -80,16 +80,29 @@ const StreaksGuessMap: FC<Props> = ({
   const lastClickRef = useRef<{ lat: number; lng: number } | null>(null)
 
   useEffect(() => {
-    handleSetupMap()
-  }, [googleMapsConfig])
+    if (!googleMapsConfig?.map || isSpectator) return
+    const map = googleMapsConfig.map
+    let cancelled = false
+    let listener: google.maps.MapsEventListener | undefined
+
+    void import('@utils/constants/countryBounds.json').then(({ default: countryBounds }) => {
+      if (cancelled) return
+      listener = map.addListener('click', (e: google.maps.MapMouseEvent) => addCountryPolygon(e, map, countryBounds))
+    })
+
+    return () => {
+      cancelled = true
+      listener?.remove()
+    }
+  }, [googleMapsConfig, isSpectator])
 
   useEffect(() => {
     handleResetMapState()
   }, [resetMap, googleMapsConfig])
 
   useEffect(() => {
-    if (!googleMapsConfig?.map || !googleMapsConfig.mapsApi) return
-    googleMapsConfig.mapsApi.event.trigger(googleMapsConfig.map, 'resize')
+    if (!googleMapsConfig?.map) return
+    triggerMapsEvent(googleMapsConfig.map, 'resize')
   }, [googleMapsConfig, mapWidth, mapHeight, mapExpanded, mobileMapOpen])
 
   useEffect(() => {
@@ -106,16 +119,6 @@ const StreaksGuessMap: FC<Props> = ({
     document.addEventListener('pointerdown', onPointerDown, true)
     return () => document.removeEventListener('pointerdown', onPointerDown, true)
   }, [tabletTouch, mapExpanded, mobileMapOpen, setHovering, setIsPinned])
-
-  const handleSetupMap = async () => {
-    if (!googleMapsConfig?.map || isSpectator) return
-
-    const { map } = googleMapsConfig
-
-    const { default: countryBounds } = await import('@utils/constants/countryBounds.json')
-
-    map.addListener('click', (e: google.maps.MapMouseEvent) => addCountryPolygon(e, map, countryBounds))
-  }
 
   const handleResetMapState = () => {
     if (isSpectator) return
