@@ -11,6 +11,7 @@ import StyledMultiGamePage from '@styles/MultiGamePage.Styled'
 import { PageType } from '@types'
 import { mailman } from '@utils/helpers'
 import { spectateFollowDecision } from '@utils/friends/friendPresence'
+import { usePlayViewportLock } from '@utils/hooks/usePlayViewportLock'
 import { usePresenceHeartbeat } from '@utils/hooks/usePresenceHeartbeat'
 import { useVisibleInterval } from '@utils/useVisibleInterval'
 
@@ -30,6 +31,7 @@ const MultiGamePage: PageType = () => {
   const router = useRouter()
   const sessionId = typeof router.query.id === 'string' ? router.query.id : ''
   const spectateMode = router.isReady && router.query.spectate === '1'
+  usePlayViewportLock()
 
   usePresenceHeartbeat(
     isSpectator ? 'spectating' : 'in_game',

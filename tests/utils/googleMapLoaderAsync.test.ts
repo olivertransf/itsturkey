@@ -5,11 +5,15 @@ const trigger = jest.fn()
 const OverlayView = function OverlayView() {}
 const LatLng = function LatLng() {}
 const Map = function Map() {}
+const StreetViewPanorama = function StreetViewPanorama() {}
+const StreetViewService = function StreetViewService() {}
 
 const readyCore = {
   LatLng,
   Map,
   OverlayView,
+  StreetViewPanorama,
+  StreetViewService,
   event: { addListener, trigger },
 }
 
@@ -51,9 +55,15 @@ describe('assignMissingMapsExports', () => {
 })
 
 describe('mapsApiReady', () => {
-  test('is false until event.addListener and OverlayView exist', () => {
+  test('is false until event, OverlayView, and Street View constructors exist', () => {
     const maps: Record<string, unknown> = { LatLng, Map }
 
+    expect(mapsApiReady(maps as typeof google.maps)).toBe(false)
+
+    assignMissingMapsExports(maps, {
+      OverlayView,
+      event: { addListener, trigger },
+    })
     expect(mapsApiReady(maps as typeof google.maps)).toBe(false)
 
     assignMissingMapsExports(maps, readyCore)

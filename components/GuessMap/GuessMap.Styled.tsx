@@ -40,7 +40,7 @@ const StyledGuessMap = styled.div<StyledProps>`
     @media ${PHONE_GUESS_MAP_MQ} {
       display: flex;
       flex-direction: column;
-      height: min(62dvh, 720px);
+      height: min(72dvh, 760px);
       width: 100%;
       max-width: 100%;
       bottom: -100%;

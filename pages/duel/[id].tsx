@@ -34,6 +34,7 @@ import {
 import { duelPrivateChannel, userPrivateChannel } from '@utils/pusherChannels'
 import { usePusherRealtimeHealthy } from '@utils/usePusherRealtimeHealthy'
 import { usePusherSubscription } from '@utils/usePusherSubscription'
+import { usePlayViewportLock } from '@utils/hooks/usePlayViewportLock'
 import { useVisibleInterval } from '@utils/useVisibleInterval'
 
 /** Dedupes concurrent auto-join attempts (e.g. React Strict Mode double mount). */
@@ -60,6 +61,7 @@ const DuelRoomPage: PageType = () => {
   const [endPhase, setEndPhase] = useState<'final_damage' | 'summary'>('final_damage')
   const [watchers, setWatchers] = useState<WatcherChip[]>([])
   const prevGuestJoined = useRef<boolean | null>(null)
+  usePlayViewportLock()
 
   const isAuthenticated = status === 'authenticated'
   const loginHref =

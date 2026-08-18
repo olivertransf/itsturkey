@@ -1,8 +1,10 @@
 import styled from 'styled-components'
 
 export const StyledMultiGameView = styled.div`
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   background: var(--bg-primary);
   color: var(--text-primary);
 
@@ -68,8 +70,9 @@ export const StyledMultiGameView = styled.div`
     grid-template-columns: repeat(var(--multi-columns), minmax(0, 1fr));
     gap: 8px;
     padding: 8px;
-    height: calc(100vh - 58px);
-    height: calc(100dvh - 58px);
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
   }
 
   @media (max-width: 900px) {
@@ -80,8 +83,6 @@ export const StyledMultiGameView = styled.div`
 
     .multi-grid {
       grid-template-columns: 1fr;
-      height: auto;
-      min-height: calc(100vh - 58px);
     }
   }
 `

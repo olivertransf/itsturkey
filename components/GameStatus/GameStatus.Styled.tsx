@@ -1,4 +1,5 @@
 import styled from 'styled-components'
+import { PHONE_GUESS_MAP_MQ } from '@utils/constants/breakpoints'
 
 type StyledProps = {
   $compact?: boolean
@@ -76,6 +77,19 @@ const StyledGameStatus = styled.div<StyledProps>`
       font-size: 1rem;
     }
   `}
+
+  @media ${PHONE_GUESS_MAP_MQ} {
+    top: max(10px, env(safe-area-inset-top, 0px));
+    right: max(10px, env(safe-area-inset-right, 0px));
+
+    .infoSection {
+      padding: 8px 10px;
+    }
+
+    .value.time {
+      font-size: 1rem;
+    }
+  }
 `
 
 export default StyledGameStatus

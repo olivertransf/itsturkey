@@ -34,6 +34,8 @@ export const mapsApiReady = (maps: typeof google.maps | undefined): maps is type
   typeof maps?.LatLng === 'function' &&
   typeof maps?.Map === 'function' &&
   typeof maps?.OverlayView === 'function' &&
+  typeof maps?.StreetViewPanorama === 'function' &&
+  typeof maps?.StreetViewService === 'function' &&
   eventNamespaceReady(maps.event)
 
 export const triggerMapsEvent = (instance: object | null | undefined, name: string) => {

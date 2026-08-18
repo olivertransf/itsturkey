@@ -11,6 +11,7 @@ import { updateStartTime } from '@redux/slices'
 import StyledGamePage from '@styles/GamePage.Styled'
 import { ChallengeType, GameViewType, PageType } from '@types'
 import { mailman, showToast } from '@utils/helpers'
+import { usePlayViewportLock } from '@utils/hooks/usePlayViewportLock'
 
 const ChallengePage: PageType = () => {
   const [view, setView] = useState<GameViewType>('Game')
@@ -20,6 +21,7 @@ const ChallengePage: PageType = () => {
   const router = useRouter()
   const challengeId = router.query.id as string
   const dispatch = useAppDispatch()
+  usePlayViewportLock()
 
   const fetchChallenge = async () => {
     const res = await mailman(`challenges/${challengeId}`)

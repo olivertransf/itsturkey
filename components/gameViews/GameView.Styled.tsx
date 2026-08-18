@@ -3,10 +3,17 @@ import styled from 'styled-components'
 const StyledGameView = styled.div`
   height: 100%;
   width: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 
   .play-wrapper {
+    flex: 1;
+    min-height: 0;
     height: 100%;
     width: 100%;
+    display: flex;
+    flex-direction: column;
   }
 
   .results-wrapper {

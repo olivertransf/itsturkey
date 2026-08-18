@@ -84,7 +84,7 @@ const StandardGameView: FC<Props> = ({
 
   return (
     <StyledGameView>
-      <div className="play-wrapper" style={{ display: view === 'Game' ? 'block' : 'none' }}>
+      <div className="play-wrapper" style={{ display: view === 'Game' ? 'flex' : 'none' }}>
         <StreetView
           gameData={gameData}
           setGameData={setGameData}

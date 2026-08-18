@@ -84,7 +84,7 @@ const layerFill = css`
 `
 
 const inactiveLayer = css`
-  display: contents;
+  ${layerFill}
 `
 
 const occlusionLayers = (fx: VisualRestrictions | undefined) => {
@@ -121,7 +121,7 @@ const StyledStreetView = styled.div<StyledProps>`
   height: 100%;
   width: 100%;
   min-height: 0;
-  flex: 1;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   --sv-hue: 0deg;
@@ -148,6 +148,7 @@ const StyledStreetView = styled.div<StyledProps>`
     width: 100%;
     position: relative;
     overflow: hidden;
+    touch-action: none;
   }
 
   .pano-loading {
@@ -249,6 +250,10 @@ const StyledStreetView = styled.div<StyledProps>`
   .streetview-fx-target {
     position: absolute;
     inset: 0;
+    width: 100%;
+    height: 100%;
+    min-width: 1px;
+    min-height: 1px;
     z-index: 0;
     transform-origin: center center;
   }

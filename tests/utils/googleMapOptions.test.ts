@@ -38,6 +38,7 @@ describe('getStreetviewOptions', () => {
 
     expect(() => getStreetviewOptions(game)).not.toThrow()
     expect(getStreetviewOptions(game).panControlOptions.position).toBe(6)
+    expect(getStreetviewOptions(game).visible).toBe(false)
 
     ;(global as { google?: unknown }).google = prev
   })

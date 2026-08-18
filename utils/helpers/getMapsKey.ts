@@ -6,19 +6,22 @@ type GetMapsKeyOptions = {
   allowFallback?: boolean
 }
 
-const getMapsKey = (usersCustomKey: string | undefined, options: GetMapsKeyOptions = {}): { key: string } => {
+const getMapsKey = (
+  usersCustomKey: string | undefined,
+  options: GetMapsKeyOptions = {}
+): { key: string; loading: 'async' } => {
   const { allowFallback = true } = options
   const GEOHUB_MAPS_KEY = process.env.NEXT_PUBLIC_GOOGLE_API_KEY as string
 
   if (usersCustomKey) {
-    return { key: usersCustomKey }
+    return { key: usersCustomKey, loading: 'async' }
   }
 
   if (allowFallback && GEOHUB_MAPS_KEY) {
-    return { key: GEOHUB_MAPS_KEY }
+    return { key: GEOHUB_MAPS_KEY, loading: 'async' }
   }
 
-  return { key: '' }
+  return { key: '', loading: 'async' }
 }
 
 export default getMapsKey

@@ -79,6 +79,7 @@ export const getStreetviewOptions = (gameData: Game) => {
 
   return {
     addressControl: false,
+    visible: false,
     panControl: canPan,
     panControlOptions: {
       position: google.maps.ControlPosition?.LEFT_BOTTOM ?? 6,

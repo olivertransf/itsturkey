@@ -11,6 +11,7 @@ import { updateRecentlyPlayed } from '@redux/slices'
 import StyledGamePage from '@styles/GamePage.Styled'
 import { GameViewType, PageType } from '@types'
 import { mailman } from '@utils/helpers'
+import { usePlayViewportLock } from '@utils/hooks/usePlayViewportLock'
 import { usePresenceHeartbeat } from '@utils/hooks/usePresenceHeartbeat'
 import { useVisibleInterval } from '@utils/useVisibleInterval'
 
@@ -30,6 +31,7 @@ const GamePage: PageType = () => {
   const gameId = typeof router.query.id === 'string' ? router.query.id : ''
   const spectateMode = router.isReady && router.query.spectate === '1'
   const dispatch = useAppDispatch()
+  usePlayViewportLock()
 
   usePresenceHeartbeat(
     'in_game',

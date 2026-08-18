@@ -14,7 +14,16 @@ import { WatchersIndicator } from '@components/WatchersIndicator'
 import type { WatcherChip } from '@components/WatchersIndicator'
 import { DailyQuotaModal } from '@components/modals/DailyQuotaModal'
 import { Spinner } from '@components/system'
-import { mailman, getMapsKey, googleMapLoaderAsync, showToast, triggerMapsEvent } from '@utils/helpers'
+import {
+  mailman,
+  getMapsKey,
+  googleMapLoaderAsync,
+  isStreetViewStatusOk,
+  panoElementHasSize,
+  showToast,
+  streetViewPanoramaRequests,
+  triggerMapsEvent,
+} from '@utils/helpers'
 import type { StreetViewLiveView } from '@utils/helpers/streetViewLiveView'
 import type { GuessMapLive } from '@utils/helpers/guessMapLive'
 import { attachStreetViewPanZoomLock } from '@utils/helpers/lockStreetViewPanZoom'
@@ -319,7 +328,9 @@ const Streetview: FC<Props> = ({
 
   const initializeStreetView = () => {
     const panoEl = panoContainerRef.current ?? document.getElementById(panoElementId)
-    if (!panoEl) return false
+    if (!panoEl || !panoElementHasSize(panoEl)) return false
+    if (typeof google.maps.StreetViewService !== 'function') return false
+    if (typeof google.maps.StreetViewPanorama !== 'function') return false
 
     const svService = new google.maps.StreetViewService()
 
@@ -353,17 +364,48 @@ const Streetview: FC<Props> = ({
     let retryTimer: ReturnType<typeof setTimeout> | undefined
     let attempts = 0
 
+    const scheduleRetry = (delayMs: number, message = 'Could not load Street View') => {
+      if (cancelled || attempts >= 24) {
+        if (!cancelled) {
+          setLoading(false)
+          showToast('error', message)
+        }
+        return
+      }
+      attempts += 1
+      retryTimer = setTimeout(boot, delayMs)
+    }
+
     const boot = () => {
-      void googleMapLoaderAsync(getMapsKey(user.mapsAPIKey, { allowFallback: false }))
-        .then(() => {
+      const keys = getMapsKey(user.mapsAPIKey, { allowFallback: false })
+      if (!keys.key) {
+        scheduleRetry(100, 'Add a Google Maps API key in Account settings to play')
+        return
+      }
+
+      void googleMapLoaderAsync(keys)
+        .then(async () => {
           if (cancelled) return
-          if (initializeStreetView()) {
-            quotaTimer = setTimeout(checkForQuotaExceeded, 300)
+          const started = Date.now()
+          while (!cancelled && Date.now() - started < 2000) {
+            const el = panoContainerRef.current ?? document.getElementById(panoElementId)
+            if (panoElementHasSize(el)) break
+            await new Promise((resolve) => setTimeout(resolve, 50))
+          }
+          if (cancelled) return
+          try {
+            if (initializeStreetView()) {
+              quotaTimer = setTimeout(checkForQuotaExceeded, 300)
+              return
+            }
+          } catch {
+            if (!cancelled) {
+              setLoading(false)
+              showToast('error', 'Could not load Street View')
+            }
             return
           }
-          if (attempts >= 12) return
-          attempts += 1
-          retryTimer = setTimeout(boot, 50)
+          scheduleRetry(50)
         })
         .catch(() => {
           if (!cancelled) {
@@ -406,46 +448,49 @@ const Streetview: FC<Props> = ({
       return
     }
 
-    const lat = Number(loc.lat)
-    const lng = Number(loc.lng)
-    const useLatLng = Number.isFinite(lat) && Number.isFinite(lng)
-
-    if (!loc.panoId && !useLatLng) {
+    const requests = streetViewPanoramaRequests(loc)
+    if (!requests.length) {
       setLoading(false)
       showToast('error', 'Missing round location')
       return
     }
 
-    const request: google.maps.StreetViewLocationRequest | { pano: string } = loc.panoId
-      ? { pano: loc.panoId }
-      : { location: { lat, lng }, radius: 150 }
-
-    await new Promise<void>((resolve) => {
-      svService.getPanorama(request, (data, status) => {
-        const okStatus = google.maps.StreetViewStatus?.OK ?? 'OK'
-        if (status !== okStatus || !data?.location?.pano) {
-          showToast('error', 'Could not load streetview for this location')
-          setLoading(false)
-          resolve()
-          return
-        }
-
-        const heading = loc.heading ?? 0
-        const pitch = loc.pitch ?? 0
-        const zoom = loc.zoom ?? 0
-
-        svPanorama.setPano(data.location.pano)
-        svPanorama.setPov({ heading, pitch })
-        svPanorama.setZoom(zoom)
-        svPanorama.setVisible(true)
-        lockPoseTo(heading, pitch, zoom)
-
-        undoLocRef.current = []
-        triggerPanoramaResize(svPanorama)
-        setLoading(false)
-        resolve()
+    const fetchPano = (request: (typeof requests)[number]) =>
+      new Promise<google.maps.StreetViewPanoramaData | null>((resolve) => {
+        svService.getPanorama(request, (data, status) => {
+          if (isStreetViewStatusOk(status) && data?.location?.pano) {
+            resolve(data)
+            return
+          }
+          resolve(null)
+        })
       })
-    })
+
+    let data: google.maps.StreetViewPanoramaData | null = null
+    for (const request of requests) {
+      data = await fetchPano(request)
+      if (data?.location?.pano) break
+    }
+
+    if (!data?.location?.pano) {
+      showToast('error', 'Could not load streetview for this location')
+      setLoading(false)
+      return
+    }
+
+    const heading = loc.heading ?? 0
+    const pitch = loc.pitch ?? 0
+    const zoom = loc.zoom ?? 0
+
+    svPanorama.setPano(data.location.pano)
+    svPanorama.setPov({ heading, pitch })
+    svPanorama.setZoom(zoom)
+    svPanorama.setVisible(true)
+    lockPoseTo(heading, pitch, zoom)
+
+    undoLocRef.current = []
+    triggerPanoramaResize(svPanorama)
+    setLoading(false)
   }
 
   const trackLocations = () => {

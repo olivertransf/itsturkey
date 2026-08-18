@@ -1,9 +1,13 @@
 import styled from 'styled-components'
 
 const StyledGamePage = styled.div`
-  height: 100vh;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   height: 100dvh;
-  overflow: hidden auto;
+  overflow: hidden;
+  overscroll-behavior: none;
 
   .resultsWrapper {
     display: flex;
@@ -15,7 +19,7 @@ const StyledGamePage = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100vh;
+    height: 100%;
   }
 `
 

@@ -48,6 +48,12 @@ export type { MapsKeyCheckResult } from './checkGoogleMapsApiKey'
 export { default as googleMapLoaderAsync, triggerMapsEvent } from './googleMapLoaderAsync'
 export { default as getRandomAvatar } from './getRandomAvatar'
 export { openStreetViewLocation } from './openStreetViewLocation'
+export {
+  isStreetViewStatusOk,
+  panoElementHasSize,
+  streetViewPanoramaRequests,
+} from './streetViewPano'
+export type { StreetViewPanoRequest, StreetViewRoundLocation } from './streetViewPano'
 export { default as mailman } from './mailman'
 export type { MailmanOptions } from './mailman'
 export {
