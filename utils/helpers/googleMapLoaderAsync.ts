@@ -1,17 +1,5 @@
 import { Loader, LoaderOptions } from '@googlemaps/js-api-loader'
 
-/**
- * Extends the stock Loader URL with `loading=async` (Maps JS API ≥3.55) so the
- * browser console warning about synchronous bootstrap goes away. google-map-react
- * uses js-api-loader v1, which omits this query param by default.
- */
-class LoaderWithAsync extends Loader {
-  createUrl(): string {
-    const url = super.createUrl()
-    return url.includes('loading=') ? url : `${url}&loading=async`
-  }
-}
-
 const unresolvedBoot = new Promise<typeof google.maps>(() => {})
 
 let loadPromise: Promise<typeof google.maps> | undefined
@@ -22,19 +10,37 @@ type MapsNs = typeof google.maps & {
   importLibrary?: (name: string) => Promise<Record<string, unknown>>
 }
 
-const CONSTRUCTOR_KEYS = ['LatLng', 'LatLngBounds', 'Map', 'Polyline', 'OverlayView', 'StreetViewPanorama', 'StreetViewService'] as const
+const CONSTRUCTOR_KEYS = [
+  'LatLng',
+  'LatLngBounds',
+  'Map',
+  'Polyline',
+  'OverlayView',
+  'StreetViewPanorama',
+  'StreetViewService',
+  'event',
+] as const
+
+const SKIP_KEYS = new Set(['importLibrary', 'then', 'default', '__esModule', 'constructor', 'prototype'])
 
 const eventNamespaceReady = (event: unknown): boolean => {
-  if (!event || typeof event !== 'object') return false
-  const ns = event as { addListener?: unknown; trigger?: unknown }
-  return typeof ns.addListener === 'function' && typeof ns.trigger === 'function'
+  if (event == null) return false
+  if (typeof event !== 'object' && typeof event !== 'function') return false
+  const ns = event as { addListener?: unknown }
+  return typeof ns.addListener === 'function'
+}
+
+export const mapsApiMissing = (maps: typeof google.maps | undefined): string[] => {
+  const missing: string[] = []
+  if (typeof maps?.LatLng !== 'function') missing.push('LatLng')
+  if (typeof maps?.Map !== 'function') missing.push('Map')
+  if (typeof maps?.OverlayView !== 'function') missing.push('OverlayView')
+  if (!eventNamespaceReady(maps?.event)) missing.push('event')
+  return missing
 }
 
 export const mapsApiReady = (maps: typeof google.maps | undefined): maps is typeof google.maps =>
-  typeof maps?.LatLng === 'function' &&
-  typeof maps?.Map === 'function' &&
-  typeof maps?.OverlayView === 'function' &&
-  eventNamespaceReady(maps.event)
+  mapsApiMissing(maps).length === 0
 
 export const streetViewApiReady = (maps: typeof google.maps | undefined): boolean =>
   typeof maps?.StreetViewPanorama === 'function' && typeof maps?.StreetViewService === 'function'
@@ -46,54 +52,101 @@ export const triggerMapsEvent = (instance: object | null | undefined, name: stri
   trigger(instance, name)
 }
 
+const readProp = (source: object, key: string): unknown => {
+  try {
+    return (source as Record<string, unknown>)[key]
+  } catch {
+    return undefined
+  }
+}
+
+const sourceKeys = (source: object): string[] => {
+  const keys = new Set<string>(CONSTRUCTOR_KEYS)
+  try {
+    for (const key of Object.getOwnPropertyNames(source)) keys.add(key)
+  } catch {
+    // ignore
+  }
+  try {
+    for (const key of Object.keys(source)) keys.add(key)
+  } catch {
+    // ignore
+  }
+  return [...keys]
+}
+
 export const assignMissingMapsExports = (target: object, source: object | undefined) => {
   if (!source) return
-  const rec = source as Record<string, unknown>
   const dest = target as Record<string, unknown>
 
   const assignKey = (key: string) => {
-    if (key === 'importLibrary') return
-    const incoming = rec[key]
+    if (SKIP_KEYS.has(key)) return
+    const incoming = readProp(source, key)
     if (incoming == null) return
     const current = dest[key]
+    if (key === 'event' || eventNamespaceReady(incoming)) {
+      if (!eventNamespaceReady(current)) dest[key] = incoming
+      return
+    }
     if (typeof incoming === 'function') {
       dest[key] = incoming
       return
     }
     if (typeof incoming !== 'object') return
-    if (key === 'event' || eventNamespaceReady(incoming)) {
-      if (!eventNamespaceReady(current)) dest[key] = incoming
-      return
-    }
     if (current == null) dest[key] = incoming
   }
 
-  for (const key of CONSTRUCTOR_KEYS) assignKey(key)
-  for (const key of Object.keys(rec)) assignKey(key)
+  for (const key of sourceKeys(source)) assignKey(key)
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+const hydrateUntilReady = async (
+  loadLibs: () => Promise<Array<object | undefined>>
+): Promise<typeof google.maps> => {
+  const deadline = Date.now() + 8000
+  let lastError: unknown
+
+  while (Date.now() <= deadline) {
+    const maps = window.google?.maps as MapsNs | undefined
+    if (maps) {
+      try {
+        for (const lib of await loadLibs()) {
+          assignMissingMapsExports(maps, lib)
+        }
+      } catch (err) {
+        lastError = err
+      }
+      if (mapsApiReady(maps)) return maps
+    }
+    await sleep(50)
+  }
+
+  const missing = mapsApiMissing(window.google?.maps).join(', ') || 'LatLng/Map/OverlayView/event'
+  const extra = lastError instanceof Error ? ` (${lastError.message})` : ''
+  throw new Error(`Google Maps ${missing} are not available${extra}`)
+}
+
+const importCoreMaps = async (
+  importer: (name: 'core' | 'maps' | 'streetView') => Promise<object>
+): Promise<Array<object | undefined>> => {
+  const [core, mapsLib] = await Promise.all([importer('core'), importer('maps')])
+  let streetView: object | undefined
+  try {
+    streetView = await importer('streetView')
+  } catch {
+    // GuessMap only needs core/maps.
+  }
+  return [core, mapsLib, streetView]
 }
 
 const hydrateMapsNamespace = async (): Promise<typeof google.maps> => {
-  const maps = window.google?.maps as MapsNs | undefined
-  if (!maps) {
+  if (typeof window.google?.maps?.importLibrary !== 'function') {
     throw new Error('Google Maps failed to load')
   }
-
-  if (typeof maps.importLibrary === 'function') {
-    const [core, mapsLib] = await Promise.all([maps.importLibrary('core'), maps.importLibrary('maps')])
-    assignMissingMapsExports(maps, core)
-    assignMissingMapsExports(maps, mapsLib)
-    try {
-      assignMissingMapsExports(maps, await maps.importLibrary('streetView'))
-    } catch {
-      // GuessMap only needs core/maps. Street View hydrates itself if this chunk is blocked.
-    }
-  }
-
-  if (!mapsApiReady(maps)) {
-    throw new Error('Google Maps LatLng/Map/OverlayView/event are not available')
-  }
-
-  return maps
+  return hydrateUntilReady(() =>
+    importCoreMaps((name) => window.google.maps.importLibrary(name) as Promise<object>)
+  )
 }
 
 export const ensureStreetViewLoaded = async (): Promise<boolean> => {
@@ -165,33 +218,17 @@ export default function googleMapLoaderAsync(
     }
   }
 
-  const loader = new LoaderWithAsync({
+  const loader = new Loader({
     apiKey,
     ...omitLoaderExtras(bootstrapURLKeys),
     libraries: libraries as LoaderOptions['libraries'],
   })
 
-  loadPromise = Promise.all([loader.importLibrary('core'), loader.importLibrary('maps')])
-    .then(async ([core, mapsLib]) => {
-      const maps = window.google?.maps as MapsNs | undefined
-      if (!maps) {
-        throw new Error('Google Maps failed to load')
-      }
-      assignMissingMapsExports(maps, core)
-      assignMissingMapsExports(maps, mapsLib)
-      try {
-        assignMissingMapsExports(maps, await loader.importLibrary('streetView'))
-      } catch {
-        // optional
-      }
-      if (!mapsApiReady(maps)) {
-        throw new Error('Google Maps LatLng/Map/OverlayView/event are not available')
-      }
-      return maps
-    })
-    .catch((err) => {
+  loadPromise = hydrateUntilReady(() => importCoreMaps((name) => loader.importLibrary(name) as Promise<object>)).catch(
+    (err) => {
       loadPromise = undefined
       throw err
-    })
+    }
+  )
   return loadPromise
 }

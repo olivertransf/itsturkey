@@ -1,5 +1,6 @@
 import {
   assignMissingMapsExports,
+  mapsApiMissing,
   mapsApiReady,
   streetViewApiReady,
   triggerMapsEvent,
@@ -58,14 +59,15 @@ describe('assignMissingMapsExports', () => {
     expect((maps.ControlPosition as { LEFT_BOTTOM: number }).LEFT_BOTTOM).toBe(6)
   })
 
-  test('replaces a placeholder constructor with the importLibrary export', () => {
-    const stub = function Map() {}
-    const real = function Map() {}
-    const maps: Record<string, unknown> = { Map: stub }
+  test('treats a callable event namespace with addListener as ready', () => {
+    const eventFn = function event() {} as { addListener?: typeof addListener; trigger?: typeof trigger } & (() => void)
+    eventFn.addListener = addListener
+    eventFn.trigger = trigger
 
-    assignMissingMapsExports(maps, { Map: real })
+    const maps: Record<string, unknown> = { LatLng, Map, OverlayView }
+    assignMissingMapsExports(maps, { event: eventFn })
 
-    expect(maps.Map).toBe(real)
+    expect(mapsApiReady(maps as typeof google.maps)).toBe(true)
   })
 })
 
@@ -81,6 +83,12 @@ describe('mapsApiReady', () => {
     })
 
     expect(mapsApiReady(maps as typeof google.maps)).toBe(true)
+  })
+
+  test('mapsApiMissing names the constructors that are still stubs', () => {
+    const maps: Record<string, unknown> = { LatLng, Map }
+
+    expect(mapsApiMissing(maps as typeof google.maps)).toEqual(['OverlayView', 'event'])
   })
 })
 
