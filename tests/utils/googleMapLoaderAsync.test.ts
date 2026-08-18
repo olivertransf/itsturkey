@@ -1,5 +1,6 @@
 import {
   assignMissingMapsExports,
+  hydrateUntilReady,
   mapsApiMissing,
   mapsApiReady,
   streetViewApiReady,
@@ -126,6 +127,30 @@ describe('triggerMapsEvent', () => {
     triggerMapsEvent(target, 'resize')
 
     expect(triggerFn).toHaveBeenCalledWith(target, 'resize')
+    ;(global as { google?: unknown }).google = prev
+  })
+})
+
+describe('hydrateUntilReady', () => {
+  test('calls loadLibs when google.maps is missing so the script can inject', async () => {
+    const prev = (global as { google?: unknown }).google
+    delete (global as { google?: unknown }).google
+
+    const event = { addListener }
+
+    const maps = await hydrateUntilReady(
+      async () => {
+        const g = ((global as { google?: { maps: Record<string, unknown> } }).google ??= { maps: {} })
+        g.maps.LatLng = LatLng
+        g.maps.Map = Map
+        g.maps.OverlayView = OverlayView
+        g.maps.event = event
+        return []
+      },
+      { timeoutMs: 400, waitMs: 10 }
+    )
+
+    expect(maps.LatLng).toBe(LatLng)
     ;(global as { google?: unknown }).google = prev
   })
 })

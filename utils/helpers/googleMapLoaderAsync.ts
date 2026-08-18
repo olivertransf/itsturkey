@@ -101,28 +101,47 @@ export const assignMissingMapsExports = (target: object, source: object | undefi
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-const hydrateUntilReady = async (
-  loadLibs: () => Promise<Array<object | undefined>>
+export type HydrateUntilReadyOptions = {
+  timeoutMs?: number
+  waitMs?: number
+}
+
+export const hydrateUntilReady = async (
+  loadLibs: () => Promise<Array<object | undefined>>,
+  options: HydrateUntilReadyOptions = {}
 ): Promise<typeof google.maps> => {
-  const deadline = Date.now() + 8000
+  const timeoutMs = options.timeoutMs ?? 8000
+  const waitMs = options.waitMs ?? 50
+  const deadline = Date.now() + timeoutMs
   let lastError: unknown
 
-  while (Date.now() <= deadline) {
-    const maps = window.google?.maps as MapsNs | undefined
-    if (maps) {
-      try {
-        for (const lib of await loadLibs()) {
+  while (true) {
+    const remaining = deadline - Date.now()
+    if (remaining <= 0) break
+
+    try {
+      const libs = await Promise.race([
+        loadLibs(),
+        sleep(remaining).then(() => Promise.reject(new Error('Maps library load timed out'))),
+      ])
+      const maps = (typeof window !== 'undefined' ? window.google?.maps : undefined) as MapsNs | undefined
+      if (maps) {
+        for (const lib of libs) {
           assignMissingMapsExports(maps, lib)
         }
-      } catch (err) {
-        lastError = err
+        if (mapsApiReady(maps)) return maps
       }
-      if (mapsApiReady(maps)) return maps
+    } catch (err) {
+      lastError = err
     }
-    await sleep(50)
+
+    const wait = Math.min(waitMs, Math.max(0, deadline - Date.now()))
+    if (wait <= 0) break
+    await sleep(wait)
   }
 
-  const missing = mapsApiMissing(window.google?.maps).join(', ') || 'LatLng/Map/OverlayView/event'
+  const maps = typeof window !== 'undefined' ? window.google?.maps : undefined
+  const missing = mapsApiMissing(maps).join(', ') || 'LatLng/Map/OverlayView/event'
   const extra = lastError instanceof Error ? ` (${lastError.message})` : ''
   throw new Error(`Google Maps ${missing} are not available${extra}`)
 }
