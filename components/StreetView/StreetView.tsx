@@ -18,9 +18,11 @@ import {
   mailman,
   getMapsKey,
   googleMapLoaderAsync,
+  ensureStreetViewLoaded,
   isStreetViewStatusOk,
   panoElementHasSize,
   showToast,
+  streetViewApiReady,
   streetViewPanoramaRequests,
   triggerMapsEvent,
 } from '@utils/helpers'
@@ -393,6 +395,12 @@ const Streetview: FC<Props> = ({
             await new Promise((resolve) => setTimeout(resolve, 50))
           }
           if (cancelled) return
+          await ensureStreetViewLoaded()
+          if (cancelled) return
+          if (!streetViewApiReady(window.google?.maps)) {
+            scheduleRetry(50)
+            return
+          }
           try {
             if (initializeStreetView()) {
               quotaTimer = setTimeout(checkForQuotaExceeded, 300)

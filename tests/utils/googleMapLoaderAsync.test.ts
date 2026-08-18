@@ -1,4 +1,9 @@
-import { assignMissingMapsExports, mapsApiReady, triggerMapsEvent } from '@utils/helpers/googleMapLoaderAsync'
+import {
+  assignMissingMapsExports,
+  mapsApiReady,
+  streetViewApiReady,
+  triggerMapsEvent,
+} from '@utils/helpers/googleMapLoaderAsync'
 
 const addListener = () => ({ remove: () => undefined })
 const trigger = jest.fn()
@@ -52,10 +57,20 @@ describe('assignMissingMapsExports', () => {
     expect(maps.OverlayView).toBe(OverlayView)
     expect((maps.ControlPosition as { LEFT_BOTTOM: number }).LEFT_BOTTOM).toBe(6)
   })
+
+  test('replaces a placeholder constructor with the importLibrary export', () => {
+    const stub = function Map() {}
+    const real = function Map() {}
+    const maps: Record<string, unknown> = { Map: stub }
+
+    assignMissingMapsExports(maps, { Map: real })
+
+    expect(maps.Map).toBe(real)
+  })
 })
 
 describe('mapsApiReady', () => {
-  test('is false until event, OverlayView, and Street View constructors exist', () => {
+  test('is true once LatLng, Map, OverlayView, and event exist (Street View optional)', () => {
     const maps: Record<string, unknown> = { LatLng, Map }
 
     expect(mapsApiReady(maps as typeof google.maps)).toBe(false)
@@ -64,11 +79,21 @@ describe('mapsApiReady', () => {
       OverlayView,
       event: { addListener, trigger },
     })
-    expect(mapsApiReady(maps as typeof google.maps)).toBe(false)
-
-    assignMissingMapsExports(maps, readyCore)
 
     expect(mapsApiReady(maps as typeof google.maps)).toBe(true)
+  })
+})
+
+describe('streetViewApiReady', () => {
+  test('is independent of the core maps constructors', () => {
+    const maps: Record<string, unknown> = { LatLng, Map, OverlayView, event: { addListener, trigger } }
+
+    expect(mapsApiReady(maps as typeof google.maps)).toBe(true)
+    expect(streetViewApiReady(maps as typeof google.maps)).toBe(false)
+
+    assignMissingMapsExports(maps, { StreetViewPanorama, StreetViewService })
+
+    expect(streetViewApiReady(maps as typeof google.maps)).toBe(true)
   })
 })
 
