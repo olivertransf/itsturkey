@@ -1,34 +1,26 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
-/**
- * Runs `tick` on an interval only while the document is visible.
- * When `ms` is null, skips the interval and only runs on mount, focus, and visibility regain.
- */
 export const useVisibleInterval = (tick: () => void, ms: number | null, enabled = true) => {
+  const tickRef = useRef(tick)
+  tickRef.current = tick
+
   useEffect(() => {
-    if (!enabled) return
+    if (!enabled) return undefined
 
     const runIfVisible = () => {
-      if (document.visibilityState === 'visible') {
-        tick()
-      }
+      if (document.visibilityState === 'visible') tickRef.current()
     }
 
     runIfVisible()
-
     const intervalId = ms != null && ms > 0 ? window.setInterval(runIfVisible, ms) : undefined
 
-    const onVisible = () => {
-      if (document.visibilityState === 'visible') tick()
-    }
-
-    window.addEventListener('focus', onVisible)
-    document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('focus', runIfVisible)
+    document.addEventListener('visibilitychange', runIfVisible)
 
     return () => {
       if (intervalId != null) window.clearInterval(intervalId)
-      window.removeEventListener('focus', onVisible)
-      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('focus', runIfVisible)
+      document.removeEventListener('visibilitychange', runIfVisible)
     }
-  }, [tick, ms, enabled])
+  }, [ms, enabled])
 }
